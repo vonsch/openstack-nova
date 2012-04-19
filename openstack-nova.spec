@@ -316,7 +316,7 @@ install -p -D -m 755 %{SOURCE17} %{buildroot}%{_initrddir}/%{name}-direct-api
 install -p -D -m 755 %{SOURCE18} %{buildroot}%{_initrddir}/%{name}-xvpvncproxy
 install -p -D -m 755 %{SOURCE19} %{buildroot}%{_initrddir}/%{name}-console
 install -p -D -m 755 %{SOURCE24} %{buildroot}%{_initrddir}/%{name}-consoleauth
-install -p -D -m 755 %{SOURCE25} %{buildroot}%{_initrddir}/%{name}-metadata-api.init
+install -p -D -m 755 %{SOURCE25} %{buildroot}%{_initrddir}/%{name}-metadata-api
 
 # Install sudoers
 install -p -D -m 440 %{SOURCE20} %{buildroot}/etc/sudoers.d/%{name}
@@ -360,7 +360,7 @@ EOF
 chmod 0755 $RPM_BUILD_ROOT/etc/%{_python_prefix}/profile.d/common-python-nova.sh
 
 # Replace ~[^~]\+~ in configuration templates
-for file in `find %{buildroot} -type f -print0 | xargs -0 grep -l '~[^~]\+~'`; do
+for file in `find %{buildroot}/{etc,var} -type f -print0 | xargs -0 grep -l '~[^~]\+~'`; do
 	echo "Modify file: '$file'"
 	sed -i \
 		-e 's:~bindir~:%{_bindir}:g' \
@@ -387,13 +387,13 @@ exit 0
 
 %post
 # Register the services
-for svc in api cert compute network objectstore scheduler volume direct-api vncproxy; do
+for svc in api cert compute console consoleauth direct-api metadata-api network objectstore scheduler volume xvpvncproxy; do
     /sbin/chkconfig --add %{name}-${svc}
 done
 
 %preun
 if [ $1 -eq 0 ] ; then
-    for svc in api cert compute network objectstore scheduler volume direct-api vncproxy; do
+    for svc in api cert compute console consoleauth direct-api metadata-api network objectstore scheduler volume xvpvncproxy; do
         /sbin/service %{name}-${svc} stop > /dev/null 2>&1
         /sbin/chkconfig --del %{name}-${svc} > /dev/null 2>&1
     done
@@ -401,7 +401,7 @@ fi
 
 %postun
 if [ "$1" -ge 1 ] ; then
-    for svc in api cert compute network objectstore scheduler volume direct-api vncproxy; do
+    for svc in api cert compute console consoleauth direct-api metadata-api network objectstore scheduler volume xvpvncproxy; do
         /sbin/service %{name}-${svc} condrestart > /dev/null 2>&1
     done
 fi
@@ -441,13 +441,13 @@ fi
 %dir %{_sharedstatedir}/nova/CA/reqs
 %{_sharedstatedir}/nova/CA/*.sh
 %{_sharedstatedir}/nova/CA/openssl.cnf.tmpl
-%ghost %config(noreplace) %attr(-, root, nova) %{_sharedstatedir}/nova/CA/cacert.pem
-%ghost %config(noreplace) %attr(-, root, nova) %{_sharedstatedir}/nova/CA/crl.pem
-%ghost %config(noreplace) %attr(-, root, nova) %{_sharedstatedir}/nova/CA/index.txt
-%ghost %config(noreplace) %attr(-, root, nova) %{_sharedstatedir}/nova/CA/openssl.cnf
-%ghost %config(noreplace) %attr(-, root, nova) %{_sharedstatedir}/nova/CA/serial
+%ghost %config(missingok,noreplace) %verify(not md5 size mtime) %{_sharedstatedir}/nova/CA/cacert.pem
+%ghost %config(missingok,noreplace) %verify(not md5 size mtime) %{_sharedstatedir}/nova/CA/crl.pem
+%ghost %config(missingok,noreplace) %verify(not md5 size mtime) %{_sharedstatedir}/nova/CA/index.txt
+%ghost %config(missingok,noreplace) %verify(not md5 size mtime) %{_sharedstatedir}/nova/CA/openssl.cnf
+%ghost %config(missingok,noreplace) %verify(not md5 size mtime) %{_sharedstatedir}/nova/CA/serial
 %dir %attr(0750, -, -) %{_sharedstatedir}/nova/CA/private
-%ghost %config(noreplace) %attr(-, root, nova)  %{_sharedstatedir}/nova/CA/private/cakey.pem
+%ghost %config(missingok,noreplace) %verify(not md5 size mtime) %{_sharedstatedir}/nova/CA/private/cakey.pem
 %config(noreplace) /etc/profile.d/%{name}.sh
 
 %files -n common-python-nova
