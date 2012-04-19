@@ -170,7 +170,7 @@ Group:            Documentation
 
 Requires:         %{name} = %{version}-%{release}
 
-BuildRequires:    python-sphinx
+BuildRequires:    python-sphinx10
 BuildRequires:    graphviz
 BuildRequires:    python-distutils-extra
 
@@ -199,7 +199,7 @@ This package contains documentation files for nova.
 %prep
 %setup -q -n nova-%{version}
 
-%patch100 -p1
+%patch100 -p1 -b .newdeps
 %patch0001 -p1
 %patch0002 -p1
 %patch0003 -p1
