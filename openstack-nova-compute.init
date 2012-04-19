@@ -18,7 +18,7 @@
 # Required-Start: $remote_fs $network $syslog
 # Required-Stop: $remote_fs $syslog
 # Default-Stop: 0 1 6
-# Short-Description: Compute Worker
+# Short-Description: OpenStack Nova Compute Worker
 # Description: Compute workers manage computing instances on host
 #               machines. Through the API, commands are dispatched
 #               to compute workers to:
@@ -47,7 +47,7 @@ start() {
     [ -x $exec ] || exit 5
     [ -f $config ] || exit 6
     echo -n $"Starting $prog: "
-    daemon --user nova --pidfile $pidfile "$exec --flagfile $config --logfile $logfile &>/dev/null & echo \$! > $pidfile"
+    daemon --user nova --pidfile $pidfile "$exec --config-file $config --logfile $logfile &>/dev/null & echo \$! > $pidfile"
     retval=$?
     echo
     [ $retval -eq 0 ] && touch $lockfile

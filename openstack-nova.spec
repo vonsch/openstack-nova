@@ -4,7 +4,7 @@
 
 Name:             %{_openstack_name}-%{release_name}-nova
 Version:          2012.1
-Release:          1%{?dist}.gdc1
+Release:          2%{?dist}.gdc1
 
 #
 # - GoodData customization
@@ -32,6 +32,7 @@ Release:          1%{?dist}.gdc1
 #
 
 Summary:          OpenStack Compute (nova)
+
 Group:            Applications/System
 License:          ASL 2.0
 URL:              http://openstack.org/projects/compute/
@@ -47,7 +48,10 @@ Source14:         openstack-nova-objectstore.init
 Source15:         openstack-nova-scheduler.init
 Source16:         openstack-nova-volume.init
 Source17:         openstack-nova-direct-api.init
-Source19:         openstack-nova-vncproxy.init
+Source18:         openstack-nova-xvpvncproxy.init
+Source19:         openstack-nova-console.init
+Source24:         openstack-nova-consoleauth.init
+Source25:         openstack-nova-metadata-api.init
 
 Source20:         nova-sudoers
 Source21:         nova-polkit.pkla
@@ -58,11 +62,19 @@ Source22:         nova-ifc-template
 #
 Patch0001: 0001-fix-bug-where-nova-ignores-glance-host-in-imageref.patch
 Patch0002: 0002-Stop-libvirt-test-from-deleting-instances-dir.patch
-Patch0003: 0003-ensure-atomic-manipulation-of-libvirt-disk-images.patch
+Patch0003: 0003-Allow-unprivileged-RADOS-users-to-access-rbd-volumes.patch
 Patch0004: 0004-Fixed-bug-962840-added-a-test-case.patch
-Patch0005: 0005-Ensure-we-don-t-access-the-net-when-building-docs.patch
-Patch0006: 0006-fix-useexisting-deprecation-warnings.patch
+Patch0005: 0005-Fix-errors-in-os-networks-extension.patch
+Patch0006: 0006-Create-compute.api.BaseAPI-for-compute-APIs-to-use.patch
+Patch0007: 0007-Populate-image-properties-with-project_id-again.patch
+Patch0008: 0008-Use-project_id-in-ec2.cloud._format_image.patch
+Patch0009: 0009-ensure-atomic-manipulation-of-libvirt-disk-images.patch
+Patch0010: 0010-Ensure-we-don-t-access-the-net-when-building-docs.patch
+Patch0011: 0011-fix-useexisting-deprecation-warnings.patch
+Patch0012: 0012-support-a-configurable-libvirt-injection-partition.patch
+Patch0013: 0013-enforce-quota-on-security-group-rules.patch
 
+# This is EPEL specific and not upstream
 Patch100:         openstack-nova-newdeps.patch
 
 BuildArch:        noarch
@@ -76,11 +88,11 @@ Requires:         common-python-nova = %{version}-%{release}
 
 Requires:         python-paste
 Requires:         python-paste-deploy
+Requires:         python-setuptools
 
 Requires:         bridge-utils
-# Not in EL6
+#TODO: Enable when available in RHEL 6.3
 #Requires:         dnsmasq-utils
-
 Requires:         libguestfs-mount >= 1.7.17
 # The fuse dependency should be added to libguestfs-mount
 Requires:         fuse
@@ -95,7 +107,7 @@ Requires:         openssl
 Requires:         sudo
 
 Requires(post):   chkconfig
-Requires(preun):  initscripts
+Requires(postun): initscripts
 Requires(preun):  chkconfig
 Requires(pre):    shadow-utils qemu-kvm
 
@@ -120,6 +132,8 @@ Requires:         m2crypto
 Requires:         libvirt-python
 Requires:         python-anyjson
 Requires:         python-IPy
+Requires:         common-python-boto
+# TODO: make these messaging libs optional
 Requires:         python-qpid
 Requires:         python-carrot
 Requires:         python-kombu
@@ -134,10 +148,15 @@ Requires:         python-lxml
 Requires:         python-mox
 Requires:         python-redis
 Requires:         python-routes
+Requires:         python-sqlalchemy0.7
 Requires:         python-tornado
 Requires:         python-twisted-core
 Requires:         python-twisted-web
+Requires:         python-webob1.0
 Requires:         python-netaddr
+# TODO: remove the following dependency which is minimal
+Requires:         common-python-glance
+Requires:         common-python-novaclient
 Requires:         python-paste-deploy
 Requires:         python-migrate
 Requires:         python-ldap
@@ -148,13 +167,6 @@ Requires:         scsi-target-utils
 Requires:         lvm2
 Requires:         socat
 Requires:         coreutils
-
-Requires:         python-sqlalchemy0.7
-Requires:         python-webob1.0
-
-Requires:         common-python-boto
-Requires:         common-python-glance
-Requires:         common-python-novaclient
 
 %description -n   common-python-nova
 OpenStack Compute (codename Nova) is open source software designed to
@@ -175,18 +187,19 @@ BuildRequires:    graphviz
 BuildRequires:    python-distutils-extra
 
 BuildRequires:    python-nose
+# Required to build module documents
 BuildRequires:    python-IPy
+BuildRequires:    common-python-boto
 BuildRequires:    python-eventlet
 BuildRequires:    python-gflags
 BuildRequires:    python-routes
+BuildRequires:    python-sqlalchemy0.7
 BuildRequires:    python-tornado
 BuildRequires:    python-twisted-core
 BuildRequires:    python-twisted-web
 BuildRequires:    python-webob1.0
-BuildRequires:    python-sqlalchemy0.7
+# while not strictly required, quiets the build down when building docs.
 BuildRequires:    python-carrot, python-mox, python-suds, m2crypto, bpython, python-memcached, python-migrate, python-iso8601
-
-BuildRequires:    common-python-boto
 
 %description      doc
 OpenStack Compute (codename Nova) is open source software designed to
@@ -199,17 +212,26 @@ This package contains documentation files for nova.
 %prep
 %setup -q -n nova-%{version}
 
-%patch100 -p1 -b .newdeps
 %patch0001 -p1
 %patch0002 -p1
 %patch0003 -p1
 %patch0004 -p1
 %patch0005 -p1
 %patch0006 -p1
+%patch0007 -p1
+%patch0008 -p1
+%patch0009 -p1
+%patch0010 -p1
+%patch0011 -p1
+%patch0012 -p1
+%patch0013 -p1
+
+# Apply EPEL patch
+%patch100 -p1
 
 find . \( -name .gitignore -o -name .placeholder \) -delete
 
-find nova -name \*.py -exec sed -i '/\/usr\/bin\/env python/d' {} \;
+find nova -name \*.py -exec sed -i '/\/usr\/bin\/env python/{d;q}' {} +
 
 %build
 . /etc/opt/common-python/profile.d/common-python-boto.sh
@@ -238,7 +260,7 @@ doc/generate_autodoc_index.sh
 pushd doc
 
 %if 0%{?with_doc}
-SPHINX_DEBUG=1 sphinx-build -b html source build/html
+SPHINX_DEBUG=1 sphinx-1.0-build -b html source build/html
 # Fix hidden-file-or-dir warnings
 rm -fr build/html/.doctrees build/html/.buildinfo
 %endif
@@ -246,7 +268,7 @@ rm -fr build/html/.doctrees build/html/.buildinfo
 # Create dir link to avoid a sphinx-build exception
 mkdir -p build/man/.doctrees/
 ln -s .  build/man/.doctrees/man
-SPHINX_DEBUG=1 sphinx-build -b man -c source source/man build/man
+SPHINX_DEBUG=1 sphinx-1.0-build -b man -c source source/man build/man
 mkdir -p %{buildroot}%{_mandir}/man1
 install -p -D -m 644 build/man/*.1 %{buildroot}%{_mandir}/man1/
 
@@ -291,7 +313,10 @@ install -p -D -m 755 %{SOURCE14} %{buildroot}%{_initrddir}/%{name}-objectstore
 install -p -D -m 755 %{SOURCE15} %{buildroot}%{_initrddir}/%{name}-scheduler
 install -p -D -m 755 %{SOURCE16} %{buildroot}%{_initrddir}/%{name}-volume
 install -p -D -m 755 %{SOURCE17} %{buildroot}%{_initrddir}/%{name}-direct-api
-install -p -D -m 755 %{SOURCE19} %{buildroot}%{_initrddir}/%{name}-nova-vncproxy
+install -p -D -m 755 %{SOURCE18} %{buildroot}%{_initrddir}/%{name}-xvpvncproxy
+install -p -D -m 755 %{SOURCE19} %{buildroot}%{_initrddir}/%{name}-console
+install -p -D -m 755 %{SOURCE24} %{buildroot}%{_initrddir}/%{name}-consoleauth
+install -p -D -m 755 %{SOURCE25} %{buildroot}%{_initrddir}/%{name}-metadata-api.init
 
 # Install sudoers
 install -p -D -m 440 %{SOURCE20} %{buildroot}/etc/sudoers.d/%{name}
@@ -361,26 +386,23 @@ fi
 exit 0
 
 %post
-if [ $1 -eq 1 ] ; then
-    # Initial installation
-    for svc in api cert compute network objectstore scheduler volume direct-api vncproxy; do
-        /sbin/chkconfig --add %{name}-${svc} > /dev/null 2>&1 || :
-    done
-fi
+# Register the services
+for svc in api cert compute network objectstore scheduler volume direct-api vncproxy; do
+    /sbin/chkconfig --add %{name}-${svc}
+done
 
 %preun
 if [ $1 -eq 0 ] ; then
     for svc in api cert compute network objectstore scheduler volume direct-api vncproxy; do
-        /sbin/service %{name}-${svc} stop > /dev/null 2>&1 || :
-        /sbin/chkconfig --del %{name}-${svc} > /dev/null 2>&1 || :
+        /sbin/service %{name}-${svc} stop > /dev/null 2>&1
+        /sbin/chkconfig --del %{name}-${svc} > /dev/null 2>&1
     done
 fi
 
 %postun
-if [ $1 -ge 1 ] ; then
-    # Package upgrade, not uninstall
+if [ "$1" -ge 1 ] ; then
     for svc in api cert compute network objectstore scheduler volume direct-api vncproxy; do
-        /sbin/service %{name}-${svc} condrestart >/dev/null 2>&1 || :
+        /sbin/service %{name}-${svc} condrestart > /dev/null 2>&1
     done
 fi
 
@@ -441,6 +463,9 @@ fi
 %endif
 
 %changelog
+* Wed Apr 18 2012 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 2012.1-2
+- be more compatible with EL6
+
 * Wed Apr 18 2012 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 2012.1-1
 - Initial import based on F17 openstack-nova 2012.1-1
 - Change prefix to /opt/openstack

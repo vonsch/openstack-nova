@@ -1,22 +1,22 @@
 #!/bin/sh
 #
-# GoodData customized OpenStack Nova Console VNC Proxy
+# GoodData customized OpenStack Nova Metadata API Server
 #
 # chkconfig:   - 20 80
-# description: OpenStack Nova Console VNC Proxy Server
+# description: cert manages auth cert access and creation
 
 ### BEGIN INIT INFO
 # Provides:
 # Required-Start: $remote_fs $network $syslog
 # Required-Stop: $remote_fs $syslog
 # Default-Stop: 0 1 6
-# Short-Description: OpenStack Nova Console VNC Proxy
-# Description: OpenStack Nova Console VNC Proxy Server
+# Short-Description: OpenStack Nova Metadata API Server
+# Description: OpenStack Nova Metadata API Server
 ### END INIT INFO
 
 . /etc/rc.d/init.d/functions
 
-suffix=vncproxy
+suffix=metadata-api
 prog=openstack-nova-$suffix
 exec="~bindir~/nova-$suffix"
 config="~sysconfdir~/nova/nova.conf"
@@ -31,7 +31,7 @@ start() {
     [ -x $exec ] || exit 5
     [ -f $config ] || exit 6
     echo -n $"Starting $prog: "
-    daemon --user nova --pidfile $pidfile "$exec --flagfile $config --logfile $logfile &>/dev/null & echo \$! > $pidfile"
+    daemon --user nova --pidfile $pidfile "$exec --config-file $config --logfile $logfile &>/dev/null & echo \$! > $pidfile"
     retval=$?
     echo
     [ $retval -eq 0 ] && touch $lockfile

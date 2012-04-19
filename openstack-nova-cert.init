@@ -1,17 +1,17 @@
 #!/bin/sh
 #
-# GoodData customized OpenStack Nova Cert Server
+# GoodData customized OpenStack Nova cert Worker
 #
 # chkconfig:   - 20 80
-# description: OpenStack Nova Cert Server
+# description: cert manages auth cert access and creation
 
 ### BEGIN INIT INFO
 # Provides:
 # Required-Start: $remote_fs $network $syslog
 # Required-Stop: $remote_fs $syslog
 # Default-Stop: 0 1 6
-# Short-Description: Nova Cert Server
-# Description: OpenStack Nova Cert Server
+# Short-Description: OpenStack Nova Cert Manager
+# Description: cert manages auth cert access and creation
 ### END INIT INFO
 
 . /etc/rc.d/init.d/functions
@@ -31,7 +31,7 @@ start() {
     [ -x $exec ] || exit 5
     [ -f $config ] || exit 6
     echo -n $"Starting $prog: "
-    daemon --user nova --pidfile $pidfile "$exec --flagfile $config --logfile $logfile &>/dev/null & echo \$! > $pidfile"
+    daemon --user nova --pidfile $pidfile "$exec --config-file $config --logfile $logfile &>/dev/null & echo \$! > $pidfile"
     retval=$?
     echo
     [ $retval -eq 0 ] && touch $lockfile
@@ -39,7 +39,7 @@ start() {
 }
 
 stop() {
-    echo -n $"Stopping -$prog: "
+    echo -n $"Stopping $prog: "
     killproc -p $pidfile $prog
     retval=$?
     echo
