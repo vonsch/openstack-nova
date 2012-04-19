@@ -1,0 +1,12 @@
+--- nova/utils.py.orig	2012-04-19 21:54:25.262511559 +0200
++++ nova/utils.py	2012-04-19 21:55:14.650267647 +0200
+@@ -341,7 +341,7 @@
+         if not os.path.exists(filename):
+             filename = "./nova.conf"
+             if not os.path.exists(filename):
+-                filename = '/etc/nova/nova.conf'
++                filename = '/etc/opt/openstack/nova/nova.conf'
+         if os.path.exists(filename):
+             flagfile = '--flagfile=%s' % filename
+             args.insert(1, flagfile)
+

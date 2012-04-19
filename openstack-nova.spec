@@ -77,6 +77,8 @@ Patch0013: 0013-enforce-quota-on-security-group-rules.patch
 # This is EPEL specific and not upstream
 Patch100:         openstack-nova-newdeps.patch
 
+Patch101:         default-flagfile-location.patch
+
 BuildArch:        noarch
 BuildRequires:    intltool
 BuildRequires:    python-setuptools
@@ -228,6 +230,8 @@ This package contains documentation files for nova.
 
 # Apply EPEL patch
 %patch100 -p1
+
+%patch101 -p0
 
 find . \( -name .gitignore -o -name .placeholder \) -delete
 
