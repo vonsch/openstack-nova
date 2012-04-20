@@ -239,13 +239,13 @@ find nova -name \*.py -exec sed -i '/\/usr\/bin\/env python/{d;q}' {} +
 
 %build
 . /etc/opt/common-python/profile.d/common-python-boto.sh
-. /etc/opt/common-python/profile.d/common-python-glance.sh
+#. /etc/opt/common-python/profile.d/common-python-glance.sh
 . /etc/opt/common-python/profile.d/common-python-novaclient.sh
 %{__python} setup.py build
 
 %install
 . /etc/opt/common-python/profile.d/common-python-boto.sh
-. /etc/opt/common-python/profile.d/common-python-glance.sh
+#. /etc/opt/common-python/profile.d/common-python-glance.sh
 . /etc/opt/common-python/profile.d/common-python-novaclient.sh
 %{__python} setup.py install \
 	--prefix=%{_prefix} \
