@@ -463,7 +463,7 @@ fi
 %endif
 
 %changelog
-* Fri 20 2012 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 2012.1-3
+* Fri Apr 20 2012 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 2012.1-3
 - openstack nova api depends on new version of python-paste-deploy
 
 * Wed Apr 18 2012 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 2012.1-2
