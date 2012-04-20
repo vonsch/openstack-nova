@@ -4,7 +4,7 @@
 
 Name:             %{_openstack_name}-%{release_name}-nova
 Version:          2012.1
-Release:          2%{?dist}.gdc1
+Release:          3%{?dist}.gdc1
 
 #
 # - GoodData customization
@@ -89,7 +89,7 @@ BuildRequires:    python-lockfile
 Requires:         common-python-nova = %{version}-%{release}
 
 Requires:         python-paste
-Requires:         python-paste-deploy
+Requires:         python-paste-deploy >= 1.5.0
 Requires:         python-setuptools
 
 Requires:         bridge-utils
@@ -159,7 +159,7 @@ Requires:         python-netaddr
 # TODO: remove the following dependency which is minimal
 Requires:         common-python-glance
 Requires:         common-python-novaclient
-Requires:         python-paste-deploy
+Requires:         python-paste-deploy >= 1.5.0
 Requires:         python-migrate
 Requires:         python-ldap
 Requires:         radvd
@@ -463,6 +463,9 @@ fi
 %endif
 
 %changelog
+* Fri 20 2012 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 2012.1-3
+- openstack nova api depends on new version of python-paste-deploy
+
 * Wed Apr 18 2012 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 2012.1-2
 - be more compatible with EL6
 
