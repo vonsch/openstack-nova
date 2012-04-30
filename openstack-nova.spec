@@ -85,6 +85,11 @@ BuildRequires:    python-setuptools
 BuildRequires:    python-distutils-extra >= 2.18
 BuildRequires:    python-netaddr
 BuildRequires:    python-lockfile
+# These are required to build due to the requirements check added
+BuildRequires:    python-paste-deploy1.5
+BuildRequires:    python-routes1.12
+BuildRequires:    python-sqlalchemy0.7
+BuildRequires:    python-webob1.0
 
 Requires:         common-python-nova = %{version}-%{release}
 
