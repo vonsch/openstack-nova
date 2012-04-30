@@ -4,7 +4,7 @@
 
 Name:             %{_openstack_name}-%{release_name}-nova
 Version:          2012.1
-Release:          3%{?dist}.gdc1
+Release:          4%{?dist}.gdc1
 
 #
 # - GoodData customization
@@ -89,7 +89,7 @@ BuildRequires:    python-lockfile
 Requires:         common-python-nova = %{version}-%{release}
 
 Requires:         python-paste
-Requires:         python-paste-deploy >= 1.5.0
+Requires:         python-paste-deploy1.5
 Requires:         python-setuptools
 
 Requires:         bridge-utils
@@ -149,7 +149,7 @@ Requires:         python-lockfile
 Requires:         python-lxml
 Requires:         python-mox
 Requires:         python-redis
-Requires:         python-routes
+Requires:         python-routes1.12
 Requires:         python-sqlalchemy0.7
 Requires:         python-tornado
 Requires:         python-twisted-core
@@ -159,7 +159,7 @@ Requires:         python-netaddr
 # TODO: remove the following dependency which is minimal
 Requires:         common-python-glance
 Requires:         common-python-novaclient
-Requires:         python-paste-deploy >= 1.5.0
+Requires:         python-paste-deploy1.5
 Requires:         python-migrate
 Requires:         python-ldap
 Requires:         radvd
@@ -193,8 +193,8 @@ BuildRequires:    python-nose
 BuildRequires:    python-IPy
 BuildRequires:    common-python-boto
 BuildRequires:    python-eventlet
-BuildRequires:    python-gflags
-BuildRequires:    python-routes
+BuildRequires:    python-gflags/
+BuildRequires:    python-routes1.12
 BuildRequires:    python-sqlalchemy0.7
 BuildRequires:    python-tornado
 BuildRequires:    python-twisted-core
@@ -463,6 +463,9 @@ fi
 %endif
 
 %changelog
+* Mon Apr 30 2012 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 2012.1-4
+- Add the lookup for the parallel install of python-routes and python-paste-deploy
+
 * Fri Apr 20 2012 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 2012.1-3
 - openstack nova api depends on new version of python-paste-deploy
 

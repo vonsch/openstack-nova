@@ -1,7 +1,7 @@
 diff -Naur nova-2012.1.orig/nova/__init__.py nova-2012.1/nova/__init__.py
---- nova-2012.1.orig/nova/__init__.py	2012-04-02 00:45:02.505117835 +0000
-+++ nova-2012.1/nova/__init__.py	2012-04-02 00:47:49.348207780 +0000
-@@ -31,6 +31,29 @@
+--- nova-2012.1.orig/nova/__init__.py	2012-04-25 10:16:25.104877188 +0000
++++ nova-2012.1/nova/__init__.py	2012-04-25 10:18:12.504028632 +0000
+@@ -31,6 +31,37 @@
  .. moduleauthor:: Andy Smith <andy@anarkystic.com>
  """
  
@@ -26,6 +26,14 @@ diff -Naur nova-2012.1.orig/nova/__init__.py nova-2012.1/nova/__init__.py
 +
 +replace_dist("WebOb >= 1.0")
 +replace_dist("SQLAlchemy >= 0.6.3")
++replace_dist("Routes >= 1.12.3")
++
++replace_dist("PasteDeploy >= 1.5.0")
++# This hack is needed because replace_dist() results in
++# the standard paste module path being at the start of __path__.
++# TODO: See can we get pkg_resources to do the right thing directly
++import paste
++paste.__path__.insert(0, paste.__path__.pop(-1))
 +
 +
  import gettext
