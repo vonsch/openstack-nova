@@ -86,15 +86,18 @@ BuildRequires:    python-distutils-extra >= 2.18
 BuildRequires:    python-netaddr
 BuildRequires:    python-lockfile
 # These are required to build due to the requirements check added
-BuildRequires:    python-paste-deploy1.5
-BuildRequires:    python-routes1.12
+#BuildRequires:    python-paste-deploy1.5
+BuildRequires:    python-paste-deploy >= 1.5
+#BuildRequires:    python-routes1.12
+BuildRequires:    common-python-routes >= 1.12
 BuildRequires:    python-sqlalchemy0.7
 BuildRequires:    python-webob1.0
 
 Requires:         common-python-nova = %{version}-%{release}
 
 Requires:         python-paste
-Requires:         python-paste-deploy1.5
+#Requires:         python-paste-deploy1.5
+Requires:         python-paste-deploy >= 1.5
 Requires:         python-setuptools
 
 Requires:         bridge-utils
@@ -154,7 +157,8 @@ Requires:         python-lockfile
 Requires:         python-lxml
 Requires:         python-mox
 Requires:         python-redis
-Requires:         python-routes1.12
+#Requires:         python-routes1.12
+Requires:         common-python-routes >= 1.12
 Requires:         python-sqlalchemy0.7
 Requires:         python-tornado
 Requires:         python-twisted-core
@@ -164,7 +168,8 @@ Requires:         python-netaddr
 # TODO: remove the following dependency which is minimal
 Requires:         common-python-glance
 Requires:         common-python-novaclient
-Requires:         python-paste-deploy1.5
+#Requires:         python-paste-deploy1.5
+Requires:         python-paste-deploy >= 1.5
 Requires:         python-migrate
 Requires:         python-ldap
 Requires:         radvd
@@ -198,8 +203,12 @@ BuildRequires:    python-nose
 BuildRequires:    python-IPy
 BuildRequires:    common-python-boto
 BuildRequires:    python-eventlet
-BuildRequires:    python-gflags
-BuildRequires:    python-routes1.12
+BuildRequires:    python-gfags
+
+# Use it after it is in EPEL6 repo
+#BuildRequires:    python-routes1.12
+BuildRequires:    common-python-routes >= 1.12
+
 BuildRequires:    python-sqlalchemy0.7
 BuildRequires:    python-tornado
 BuildRequires:    python-twisted-core
@@ -243,10 +252,12 @@ find . \( -name .gitignore -o -name .placeholder \) -delete
 find nova -name \*.py -exec sed -i '/\/usr\/bin\/env python/{d;q}' {} +
 
 %build
+. /etc/opt/common-python/profile.d/common-python-routes.sh
 . /etc/opt/common-python/profile.d/common-python-boto.sh
 %{__python} setup.py build
 
 %install
+. /etc/opt/common-python/profile.d/common-python-routes.sh
 . /etc/opt/common-python/profile.d/common-python-boto.sh
 %{__python} setup.py install \
 	--prefix=%{_prefix} \
@@ -468,8 +479,8 @@ fi
 %endif
 
 %changelog
-* Mon Apr 30 2012 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 2012.1-4
-- Add the lookup for the parallel install of python-routes and python-paste-deploy
+* Wed May 02 2012 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 2012.1-4
+- Add the lookup for the install of common-python-routes >= 1.12 and python-paste-deploy >= 1.5
 
 * Fri Apr 20 2012 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 2012.1-3
 - openstack nova api depends on new version of python-paste-deploy
