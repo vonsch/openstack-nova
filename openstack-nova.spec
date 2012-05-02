@@ -203,7 +203,7 @@ BuildRequires:    python-nose
 BuildRequires:    python-IPy
 BuildRequires:    common-python-boto
 BuildRequires:    python-eventlet
-BuildRequires:    python-glfags
+BuildRequires:    python-gflags
 
 # Use it after it is in EPEL6 repo
 #BuildRequires:    python-routes1.12
