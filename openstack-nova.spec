@@ -4,7 +4,7 @@
 
 Name:             %{_openstack_name}-%{release_name}-nova
 Version:          2012.1
-Release:          4%{?dist}.gdc1
+Release:          5%{?dist}.gdc1
 
 #
 # - GoodData customization
@@ -479,6 +479,9 @@ fi
 %endif
 
 %changelog
+* Fri May 04 2012 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 2012.1-5
+- fix metadata-api rc script
+
 * Wed May 02 2012 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 2012.1-4
 - Add the lookup for the install of common-python-routes >= 1.12 and python-paste-deploy >= 1.5
 
