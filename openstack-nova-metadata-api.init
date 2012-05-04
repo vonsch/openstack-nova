@@ -16,7 +16,7 @@
 
 . /etc/rc.d/init.d/functions
 
-suffix=metadata-api
+suffix=api-metadata
 prog=openstack-nova-$suffix
 exec="~bindir~/nova-$suffix"
 config="~sysconfdir~/nova/nova.conf"
