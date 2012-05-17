@@ -2,7 +2,7 @@
 #
 # GoodData customized OpenStack Nova Object Storage
 #
-# chkconfig:   - 20 80
+# chkconfig:   - 98 02
 # description: Implementation of an S3-like storage server based on local files.
 
 ### BEGIN INIT INFO

@@ -2,7 +2,7 @@
 #
 # GoodData customized OpenStack Nova cert Worker
 #
-# chkconfig:   - 20 80
+# chkconfig:   - 98 02
 # description: cert manages auth cert access and creation
 
 ### BEGIN INIT INFO

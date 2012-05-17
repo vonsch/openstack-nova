@@ -2,7 +2,7 @@
 #
 # GoodData customized OpenStack Nova Console XVP VNC Proxy
 #
-# chkconfig:   - 20 80
+# chkconfig:   - 98 02
 # description: OpenStack Nova Console XVP VNC Proxy Server
 
 ### BEGIN INIT INFO

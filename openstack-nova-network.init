@@ -2,7 +2,7 @@
 #
 # GoodData customized OpenStack Nova Network Controller
 #
-# chkconfig:   - 20 80
+# chkconfig:   - 98 02
 # description: The Network Controller manages the networking resources \
 #              on host machines. The API server dispatches commands    \
 #              through the message queue, which are subsequently       \

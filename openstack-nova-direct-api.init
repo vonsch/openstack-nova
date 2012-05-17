@@ -2,7 +2,7 @@
 #
 # GoodData customized OpenStack Nova Direct API Server
 #
-# chkconfig:   - 20 80
+# chkconfig:   - 98 02
 # description: At the heart of the cloud framework is an API Server. \
 #              This API Server makes command and control of the      \
 #              hypervisor, storage, and networking programmatically  \

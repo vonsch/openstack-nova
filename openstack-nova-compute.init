@@ -2,7 +2,7 @@
 #
 # GoodData customized OpenStack Nova Compute Worker
 #
-# chkconfig:   - 20 80
+# chkconfig:   - 98 02
 # description: Compute workers manage computing instances on host  \
 #               machines. Through the API, commands are dispatched \
 #               to compute workers to:                             \
