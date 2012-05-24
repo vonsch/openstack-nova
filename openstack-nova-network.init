@@ -37,6 +37,7 @@ config="~sysconfdir~/nova/nova.conf"
 pidfile="~rundir~/nova/nova-$suffix.pid"
 logfile="~logdir~/nova/$suffix.log"
 
+[ -e /etc/profile.d/openstack-essex-nova.sh ] && . /etc/profile.d/openstack-essex-nova.sh
 [ -e /etc/sysconfig/$prog ] && . /etc/sysconfig/$prog
 
 lockfile=/var/lock/subsys/$prog
