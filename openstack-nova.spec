@@ -4,7 +4,7 @@
 
 Name:             %{_openstack_name}-%{release_name}-nova
 Version:          2012.1
-Release:          6%{?dist}.gdc1
+Release:          6%{?dist}.gdc2
 
 #
 # - GoodData customization
@@ -510,6 +510,9 @@ fi
 %endif
 
 %changelog
+* Wed May 30 2012 Branislav Zarnovican <branislav.zarnovican@gooddata.com> 2012.1-6.gdc2
+- added sourcing of profile.d for missing PYTHONPATH
+
 * Wed May 17 2012 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 2012.1-6
 - Depend on tunctl which can be used when `ip tuntap` is unavailable
 - Sync up with Essex stable branch
