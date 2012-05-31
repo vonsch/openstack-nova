@@ -4,7 +4,7 @@
 
 Name:             %{_openstack_name}-%{release_name}-nova
 Version:          2012.1
-Release:          6%{?dist}.gdc2
+Release:          7%{?dist}.gdc1
 
 #
 # - GoodData customization
@@ -90,9 +90,13 @@ Patch0027: 0027-support-a-configurable-libvirt-injection-partition.patch
 Patch0028: 0028-handle-updated-qemu-img-info-output.patch
 
 # This is EPEL specific and not upstream
-Patch100:         openstack-nova-newdeps.patch
+Patch0500: openstack-nova-newdeps.patch
+Patch0501: default-flagfile-location.patch
 
-Patch101:         default-flagfile-location.patch
+# GDC patchset
+
+# https://jira.gooddata.com/jira/browse/GD-25542
+Patch1000: 1000-libvirt-target-dev-attribute-accept-basename-only.patch
 
 BuildArch:        noarch
 BuildRequires:    intltool
@@ -274,9 +278,11 @@ This package contains documentation files for nova.
 %patch0028 -p1
 
 # Apply EPEL patch
-%patch100 -p1
+%patch0500 -p1
+%patch0501 -p0
 
-%patch101 -p0
+# GDC Patches
+%patch1000 -p1
 
 find . \( -name .gitignore -o -name .placeholder \) -delete
 
@@ -510,6 +516,9 @@ fi
 %endif
 
 %changelog
+* Thu May 31 2012 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 2012.1-7
+- GD-25542: libvirt's xml, "target" element, "dev" attribute accept basename of device only
+
 * Wed May 30 2012 Branislav Zarnovican <branislav.zarnovican@gooddata.com> 2012.1-6.gdc2
 - added sourcing of profile.d for missing PYTHONPATH
 
