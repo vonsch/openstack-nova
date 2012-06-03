@@ -4,7 +4,7 @@
 
 Name:             %{_openstack_name}-%{release_name}-nova
 Version:          2012.1
-Release:          7%{?dist}.gdc1
+Release:          7%{?dist}.gdc2
 
 #
 # - GoodData customization
@@ -88,6 +88,7 @@ Patch0025: 0025-Ensure-we-don-t-access-the-net-when-building-docs.patch
 Patch0026: 0026-fix-useexisting-deprecation-warnings.patch
 Patch0027: 0027-support-a-configurable-libvirt-injection-partition.patch
 Patch0028: 0028-handle-updated-qemu-img-info-output.patch
+Patch0100: 0100-snapshot_id_column_to_match_db.patch
 
 # This is EPEL specific and not upstream
 Patch0500: openstack-nova-newdeps.patch
@@ -276,6 +277,8 @@ This package contains documentation files for nova.
 %patch0026 -p1
 %patch0027 -p1
 %patch0028 -p1
+
+%patch0100 -p1
 
 # Apply EPEL patch
 %patch0500 -p1
@@ -516,6 +519,9 @@ fi
 %endif
 
 %changelog
+* Sat Jun 03 2012 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 2012.1-7.gdc2
+- Fix type of snapshot_id column to match db (https://bugs.launchpad.net/nova/+bug/962615)
+
 * Thu May 31 2012 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 2012.1-7
 - GD-25542: libvirt's xml, "target" element, "dev" attribute accept basename of device only
 
