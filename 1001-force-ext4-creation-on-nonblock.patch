@@ -1,0 +1,13 @@
+--- nova-2012.1/nova/virt/libvirt/utils.py.orig	2012-06-04 10:55:00.000000000 +0200
++++ nova-2012.1/nova/virt/libvirt/utils.py	2012-06-04 10:53:51.000000000 +0200
+@@ -124,6 +124,10 @@
+         execute('mkswap', path)
+     else:
+         args = ['mkfs', '-t', fs]
++		# Add -F for ext3 and ext4 filesystems
++		# to force action on non-block device
++		if fs in ['ext3', 'ext4']:
++			args.extend(['-F'])
+         if label:
+             args.extend(['-n', label])
+         args.append(path)

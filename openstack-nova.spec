@@ -98,6 +98,8 @@ Patch0501: default-flagfile-location.patch
 
 # https://jira.gooddata.com/jira/browse/GD-25542
 Patch1000: 1000-libvirt-target-dev-attribute-accept-basename-only.patch
+# https://jira.gooddata.com/jira/browse/GD-25784
+Patch1001: 1001-force-ext4-creation-on-nonblock.patch
 
 BuildArch:        noarch
 BuildRequires:    intltool
@@ -286,6 +288,7 @@ This package contains documentation files for nova.
 
 # GDC Patches
 %patch1000 -p1
+%patch1001 -p1
 
 find . \( -name .gitignore -o -name .placeholder \) -delete
 
