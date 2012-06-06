@@ -4,7 +4,7 @@
 
 Name:             %{_openstack_name}-%{release_name}-nova
 Version:          2012.1
-Release:          7%{?dist}.gdc2
+Release:          8%{?dist}.gdc1
 
 #
 # - GoodData customization
@@ -100,6 +100,8 @@ Patch0501: default-flagfile-location.patch
 Patch1000: 1000-libvirt-target-dev-attribute-accept-basename-only.patch
 # https://jira.gooddata.com/jira/browse/GD-25784
 Patch1001: 1001-force-ext4-creation-on-nonblock.patch
+# https://jira.gooddata.com/jira/browse/GD-25782
+Patch1002: 1002-volumes_from_snapshot_on_cluster_deployment_1008866_v2.patch
 
 BuildArch:        noarch
 BuildRequires:    intltool
@@ -289,6 +291,7 @@ This package contains documentation files for nova.
 # GDC Patches
 %patch1000 -p1
 %patch1001 -p1
+%patch1002 -p1
 
 find . \( -name .gitignore -o -name .placeholder \) -delete
 
@@ -522,6 +525,10 @@ fi
 %endif
 
 %changelog
+* Wed Jun 06 2012 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 2012.1-8.gdc1
+- Fix https://bugs.launchpad.net/nova/+bug/1008866
+- Fix https://bugs.launchpad.net/nova/+bug/1009041
+
 * Sat Jun 03 2012 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 2012.1-7.gdc2
 - Fix type of snapshot_id column to match db (https://bugs.launchpad.net/nova/+bug/962615)
 
