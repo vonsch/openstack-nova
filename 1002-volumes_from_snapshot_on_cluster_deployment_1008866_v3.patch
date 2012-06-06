@@ -59,7 +59,7 @@ index 03ac987..d332c7c 100644
  @require_context
  def snapshot_get_all_for_volume(context, volume_id):
 diff --git a/nova/volume/driver.py b/nova/volume/driver.py
-index 8b316be..2dc98da 100644
+index 8b316be..87ce83c 100644
 --- a/nova/volume/driver.py
 +++ b/nova/volume/driver.py
 @@ -19,7 +19,7 @@
@@ -90,7 +90,11 @@ index 8b316be..2dc98da 100644
      cfg.IntOpt('iscsi_port',
                 default=3260,
                 help='The port that the iSCSI daemon is listening on'),
-@@ -154,8 +157,83 @@ class VolumeDriver(object):
+@@ -151,11 +154,87 @@ class VolumeDriver(object):
+         changes to the volume object to be persisted."""
+         self._create_volume(volume['name'], self._sizestr(volume['size']))
+ 
++    @utils.synchronized('create_volume_from_snapshot')
      def create_volume_from_snapshot(self, volume, snapshot):
          """Creates a volume from a snapshot."""
          self._create_volume(volume['name'], self._sizestr(volume['size']))
@@ -176,7 +180,7 @@ index 8b316be..2dc98da 100644
  
      def delete_volume(self, volume):
          """Deletes a logical volume."""
-@@ -288,17 +366,22 @@ class ISCSIDriver(VolumeDriver):
+@@ -288,17 +367,22 @@ class ISCSIDriver(VolumeDriver):
              target = {'host': host, 'target_num': target_num}
              self.db.iscsi_target_create_safe(context, target)
  
@@ -207,7 +211,7 @@ index 8b316be..2dc98da 100644
  
          model_update = {}
          if FLAGS.iscsi_helper == 'tgtadm':
-@@ -309,14 +392,14 @@ class ISCSIDriver(VolumeDriver):
+@@ -309,14 +393,14 @@ class ISCSIDriver(VolumeDriver):
              FLAGS.iscsi_ip_address, iscsi_target, iscsi_name, lun)
          return model_update
  
@@ -226,7 +230,7 @@ index 8b316be..2dc98da 100644
              return
  
          try:
-@@ -325,24 +408,32 @@ class ISCSIDriver(VolumeDriver):
+@@ -325,24 +409,32 @@ class ISCSIDriver(VolumeDriver):
              self.tgtadm.show_target(iscsi_target)
          except Exception as e:
              LOG.info(_("Skipping remove_export. No iscsi_target " +
@@ -264,7 +268,7 @@ index 8b316be..2dc98da 100644
                  return target
          return None
  
-@@ -372,17 +463,17 @@ class ISCSIDriver(VolumeDriver):
+@@ -372,17 +464,17 @@ class ISCSIDriver(VolumeDriver):
  
          properties = {}
  
@@ -287,7 +291,7 @@ index 8b316be..2dc98da 100644
                                        (volume['name']))
  
              LOG.debug(_("ISCSI Discovery: Found %s") % (location))
-@@ -401,21 +492,30 @@ class ISCSIDriver(VolumeDriver):
+@@ -401,21 +493,30 @@ class ISCSIDriver(VolumeDriver):
  
          properties['volume_id'] = volume['id']
  
