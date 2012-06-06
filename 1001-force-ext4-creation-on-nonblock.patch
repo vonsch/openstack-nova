@@ -4,10 +4,10 @@
          execute('mkswap', path)
      else:
          args = ['mkfs', '-t', fs]
-+		# Add -F for ext3 and ext4 filesystems
-+		# to force action on non-block device
-+		if fs in ['ext3', 'ext4']:
-+			args.extend(['-F'])
++        # Add -F for ext3 and ext4 filesystems
++        # to force action on non-block device
++        if fs in ['ext3', 'ext4']:
++            args.extend(['-F'])
          if label:
              args.extend(['-n', label])
          args.append(path)
