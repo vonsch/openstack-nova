@@ -4,7 +4,7 @@
 
 Name:             %{_openstack_name}-%{release_name}-nova
 Version:          2012.1
-Release:          8%{?dist}.gdc1
+Release:          8%{?dist}.gdc2
 
 #
 # - GoodData customization
@@ -525,6 +525,9 @@ fi
 %endif
 
 %changelog
+* Wed Jun 06 2012 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 2012.1-8.gdc2
+- fix indenting in "1001-force-ext4-creation-on-nonblock.patch"
+
 * Wed Jun 06 2012 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 2012.1-8.gdc1
 - Fix https://bugs.launchpad.net/nova/+bug/1008866
 - Fix https://bugs.launchpad.net/nova/+bug/1009041
