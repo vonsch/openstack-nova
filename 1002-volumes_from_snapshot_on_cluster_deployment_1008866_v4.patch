@@ -1,7 +1,19 @@
 diff --git a/nova/db/api.py b/nova/db/api.py
-index 27f80f6..8a7e07f 100644
+index 27f80f6..0ae8fa5 100644
 --- a/nova/db/api.py
 +++ b/nova/db/api.py
+@@ -978,9 +978,9 @@ def volume_get_instance(context, volume_id):
+     return IMPL.volume_get_instance(context, volume_id)
+ 
+ 
+-def volume_get_iscsi_target_num(context, volume_id):
++def volume_get_iscsi_target_num(context, volume_id, host = "all"):
+     """Get the target num (tid) allocated to the volume."""
+-    return IMPL.volume_get_iscsi_target_num(context, volume_id)
++    return IMPL.volume_get_iscsi_target_num(context, volume_id, host)
+ 
+ 
+ def volume_update(context, volume_id, values):
 @@ -1014,6 +1014,13 @@ def snapshot_get_all(context):
      """Get all snapshots."""
      return IMPL.snapshot_get_all(context)
@@ -17,17 +29,49 @@ index 27f80f6..8a7e07f 100644
  def snapshot_get_all_by_project(context, project_id):
      """Get all snapshots belonging to a project."""
 diff --git a/nova/db/sqlalchemy/api.py b/nova/db/sqlalchemy/api.py
-index 03ac987..d332c7c 100644
+index 03ac987..19fdc02 100644
 --- a/nova/db/sqlalchemy/api.py
 +++ b/nova/db/sqlalchemy/api.py
-@@ -2592,6 +2592,37 @@ def snapshot_get(context, snapshot_id, session=None):
+@@ -2446,10 +2446,16 @@ def volume_get_instance(context, volume_id):
+ 
+ 
+ @require_admin_context
+-def volume_get_iscsi_target_num(context, volume_id):
+-    result = model_query(context, models.IscsiTarget, read_deleted="yes").\
+-                     filter_by(volume_id=volume_id).\
+-                     first()
++def volume_get_iscsi_target_num(context, volume_id, host = "all"):
++    if host != "all":
++        result = model_query(context, models.IscsiTarget, read_deleted="yes").\
++                        filter_by(volume_id=volume_id).\
++                        filter_by(host=host).\
++                        first()
++    else:
++        result = model_query(context, models.IscsiTarget, read_deleted="yes").\
++                        filter_by(volume_id=volume_id).\
++                        first()
+ 
+     if not result:
+         raise exception.ISCSITargetNotFoundForVolume(volume_id=volume_id)
+@@ -2573,7 +2579,9 @@ def snapshot_destroy(context, snapshot_id):
+                 update({'deleted': True,
+                         'deleted_at': utils.utcnow(),
+                         'updated_at': literal_column('updated_at')})
+-
++        session.query(models.IscsiTarget).\
++                filter_by(volume_id=snapshot_id).\
++                update({'volume_id': None})
+ 
+ @require_context
+ def snapshot_get(context, snapshot_id, session=None):
+@@ -2592,6 +2600,37 @@ def snapshot_get(context, snapshot_id, session=None):
  def snapshot_get_all(context):
      return model_query(context, models.Snapshot).all()
  
 +@require_admin_context
 +def snapshot_get_all_by_host(context, host):
 +    session = get_session()
-+    my_filter = and_(models.Snapshot.status == 'available',
++    my_filter = and_(or_(models.Snapshot.status == 'available',models.Snapshot.status == 'error'),
 +                     models.Snapshot.deleted == False,
 +                     models.Volume.host == host)
 +    with session.begin():
@@ -40,7 +84,7 @@ index 03ac987..d332c7c 100644
 +
 +def snapshot_get_host(context, snapshot_id):
 +    session = get_session()
-+    my_filter = and_(models.Snapshot.status=='available',
++    my_filter = and_(or_(models.Snapshot.status == 'available',models.Snapshot.status == 'error', models.Snapshot.status == 'deleting',models.Snapshot.status == 'error_deleting'),
 +                     models.Snapshot.id==snapshot_id,
 +                     models.Snapshot.deleted == False)
 +    with session.begin():
@@ -58,8 +102,20 @@ index 03ac987..d332c7c 100644
  
  @require_context
  def snapshot_get_all_for_volume(context, volume_id):
+diff --git a/nova/rootwrap/volume.py b/nova/rootwrap/volume.py
+index 859777a..2a0eb6a 100755
+--- a/nova/rootwrap/volume.py
++++ b/nova/rootwrap/volume.py
+@@ -22,6 +22,7 @@ filterlist = [
+     # nova/volume/iscsi.py: iscsi_helper '--op' ...
+     filters.CommandFilter("/usr/sbin/ietadm", "root"),
+     filters.CommandFilter("/usr/sbin/tgtadm", "root"),
++    filters.CommandFilter("/usr/sbin/tgt-admin", "root"),
+ 
+     # nova/volume/driver.py: 'vgs', '--noheadings', '-o', 'name'
+     filters.CommandFilter("/sbin/vgs", "root"),
 diff --git a/nova/volume/driver.py b/nova/volume/driver.py
-index 8b316be..87ce83c 100644
+index 8b316be..bb02db0 100644
 --- a/nova/volume/driver.py
 +++ b/nova/volume/driver.py
 @@ -19,7 +19,7 @@
@@ -180,7 +236,30 @@ index 8b316be..87ce83c 100644
  
      def delete_volume(self, volume):
          """Deletes a logical volume."""
-@@ -288,17 +367,22 @@ class ISCSIDriver(VolumeDriver):
+@@ -261,11 +340,20 @@ class ISCSIDriver(VolumeDriver):
+         super(ISCSIDriver, self).set_execute(execute)
+         self.tgtadm.set_execute(execute)
+ 
+-    def ensure_export(self, context, volume):
++    def ensure_export(self, context, volume, host = "localhost"):
+         """Synchronously recreates an export for a logical volume."""
++
++        try:
++            # Volume
++            my_host = volume['host']
++        except:
++            # Snapshot
++            my_host = host
++
+         try:
+             iscsi_target = self.db.volume_get_iscsi_target_num(context,
+-                                                           volume['id'])
++                                                           volume['id'],
++                                                           my_host)
+         except exception.NotFound:
+             LOG.info(_("Skipping ensure_export. No iscsi_target " +
+                        "provisioned for volume: %d"), volume['id'])
+@@ -288,17 +376,24 @@ class ISCSIDriver(VolumeDriver):
              target = {'host': host, 'target_num': target_num}
              self.db.iscsi_target_create_safe(context, target)
  
@@ -190,8 +269,10 @@ index 8b316be..87ce83c 100644
 +    def create_export(self, context, storage, host = 'localhost'):
 +        """Creates an export for a logical volume or a snapshot."""
 +        try:
++            # Volume
 +            my_host = storage['host']
 +        except:
++            # Snapshot
 +            my_host = host
 +
 +        self._ensure_iscsi_targets(context, my_host)
@@ -211,32 +292,54 @@ index 8b316be..87ce83c 100644
  
          model_update = {}
          if FLAGS.iscsi_helper == 'tgtadm':
-@@ -309,14 +393,14 @@ class ISCSIDriver(VolumeDriver):
+@@ -309,14 +404,24 @@ class ISCSIDriver(VolumeDriver):
              FLAGS.iscsi_ip_address, iscsi_target, iscsi_name, lun)
          return model_update
  
 -    def remove_export(self, context, volume):
 -        """Removes an export for a logical volume."""
-+    def remove_export(self, context, storage):
++    def remove_export(self, context, storage, host = "localhost"):
 +        """Removes an export for a logical volume or a snapshot."""
++
++        try:
++            # Volume
++            my_host = storage['host']
++        except:
++            # Snapshot
++            my_host = host
++
          try:
              iscsi_target = self.db.volume_get_iscsi_target_num(context,
 -                                                           volume['id'])
-+                                                           storage['id'])
++                                                           storage['id'],
++                                                           my_host)
++            LOG.info(_(">>> iscsi_target: %s "), iscsi_target)
          except exception.NotFound:
              LOG.info(_("Skipping remove_export. No iscsi_target " +
 -                       "provisioned for volume: %d"), volume['id'])
-+                       "provisioned for volume/snapshot: %d"), storage['id'])
++                      "provisioned for volume/snapshot: %d"), storage['id'])
              return
  
          try:
-@@ -325,24 +409,32 @@ class ISCSIDriver(VolumeDriver):
+@@ -324,25 +429,42 @@ class ISCSIDriver(VolumeDriver):
+             # this export has already been removed
              self.tgtadm.show_target(iscsi_target)
          except Exception as e:
-             LOG.info(_("Skipping remove_export. No iscsi_target " +
+-            LOG.info(_("Skipping remove_export. No iscsi_target " +
 -                       "is presently exported for volume: %d"), volume['id'])
-+                       "is presently exported for volume/snapshot: %d"), storage['id'])
-             return
+-            return
++            LOG.info(_("No iscsi_target " +
++                       "is presently exported for volume/snapshot: %d. Try to discover."), storage['id'])
++
++            # Discover iSCSI device and remove it by IQN
++            try:
++                iscsi_properties = self._get_iscsi_properties(storage)
++            except Exception as e:
++                LOG.info(_("Skipping remove_export. No target_iqn " +
++                           "is presently exported for volume/snapshot: %d"), storage['id'])
++                return
++
++                self.tgtadm.delete_target_iqn(iscsi_properties['target_iqn'])
  
          self.tgtadm.delete_logicalunit(iscsi_target, 0)
          self.tgtadm.delete_target(iscsi_target)
@@ -268,7 +371,7 @@ index 8b316be..87ce83c 100644
                  return target
          return None
  
-@@ -372,17 +464,17 @@ class ISCSIDriver(VolumeDriver):
+@@ -372,17 +494,17 @@ class ISCSIDriver(VolumeDriver):
  
          properties = {}
  
@@ -291,7 +394,7 @@ index 8b316be..87ce83c 100644
                                        (volume['name']))
  
              LOG.debug(_("ISCSI Discovery: Found %s") % (location))
-@@ -401,21 +493,30 @@ class ISCSIDriver(VolumeDriver):
+@@ -401,21 +523,30 @@ class ISCSIDriver(VolumeDriver):
  
          properties['volume_id'] = volume['id']
  
@@ -332,11 +435,30 @@ index 8b316be..87ce83c 100644
          LOG.debug("iscsiadm %s: stdout=%s stderr=%s" %
                    (iscsi_command, out, err))
          return (out, err)
+diff --git a/nova/volume/iscsi.py b/nova/volume/iscsi.py
+index 115d51c..23d94bc 100644
+--- a/nova/volume/iscsi.py
++++ b/nova/volume/iscsi.py
+@@ -95,6 +95,9 @@ class TgtAdm(TargetAdmin):
+                   '--tid=%s' % tid,
+                   **kwargs)
+ 
++    def delete_target_iqn(self, target_iqn, **kwargs):
++        self._execute("tgt-admin", "--delete", target_iqn, run_as_root=True, **kwargs)
++
+     def show_target(self, tid, **kwargs):
+         self._run('--op', 'show',
+                   '--lld=iscsi', '--mode=target',
 diff --git a/nova/volume/manager.py b/nova/volume/manager.py
-index ada3887..2309bd8 100644
+index ada3887..64d6312 100644
 --- a/nova/volume/manager.py
 +++ b/nova/volume/manager.py
-@@ -100,6 +100,17 @@ class VolumeManager(manager.SchedulerDependentManager):
+@@ -96,10 +96,21 @@ class VolumeManager(manager.SchedulerDependentManager):
+         LOG.debug(_("Re-exporting %s volumes"), len(volumes))
+         for volume in volumes:
+             if volume['status'] in ['available', 'in-use']:
+-                self.driver.ensure_export(ctxt, volume)
++                self.driver.ensure_export(ctxt, volume, self.host)
              else:
                  LOG.info(_("volume %s: skipping export"), volume['name'])
  
@@ -345,37 +467,57 @@ index ada3887..2309bd8 100644
 +        for snapshot in snapshots:
 +            if snapshot['status'] == 'available':
 +                 try:
-+                    self.driver.create_export(ctxt, snapshot, self.host)
++                    self.driver.ensure_export(ctxt, snapshot, self.host)
 +                 except:
-+                    LOG.debug(_("Re-exporting %s snapshots failed. Export already exist?"), snapshot['name'])
++                    LOG.debug(_("Re-exporting %s snapshots failed."), snapshot['name'])
 +            else:
 +                LOG.info(_("snapshot %s: skipping export"), snapshot['name'])
 +
      def create_volume(self, context, volume_id, snapshot_id=None):
          """Creates and exports the volume."""
          context = context.elevated()
-@@ -186,6 +197,10 @@ class VolumeManager(manager.SchedulerDependentManager):
+@@ -162,7 +173,7 @@ class VolumeManager(manager.SchedulerDependentManager):
+             self.driver.delete_volume(volume_ref)
+         except exception.VolumeIsBusy, e:
+             LOG.debug(_("volume %s: volume is busy"), volume_ref['name'])
+-            self.driver.ensure_export(context, volume_ref)
++            self.driver.ensure_export(context, volume_ref, self.host)
+             self.db.volume_update(context, volume_ref['id'],
+                                   {'status': 'available'})
+             return True
+@@ -186,6 +197,21 @@ class VolumeManager(manager.SchedulerDependentManager):
              snap_name = snapshot_ref['name']
              LOG.debug(_("snapshot %(snap_name)s: creating") % locals())
              model_update = self.driver.create_snapshot(snapshot_ref)
 +
 +            LOG.debug(_("snapshot %s: creating export"), snapshot_ref['name'])
-+            self.driver.create_export(context, snapshot_ref)
++            # WARNING: This is workaround only! Correct fix need Database schema update!
++            #     "volume_allocate_iscsi_target" call in "create_export" is for volumes only!!!
++            #     with this code I mix colume_id with storage_id!
++            #     it will work when "volume_id > storage_id"
++            #mysql> select deleted,id,target_num,host,volume_id from iscsi_targets where host='some_host_name' and volume_id!="null";
++            #+---------+------+------------+----------------+-----------+
++            #| deleted | id   | target_num | host           | volume_id |
++            #+---------+------+------------+----------------+-----------+
++            #|       0 | 1603 |          2 | some_host_name |        15 |  <- id of snaphost
++            #|       0 | 1602 |          1 | some_host_name |       286 |  <- id of volume
++            #+---------+------+------------+----------------+-----------+
++            self.driver.create_export(context, snapshot_ref, self.host)
 +
              if model_update:
                  self.db.snapshot_update(context, snapshot_ref['id'],
                                          model_update)
-@@ -208,10 +223,13 @@ class VolumeManager(manager.SchedulerDependentManager):
+@@ -208,10 +234,13 @@ class VolumeManager(manager.SchedulerDependentManager):
          snapshot_ref = self.db.snapshot_get(context, snapshot_id)
  
          try:
 +            LOG.debug(_("snapshot %s: removing export"), snapshot_ref['name'])
-+            self.driver.remove_export(context, snapshot_ref)
++            self.driver.remove_export(context, snapshot_ref, self.host)
              LOG.debug(_("snapshot %s: deleting"), snapshot_ref['name'])
              self.driver.delete_snapshot(snapshot_ref)
          except exception.SnapshotIsBusy:
              LOG.debug(_("snapshot %s: snapshot is busy"), snapshot_ref['name'])
-+            self.driver.ensure_export(context, snapshot_ref)
++            self.driver.ensure_export(context, snapshot_ref, self.host)
              self.db.snapshot_update(context,
                                      snapshot_ref['id'],
                                      {'status': 'available'})

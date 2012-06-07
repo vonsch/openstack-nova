@@ -4,7 +4,7 @@
 
 Name:             %{_openstack_name}-%{release_name}-nova
 Version:          2012.1
-Release:          8%{?dist}.gdc3
+Release:          8%{?dist}.gdc4
 
 #
 # - GoodData customization
@@ -101,7 +101,7 @@ Patch1000: 1000-libvirt-target-dev-attribute-accept-basename-only.patch
 # https://jira.gooddata.com/jira/browse/GD-25784
 Patch1001: 1001-force-ext4-creation-on-nonblock.patch
 # https://jira.gooddata.com/jira/browse/GD-25782
-Patch1002: 1002-volumes_from_snapshot_on_cluster_deployment_1008866_v3.patch
+Patch1002: 1002-volumes_from_snapshot_on_cluster_deployment_1008866_v4.patch
 
 BuildArch:        noarch
 BuildRequires:    intltool
@@ -525,6 +525,9 @@ fi
 %endif
 
 %changelog
+* Thu Jun 07 2012 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 2012.1-8.gdc4
+- v4 of #1008866
+
 * Wed Jun 06 2012 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 2012.1-8.gdc3
 - synchronize API "create_volume_from_snapshot" (v3 of #1008866)
 
