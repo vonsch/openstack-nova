@@ -1,0 +1,75 @@
+From 4e423cd558e2f36ebe6553a9df1a32fca93b0428 Mon Sep 17 00:00:00 2001
+From: Armando Migliaccio <amigliaccio@internap.com>
+Date: Thu, 17 May 2012 01:54:53 +0100
+Subject: [PATCH] Fix Multi_Scheduler to process host capabilities
+
+To fix bug #1000403, make sure that each driver held by the
+Multi Scheduler gets called during update_service_capabilities.
+
+Change-Id: If8a942317b9b26dd101c5bcf502aab7296608abd
+---
+ .mailmap                                     |    1 +
+ nova/scheduler/multi.py                      |    6 ++++++
+ nova/tests/scheduler/test_multi_scheduler.py |   22 ++++++++++++++++++++++
+ 3 files changed, 29 insertions(+), 0 deletions(-)
+
+diff --git a/.mailmap b/.mailmap
+index 7fd6cb6..1537739 100644
+diff --git a/nova/scheduler/multi.py b/nova/scheduler/multi.py
+index dcc755d..144b8df 100644
+--- a/nova/scheduler/multi.py
++++ b/nova/scheduler/multi.py
+@@ -79,3 +79,9 @@ class MultiScheduler(driver.Scheduler):
+ 
+     def schedule_prep_resize(self, *args, **kwargs):
+         return self.drivers['compute'].schedule_prep_resize(*args, **kwargs)
++
++    def update_service_capabilities(self, service_name, host, capabilities):
++        # Multi scheduler is only a holder of sub-schedulers, so
++        # pass the capabilities to the schedulers that matter
++        for d in self.drivers.values():
++            d.update_service_capabilities(service_name, host, capabilities)
+diff --git a/nova/tests/scheduler/test_multi_scheduler.py b/nova/tests/scheduler/test_multi_scheduler.py
+index 3d7220c..4faf944 100644
+--- a/nova/tests/scheduler/test_multi_scheduler.py
++++ b/nova/tests/scheduler/test_multi_scheduler.py
+@@ -28,6 +28,10 @@ from nova.tests.scheduler import test_scheduler
+ class FakeComputeScheduler(driver.Scheduler):
+     is_fake_compute = True
+ 
++    def __init__(self):
++        super(FakeComputeScheduler, self).__init__()
++        self.is_update_caps_called = False
++
+     def schedule_theoretical(self, *args, **kwargs):
+         pass
+ 
+@@ -38,6 +42,10 @@ class FakeComputeScheduler(driver.Scheduler):
+ class FakeVolumeScheduler(driver.Scheduler):
+     is_fake_volume = True
+ 
++    def __init__(self):
++        super(FakeVolumeScheduler, self).__init__()
++        self.is_update_caps_called = False
++
+     def schedule_create_volume(self, *args, **kwargs):
+         pass
+ 
+@@ -103,3 +111,17 @@ class MultiDriverTestCase(test_scheduler.SchedulerTestCase):
+         self.mox.ReplayAll()
+         mgr.schedule(ctxt, 'compute', method, *fake_args, **fake_kwargs)
+         mgr.schedule(ctxt, 'volume', method, *fake_args, **fake_kwargs)
++
++    def test_update_service_capabilities(self):
++        def fake_update_service_capabilities(self, service, host, caps):
++            self.is_update_caps_called = True
++
++        mgr = self._manager
++        self.stubs.Set(driver.Scheduler,
++                       'update_service_capabilities',
++                       fake_update_service_capabilities)
++        self.assertFalse(mgr.drivers['compute'].is_update_caps_called)
++        self.assertFalse(mgr.drivers['volume'].is_update_caps_called)
++        mgr.update_service_capabilities('foo_svc', 'foo_host', 'foo_caps')
++        self.assertTrue(mgr.drivers['compute'].is_update_caps_called)
++        self.assertTrue(mgr.drivers['volume'].is_update_caps_called)

@@ -1,0 +1,40 @@
+From 4aea7f1e31faceb3449372e81fce1a1b8bc64863 Mon Sep 17 00:00:00 2001
+From: Dan Prince <dprince@redhat.com>
+Date: Thu, 24 May 2012 09:31:16 -0400
+Subject: [PATCH] Nail pep8 dependencies to 1.0.1.
+
+Nails the pep8 deps for tox and test-requires to 1.0.1.
+Fixes an issues causing pep8 failures due to a new pep8 release.
+
+(cherry picked from commit e3d7d3a)
+
+Change-Id: I30be4909f052c29834afbfddba6007045afa519b
+---
+ tools/test-requires |    2 +-
+ tox.ini             |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/tools/test-requires b/tools/test-requires
+index 2395e78..d64e5f7 100644
+--- a/tools/test-requires
++++ b/tools/test-requires
+@@ -6,5 +6,5 @@ mox==0.5.3
+ nose
+ nosexcover
+ openstack.nose_plugin
+-pep8==0.6.1
++pep8==1.0.1
+ sphinx>=1.1.2
+diff --git a/tox.ini b/tox.ini
+index e3438e2..123558d 100644
+--- a/tox.ini
++++ b/tox.ini
+@@ -11,7 +11,7 @@ commands = /bin/bash run_tests.sh -N -P
+ downloadcache = ~/cache/pip
+ 
+ [testenv:pep8]
+-deps = pep8
++deps = pep8==1.0.1
+ commands = /bin/bash run_tests.sh -N --pep8
+ 
+ [testenv:coverage]

@@ -1,0 +1,227 @@
+From ec70c69a4d2c13c5e7f9a6d6c6bd05ca885a7493 Mon Sep 17 00:00:00 2001
+From: Chuck Short <chuck.short@canonical.com>
+Date: Tue, 15 May 2012 10:05:21 -0400
+Subject: [PATCH] Generate a Changelog for Nova
+
+Ubuntu uses a tarball to generate packages for Nova and
+other openstack projects. This allows the user to find out
+what is included in the tarball.
+
+Signed-off-by: Chuck Short <chuck.short@canonical.com>
+
+Change-Id: I0291e19eee1ff2c5fc98b499571b2563841c6076
+---
+ MANIFEST.in                    |    1 +
+ nova/openstack/common/setup.py |  145 ++++++++++++++++++++++++++++++++++++++++
+ openstack-common.conf          |    2 +-
+ setup.py                       |   13 +++-
+ 4 files changed, 158 insertions(+), 3 deletions(-)
+ create mode 100644 nova/openstack/common/setup.py
+
+diff --git a/MANIFEST.in b/MANIFEST.in
+index a8549a7..3c43e93 100644
+--- a/MANIFEST.in
++++ b/MANIFEST.in
+@@ -4,6 +4,7 @@ include README.rst
+ include MANIFEST.in pylintrc Authors
+ include openstack-common.conf
+ include babel.cfg tox.ini
++include ChangeLog
+ graft nova/CA
+ graft doc
+ graft smoketests
+diff --git a/nova/openstack/common/setup.py b/nova/openstack/common/setup.py
+new file mode 100644
+index 0000000..60c731a
+--- /dev/null
++++ b/nova/openstack/common/setup.py
+@@ -0,0 +1,145 @@
++# vim: tabstop=4 shiftwidth=4 softtabstop=4
++
++# Copyright 2011 OpenStack LLC.
++# All Rights Reserved.
++#
++#    Licensed under the Apache License, Version 2.0 (the "License"); you may
++#    not use this file except in compliance with the License. You may obtain
++#    a copy of the License at
++#
++#         http://www.apache.org/licenses/LICENSE-2.0
++#
++#    Unless required by applicable law or agreed to in writing, software
++#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
++#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
++#    License for the specific language governing permissions and limitations
++#    under the License.
++
++"""
++Utilities with minimum-depends for use in setup.py
++"""
++
++import os
++import re
++import subprocess
++
++
++def parse_mailmap(mailmap='.mailmap'):
++    mapping = {}
++    if os.path.exists(mailmap):
++        fp = open(mailmap, 'r')
++        for l in fp:
++            l = l.strip()
++            if not l.startswith('#') and ' ' in l:
++                canonical_email, alias = l.split(' ')
++                mapping[alias] = canonical_email
++    return mapping
++
++
++def canonicalize_emails(changelog, mapping):
++    """Takes in a string and an email alias mapping and replaces all
++       instances of the aliases in the string with their real email.
++    """
++    for alias, email in mapping.iteritems():
++        changelog = changelog.replace(alias, email)
++    return changelog
++
++
++# Get requirements from the first file that exists
++def get_reqs_from_files(requirements_files):
++    reqs_in = []
++    for requirements_file in requirements_files:
++        if os.path.exists(requirements_file):
++            return open(requirements_file, 'r').read().split('\n')
++    return []
++
++
++def parse_requirements(requirements_files=['requirements.txt',
++                                           'tools/pip-requires']):
++    requirements = []
++    for line in get_reqs_from_files(requirements_files):
++        if re.match(r'\s*-e\s+', line):
++            requirements.append(re.sub(r'\s*-e\s+.*#egg=(.*)$', r'\1',
++                                line))
++        elif re.match(r'\s*-f\s+', line):
++            pass
++        else:
++            requirements.append(line)
++
++    return requirements
++
++
++def parse_dependency_links(requirements_files=['requirements.txt',
++                                               'tools/pip-requires']):
++    dependency_links = []
++    for line in get_reqs_from_files(requirements_files):
++        if re.match(r'(\s*#)|(\s*$)', line):
++            continue
++        if re.match(r'\s*-[ef]\s+', line):
++            dependency_links.append(re.sub(r'\s*-[ef]\s+', '', line))
++    return dependency_links
++
++
++def write_requirements():
++    venv = os.environ.get('VIRTUAL_ENV', None)
++    if venv is not None:
++        with open("requirements.txt", "w") as req_file:
++            output = subprocess.Popen(["pip", "-E", venv, "freeze", "-l"],
++                                      stdout=subprocess.PIPE)
++            requirements = output.communicate()[0].strip()
++            req_file.write(requirements)
++
++
++def _run_shell_command(cmd):
++    output = subprocess.Popen(["/bin/sh", "-c", cmd],
++                              stdout=subprocess.PIPE)
++    return output.communicate()[0].strip()
++
++
++def write_vcsversion(location):
++    """Produce a vcsversion dict that mimics the old one produced by bzr.
++    """
++    if os.path.isdir('.git'):
++        branch_nick_cmd = 'git branch | grep -Ei "\* (.*)" | cut -f2 -d" "'
++        branch_nick = _run_shell_command(branch_nick_cmd)
++        revid_cmd = "git rev-parse HEAD"
++        revid = _run_shell_command(revid_cmd).split()[0]
++        revno_cmd = "git log --oneline | wc -l"
++        revno = _run_shell_command(revno_cmd)
++        with open(location, 'w') as version_file:
++            version_file.write("""
++# This file is automatically generated by setup.py, So don't edit it. :)
++version_info = {
++    'branch_nick': '%s',
++    'revision_id': '%s',
++    'revno': %s
++}
++""" % (branch_nick, revid, revno))
++
++
++def write_git_changelog():
++    """Write a changelog based on the git changelog."""
++    if os.path.isdir('.git'):
++        git_log_cmd = 'git log --stat'
++        changelog = _run_shell_command(git_log_cmd)
++        mailmap = parse_mailmap()
++        with open("ChangeLog", "w") as changelog_file:
++            changelog_file.write(canonicalize_emails(changelog, mailmap))
++
++
++def generate_authors():
++    """Create AUTHORS file using git commits."""
++    jenkins_email = 'jenkins@review.openstack.org'
++    old_authors = 'AUTHORS.in'
++    new_authors = 'AUTHORS'
++    if os.path.isdir('.git'):
++        # don't include jenkins email address in AUTHORS file
++        git_log_cmd = "git log --format='%aN <%aE>' | sort -u | " \
++                      "grep -v " + jenkins_email
++        changelog = _run_shell_command(git_log_cmd)
++        mailmap = parse_mailmap()
++        with open(new_authors, 'w') as new_authors_fh:
++            new_authors_fh.write(canonicalize_emails(changelog, mailmap))
++            if os.path.exists(old_authors):
++                with open(old_authors, "r") as old_authors_fh:
++                    new_authors_fh.write('\n' + old_authors_fh.read())
+diff --git a/openstack-common.conf b/openstack-common.conf
+index bc191b9..025b21c 100644
+--- a/openstack-common.conf
++++ b/openstack-common.conf
+@@ -1,7 +1,7 @@
+ [DEFAULT]
+ 
+ # The list of modules to copy from openstack-common
+-modules=cfg,iniparser
++modules=cfg,iniparser,setup
+ 
+ # The base module to hold the copy of openstack.common
+ base=nova
+diff --git a/setup.py b/setup.py
+index dd5c221..080d52d 100644
+--- a/setup.py
++++ b/setup.py
+@@ -15,15 +15,24 @@
+ #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ #    License for the specific language governing permissions and limitations
+ #    under the License.
+-
+ import glob
+ import os
+ 
+ import setuptools
++from setuptools.command import sdist
+ 
++from nova.openstack.common import setup as common_setup
+ from nova import version
+ 
+-nova_cmdclass = {}
++
++class local_sdist(sdist.sdist):
++    """Customized sdist hook - builds the ChangeLog file from VC first."""
++    def run(self):
++        common_setup.write_git_changelog()
++        # sdist.sdist is an old style class, can't user super()
++        sdist.sdist.run(self)
++
++nova_cmdclass = {'sdist': local_sdist}
+ 
+ try:
+     from sphinx import setup_command

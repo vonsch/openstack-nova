@@ -4,7 +4,7 @@
 
 Name:             %{_openstack_name}-%{release_name}-nova
 Version:          2012.1
-Release:          8%{?dist}.gdc4
+Release:          9%{?dist}.gdc1
 
 #
 # - GoodData customization
@@ -83,19 +83,25 @@ Patch0020: 0020-Fix-bug-983206-_try_convert-parsing-string.patch
 Patch0021: 0021-QuantumManager-will-start-dnsmasq-during-startup.-Fi.patch
 Patch0022: 0022-Fixes-bug-952176.patch
 Patch0023: 0023-Fix-nova.tests.test_nova_rootwrap-on-Fedora-17.patch
-Patch0024: 0024-ensure-atomic-manipulation-of-libvirt-disk-images.patch
-Patch0025: 0025-Ensure-we-don-t-access-the-net-when-building-docs.patch
-Patch0026: 0026-fix-useexisting-deprecation-warnings.patch
-Patch0027: 0027-support-a-configurable-libvirt-injection-partition.patch
-Patch0028: 0028-handle-updated-qemu-img-info-output.patch
-Patch0100: 0100-snapshot_id_column_to_match_db.patch
+Patch0024: 0024-Generate-a-Changelog-for-Nova.patch
+Patch0025: 0025-Fix-type-of-snapshot_id-column-to-match-db.patch
+Patch0026: 0026-handle-updated-qemu-img-info-output.patch
+Patch0027: 0027-Nail-pep8-dependencies-to-1.0.1.patch
+Patch0028: 0028-Fix-Multi_Scheduler-to-process-host-capabilities.patch
+Patch0029: 0029-Add-libvirt-get_console_output-tests-pty-and-file.patch
+Patch0030: 0030-Report-memory-correctly-on-Xen.-Fixes-bug-997014.patch
+Patch0031: 0031-Fix-up-protocol-case-handling-for-security-groups.patch
+Patch0032: 0032-ensure-atomic-manipulation-of-libvirt-disk-images.patch
+Patch0033: 0033-Ensure-we-don-t-access-the-net-when-building-docs.patch
+Patch0034: 0034-fix-useexisting-deprecation-warnings.patch
+Patch0035: 0035-support-a-configurable-libvirt-injection-partition.patch
 
 # This is EPEL specific and not upstream
 Patch0500: openstack-nova-newdeps.patch
-Patch0501: default-flagfile-location.patch
 
 # GDC patchset
-
+# Prefix changes default location of flagfile:
+Patch0501: default-flagfile-location.patch
 # https://jira.gooddata.com/jira/browse/GD-25542
 Patch1000: 1000-libvirt-target-dev-attribute-accept-basename-only.patch
 # https://jira.gooddata.com/jira/browse/GD-25784
@@ -281,8 +287,13 @@ This package contains documentation files for nova.
 %patch0026 -p1
 %patch0027 -p1
 %patch0028 -p1
-
-%patch0100 -p1
+%patch0029 -p1
+%patch0030 -p1
+%patch0031 -p1
+%patch0032 -p1
+%patch0033 -p1
+%patch0034 -p1
+%patch0035 -p1
 
 # Apply EPEL patch
 %patch0500 -p1
@@ -525,6 +536,10 @@ fi
 %endif
 
 %changelog
+* Mon Jun 11 2012 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 2012.1-9.gdc1
+- Sync up with Essex stable branch
+- Fix for protocol case handling (#829441, CVE-2012-2654)
+
 * Thu Jun 07 2012 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 2012.1-8.gdc4
 - v4 of #1008866
 

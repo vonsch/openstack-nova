@@ -1,0 +1,33 @@
+From 2d7d51c5ea2a885ee6160d11c8a9afdbb86d1c43 Mon Sep 17 00:00:00 2001
+From: Vishvananda Ishaya <vishvananda@gmail.com>
+Date: Wed, 16 May 2012 10:04:26 -0700
+Subject: [PATCH] Fix type of snapshot_id column to match db
+
+ * Migrations create a snaphsot_id column that is an integer, but
+   models incorrectly list it as a string.
+ * The above issue causes errors in certain situations when trying
+   to list instances. It seems to be only certain db configurations
+   or versions of sqlalchemy that exhibit the issue.
+ * Issue was fixed in trunk as part of a conversion to uuids in
+   commit 407e16b863bac1dfbf4e954837009abf9c17f018 so a straight
+   backport is not possible
+ * Fixes bug 962615
+
+Change-Id: I8e9fc9712c141822890feffee838faf8b41ee4f5
+---
+ nova/db/sqlalchemy/models.py |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/nova/db/sqlalchemy/models.py b/nova/db/sqlalchemy/models.py
+index 3865cd5..ec5e663 100644
+--- a/nova/db/sqlalchemy/models.py
++++ b/nova/db/sqlalchemy/models.py
+@@ -344,7 +344,7 @@ class Volume(BASE, NovaBase):
+     user_id = Column(String(255))
+     project_id = Column(String(255))
+
+-    snapshot_id = Column(String(255))
++    snapshot_id = Column(Integer)
+
+     host = Column(String(255))  # , ForeignKey('hosts.id'))
+     size = Column(Integer)

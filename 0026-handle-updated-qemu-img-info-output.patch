@@ -1,4 +1,4 @@
-From 4099a82112d192ba01cb3c5fb3a71b5ef8bb7683 Mon Sep 17 00:00:00 2001
+From 2b3bbc49da7ea7eebbc046e746db1c085b08a425 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?P=C3=A1draig=20Brady?= <pbrady@redhat.com>
 Date: Wed, 16 May 2012 13:44:46 +0100
 Subject: [PATCH] handle updated qemu-img info output
@@ -23,6 +23,7 @@ Avoid an indexError exception when parsing the newer format.
 Fixes bug 1000261
 
 Change-Id: Ie2889b6da8a5c93e0e874e7a330529f6e6e71b0b
+(cherry picked from commit 0624b7aab0c0fe4869111ad8e302151548d6ba20)
 ---
  nova/virt/libvirt/utils.py |   14 +++++++++++---
  1 files changed, 11 insertions(+), 3 deletions(-)
