@@ -4,7 +4,7 @@
 
 Name:             %{_openstack_name}-%{release_name}-nova
 Version:          2012.1
-Release:          9%{?dist}.gdc1
+Release:          9%{?dist}.gdc2
 
 #
 # - GoodData customization
@@ -536,6 +536,9 @@ fi
 %endif
 
 %changelog
+* Fri Jun 15 2012 Branislav Zarnovican <branislav.zarnovican@gooddata.com> 2012.1-9.gdc2
+- added 3s startup delay to init scripts
+
 * Mon Jun 11 2012 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 2012.1-9.gdc1
 - Sync up with Essex stable branch
 - Fix for protocol case handling (#829441, CVE-2012-2654)
