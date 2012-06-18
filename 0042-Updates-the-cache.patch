@@ -1,0 +1,68 @@
+From caae0e9ca3abaad1d17d995f66195ea62fe2e59a Mon Sep 17 00:00:00 2001
+From: deevi rani <deevi_rani@persistent.co.in>
+Date: Thu, 3 May 2012 06:42:47 -0400
+Subject: [PATCH] Updates the cache
+
+fixes bug 939122
+
+Following are the changes done:
+1. in compute/api.py to display the
+   floating ip in nova list command upon
+   its association with an instance.
+2. in network/api.py to solve the similar
+   issue upon the floating ip disassocaition
+Updated version of: https://review.openstack.org/#/c/7059
+
+Change-Id: Ief1a3f544c3d14bd61cc0814612df3ee521ddec2
+(cherry picked from commit 7097e01a15ecd5c28b6b771e5043f18da243607e)
+---
+ Authors             |    1 +
+ nova/compute/api.py |    2 ++
+ nova/network/api.py |    8 ++++++++
+ 3 files changed, 11 insertions(+), 0 deletions(-)
+
+diff --git a/Authors b/Authors
+index d6d12fa..2a7a82a 100644
+--- a/Authors
++++ b/Authors
+@@ -204,3 +204,4 @@ Zed Shaw <zedshaw@zedshaw.com>
+ Zhixue Wu <Zhixue.Wu@citrix.com>
+ Zhongyue Luo <lzyeval@gmail.com>
+ Ziad Sawalha <github@highbridgellc.com>
++Deevi Rani <deevi_rani@persistent.co.in>
+diff --git a/nova/compute/api.py b/nova/compute/api.py
+index 92adea1..48f3d47 100644
+--- a/nova/compute/api.py
++++ b/nova/compute/api.py
+@@ -1639,6 +1639,8 @@ class API(BaseAPI):
+ 
+         self.network_api.associate_floating_ip(context,
+                 floating_address=address, fixed_address=ips[0]['address'])
++        self.network_api.invalidate_instance_cache(context.elevated(),
++                                                   instance)
+ 
+     @wrap_check_policy
+     def get_instance_metadata(self, context, instance):
+diff --git a/nova/network/api.py b/nova/network/api.py
+index 805fdbc..96a7a2f 100644
+--- a/nova/network/api.py
++++ b/nova/network/api.py
+@@ -148,10 +148,18 @@ class API(base.Base):
+     def disassociate_floating_ip(self, context, address,
+                                  affect_auto_assigned=False):
+         """Disassociates a floating ip from fixed ip it is associated with."""
++        floating_ip = self.db.floating_ip_get_by_address(context, address)
++        fixed_ip = self.db.fixed_ip_get(context, floating_ip['fixed_ip_id'])
++        instance = self.db.instance_get(context, fixed_ip['instance_id'])
+         rpc.cast(context,
+                  FLAGS.network_topic,
+                  {'method': 'disassociate_floating_ip',
+                   'args': {'address': address}})
++        self.invalidate_instance_cache(context, instance)
++
++    def invalidate_instance_cache(self, context, instance):
++        # NOTE(vish): get_instance_nw_info will recreate the cache for us
++        self.get_instance_nw_info(context, instance)
+ 
+     def allocate_for_instance(self, context, instance, **kwargs):
+         """Allocates all network structures for an instance.

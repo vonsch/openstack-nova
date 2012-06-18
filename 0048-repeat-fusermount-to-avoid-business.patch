@@ -1,0 +1,23 @@
+From a8c200c35505a32c05f0614cb6a0b44bdf8e2aba Mon Sep 17 00:00:00 2001
+From: Alessio Ababilov <aababilov@griddynamics.com>
+Date: Fri, 15 Jun 2012 18:33:26 +0300
+Subject: [PATCH] repeat fusermount to avoid business
+
+Fix bug #1013689
+
+Change-Id: I8ae786e105c08e1b5011a1b2a1dac048a710a1cb
+---
+ nova/virt/disk/guestfs.py |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/nova/virt/disk/guestfs.py b/nova/virt/disk/guestfs.py
+index 20e3eda..1e56e2a 100644
+--- a/nova/virt/disk/guestfs.py
++++ b/nova/virt/disk/guestfs.py
+@@ -90,5 +90,5 @@ class Mount(mount.Mount):
+             return
+         # root users don't need a specific unmnt_dev()
+         # but ordinary users do
+-        utils.execute('fusermount', '-u', self.mount_dir, run_as_root=True)
++        utils.execute('fusermount', '-u', self.mount_dir, run_as_root=True, attempts=4)
+         self.mounted = False

@@ -1,0 +1,69 @@
+From 1dc9f1972c8e74f98ffdfb75d75f9ddaae960e95 Mon Sep 17 00:00:00 2001
+From: Russell Bryant <rbryant@redhat.com>
+Date: Tue, 12 Jun 2012 17:07:18 -0400
+Subject: [PATCH] Add missing ack to impl_qpid.
+
+Fix bug 1012374.
+
+Johannes Erdfelt pointed out that impl_qpid wasn't acking messages that
+it received.  This turned out to be a nasty oversight, resulting in
+unbounded message queue growth inside of the python-qpid library.  This
+fixes it.
+
+Change-Id: I0370293807f0282e1dbdd59246f70be031e888a9
+(cherry picked from commit d15f3034dfab05ef0ec02b4e353b3dfa1512db35)
+---
+ nova/rpc/impl_qpid.py       |    7 ++++++-
+ nova/tests/rpc/test_qpid.py |    4 ++++
+ 2 files changed, 10 insertions(+), 1 deletions(-)
+
+diff --git a/nova/rpc/impl_qpid.py b/nova/rpc/impl_qpid.py
+index 8b10b75..289f21b 100644
+--- a/nova/rpc/impl_qpid.py
++++ b/nova/rpc/impl_qpid.py
+@@ -138,7 +138,12 @@ class ConsumerBase(object):
+     def consume(self):
+         """Fetch the message and pass it to the callback object"""
+         message = self.receiver.fetch()
+-        self.callback(message.content)
++        try:
++            self.callback(message.content)
++        except Exception:
++            LOG.exception(_("Failed to process message... skipping it."))
++        finally:
++            self.session.acknowledge(message)
+ 
+     def get_receiver(self):
+         return self.receiver
+diff --git a/nova/tests/rpc/test_qpid.py b/nova/tests/rpc/test_qpid.py
+index 616abb1..fc6bb1d 100644
+--- a/nova/tests/rpc/test_qpid.py
++++ b/nova/tests/rpc/test_qpid.py
+@@ -265,6 +265,7 @@ class RpcQpidTestCase(test.TestCase):
+                                                         self.mock_receiver)
+         self.mock_receiver.fetch().AndReturn(qpid.messaging.Message(
+                         {"result": "foo", "failure": False, "ending": False}))
++        self.mock_session.acknowledge(mox.IgnoreArg())
+         if multi:
+             self.mock_session.next_receiver(timeout=mox.IsA(int)).AndReturn(
+                                                         self.mock_receiver)
+@@ -272,16 +273,19 @@ class RpcQpidTestCase(test.TestCase):
+                             qpid.messaging.Message(
+                                 {"result": "bar", "failure": False,
+                                  "ending": False}))
++            self.mock_session.acknowledge(mox.IgnoreArg())
+             self.mock_session.next_receiver(timeout=mox.IsA(int)).AndReturn(
+                                                         self.mock_receiver)
+             self.mock_receiver.fetch().AndReturn(
+                             qpid.messaging.Message(
+                                 {"result": "baz", "failure": False,
+                                  "ending": False}))
++            self.mock_session.acknowledge(mox.IgnoreArg())
+         self.mock_session.next_receiver(timeout=mox.IsA(int)).AndReturn(
+                                                         self.mock_receiver)
+         self.mock_receiver.fetch().AndReturn(qpid.messaging.Message(
+                         {"failure": False, "ending": True}))
++        self.mock_session.acknowledge(mox.IgnoreArg())
+         self.mock_session.close()
+         self.mock_connection.session().AndReturn(self.mock_session)
+ 

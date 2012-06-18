@@ -1,0 +1,153 @@
+From f0a9f475c5d82493f90debd1082b913511ebacf0 Mon Sep 17 00:00:00 2001
+From: Dan Prince <dprince@redhat.com>
+Date: Fri, 8 Jun 2012 16:59:27 -0400
+Subject: [PATCH] Create a utf8 version of the dns_domains table.
+
+The old dns_domains table was encoded in the 'latin1'
+charset and has its primary key length set to 512.
+This is too long to be a valid pkey in a proper 'utf8' encoded
+table and seems to cause a slew of errors like:
+
+1) Dumping a database with mysqldump and trying to import it fails
+because this table is latin1 but fkeys to utf8 tables (projects).
+
+2) Trying to alter the old dns_domains table fails with errors
+like:
+mysql> ALTER TABLE dns_domains DROP PRIMARY KEY;
+ERROR 1025 (HY000): Error on rename of './nova/#sql-6cf_855'....
+
+This patch creates an Essex fix that re-creates the dns_domains
+table with a shorter 'domain' column which works with the utf8
+charset. This database upgrade will run on MySQL databases only
+which have a dns_domains table with a domain column length of
+VARCHAR(512).
+
+Fixes LP Bug #993663 on Essex.
+
+Change-Id: I97888fbc18ebfc0e25c9ba31160588c9cdf5c448
+---
+ nova/db/sqlalchemy/fix_dns_domains.py |   91 +++++++++++++++++++++++++++++++++
+ nova/db/sqlalchemy/migration.py       |    5 ++-
+ 2 files changed, 95 insertions(+), 1 deletions(-)
+ create mode 100644 nova/db/sqlalchemy/fix_dns_domains.py
+
+diff --git a/nova/db/sqlalchemy/fix_dns_domains.py b/nova/db/sqlalchemy/fix_dns_domains.py
+new file mode 100644
+index 0000000..9fa8ffe
+--- /dev/null
++++ b/nova/db/sqlalchemy/fix_dns_domains.py
+@@ -0,0 +1,91 @@
++# vim: tabstop=4 shiftwidth=4 softtabstop=4
++
++# Copyright (c) 2012 Red Hat, Inc.
++# All Rights Reserved.
++#
++#    Licensed under the Apache License, Version 2.0 (the "License"); you may
++#    not use this file except in compliance with the License. You may obtain
++#    a copy of the License at
++#
++#         http://www.apache.org/licenses/LICENSE-2.0
++#
++#    Unless required by applicable law or agreed to in writing, software
++#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
++#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
++#    License for the specific language governing permissions and limitations
++#    under the License.
++
++from sqlalchemy import Boolean, Column, DateTime, ForeignKey
++from sqlalchemy import MetaData, String, Table
++
++from nova import log as logging
++
++LOG = logging.getLogger(__name__)
++
++
++def run(migrate_engine):
++    meta = MetaData()
++    meta.bind = migrate_engine
++
++    # NOTE(dprince): The old dns_domains table is in the 'latin1'
++    # charset and had its primary key length set to 512.
++    # This is too long to be a valid pkey in the 'utf8' table charset
++    # and is the root cause of errors like:
++    #
++    # 1) Dumping a database with mysqldump and trying to import it fails
++    #    because this table is latin1 but fkeys to utf8 tables (projects).
++    #
++    # 2) Trying to alter the old dns_domains table fails with errors like:
++    #    mysql> ALTER TABLE dns_domains DROP PRIMARY KEY;
++    #    ERROR 1025 (HY000): Error on rename of './nova/#sql-6cf_855'....
++    #
++    # In short this table is just in a bad state. So... lets create a new one
++    # with a shorter 'domain' column which is valid for the utf8 charset.
++    #
++    # Since this is stable/essex we fix the table without bumping
++    # the migration number. The same upgrade will run during Folsom but
++    # that won't hurt anything.
++    #
++    # https://bugs.launchpad.net/nova/+bug/993663
++    dns_domains_old = Table('dns_domains', meta, autoload=True)
++    domain_type = str(dns_domains_old.c.domain.type)
++    if migrate_engine.name == 'mysql' and domain_type == 'VARCHAR(512)':
++        LOG.audit('Applying database fix for Essex dns_domains table.')
++        dns_domains_old.rename(name='dns_domains_old')
++
++        #Bind new metadata to avoid issues after the rename
++        meta = MetaData()
++        meta.bind = migrate_engine
++        projects = Table('projects', meta, autoload=True)  # Required for fkey
++
++        dns_domains_new = Table('dns_domains', meta,
++            Column('created_at', DateTime),
++            Column('updated_at', DateTime),
++            Column('deleted_at', DateTime),
++            Column('deleted', Boolean),
++            Column('domain', String(length=255), nullable=False,
++                   primary_key=True),
++            Column('scope', String(length=255)),
++            Column('availability_zone', String(length=255)),
++            Column('project_id', String(length=255),
++                   ForeignKey('projects.id')),
++            mysql_engine='InnoDB',
++            mysql_charset='utf8',
++        )
++        dns_domains_new.create()
++
++        dns_domains_old = Table('dns_domains_old', meta, autoload=True)
++        record_list = list(dns_domains_old.select().execute())
++        for rec in record_list:
++            row = dns_domains_new.insert()
++            row.execute({'created_at': rec['created_at'],
++                        'updated_at': rec['updated_at'],
++                        'deleted_at': rec['deleted_at'],
++                        'deleted': rec['deleted'],
++                        'domain': rec['domain'],
++                        'scope': rec['scope'],
++                        'availability_zone': rec['availability_zone'],
++                        'project_id': rec['project_id'],
++                        })
++
++        dns_domains_old.drop()
+diff --git a/nova/db/sqlalchemy/migration.py b/nova/db/sqlalchemy/migration.py
+index 16177cb..847fa02 100644
+--- a/nova/db/sqlalchemy/migration.py
++++ b/nova/db/sqlalchemy/migration.py
+@@ -19,6 +19,8 @@
+ import os
+ import sys
+ 
++from nova.db.sqlalchemy import fix_dns_domains
++from nova.db.sqlalchemy.session import get_engine
+ from nova import exception
+ from nova import flags
+ 
+@@ -48,7 +50,8 @@ def db_sync(version=None):
+     current_version = db_version()
+     repo_path = _find_migrate_repo()
+     if version is None or version > current_version:
+-        return versioning_api.upgrade(FLAGS.sql_connection, repo_path, version)
++        versioning_api.upgrade(FLAGS.sql_connection, repo_path, version)
++        return fix_dns_domains.run(get_engine())
+     else:
+         return versioning_api.downgrade(FLAGS.sql_connection, repo_path,
+                                         version)

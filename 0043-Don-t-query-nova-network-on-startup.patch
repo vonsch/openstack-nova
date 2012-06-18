@@ -1,0 +1,165 @@
+From d89c2f309221afb8b25cb0afe5291d432f033076 Mon Sep 17 00:00:00 2001
+From: Russell Bryant <rbryant@redhat.com>
+Date: Mon, 11 Jun 2012 14:07:19 +0100
+Subject: [PATCH] Don't query nova-network on startup.
+
+Backport from commit 8db54f3.
+Fix bug 999698.
+
+nova-compute requested network info for each instance on startup via rpc.
+If all services get (re)started at the same time, nova-network may not
+be available to take this request, resulting in a lost request.  To
+combat this issue, get the network info from the cache in the database
+on startup.  If by some chance this information is not correct, it will
+get fixed up by a periodic task.
+
+Change-Id: Ifb0634e87770f565e4ab36a54f6e9e19e5f31632
+---
+ nova/api/openstack/common.py                       |   10 ++--------
+ nova/api/openstack/compute/contrib/cloudpipe.py    |    4 ++--
+ nova/compute/manager.py                            |    2 +-
+ nova/compute/utils.py                              |    6 ++++++
+ .../openstack/compute/contrib/test_cloudpipe.py    |   14 +++++++-------
+ 5 files changed, 18 insertions(+), 18 deletions(-)
+
+diff --git a/nova/api/openstack/common.py b/nova/api/openstack/common.py
+index 040e8be..38f3821 100644
+--- a/nova/api/openstack/common.py
++++ b/nova/api/openstack/common.py
+@@ -27,9 +27,9 @@ from nova.api.openstack import wsgi
+ from nova.api.openstack import xmlutil
+ from nova.compute import vm_states
+ from nova.compute import task_states
++from nova.compute import utils as compute_utils
+ from nova import flags
+ from nova import log as logging
+-from nova.network import model as network_model
+ from nova import quota
+ 
+ 
+@@ -302,12 +302,6 @@ def get_networks_for_instance_from_nw_info(nw_info):
+     return networks
+ 
+ 
+-def get_nw_info_for_instance(context, instance):
+-    info_cache = instance['info_cache'] or {}
+-    cached_nwinfo = info_cache.get('network_info') or []
+-    return network_model.NetworkInfo.hydrate(cached_nwinfo)
+-
+-
+ def get_networks_for_instance(context, instance):
+     """Returns a prepared nw_info list for passing into the view builders
+ 
+@@ -319,7 +313,7 @@ def get_networks_for_instance(context, instance):
+                                      {'addr': '172.16.2.1', 'version': 4}]},
+          ...}
+     """
+-    nw_info = get_nw_info_for_instance(context, instance)
++    nw_info = compute_utils.get_nw_info_for_instance(instance)
+     return get_networks_for_instance_from_nw_info(nw_info)
+ 
+ 
+diff --git a/nova/api/openstack/compute/contrib/cloudpipe.py b/nova/api/openstack/compute/contrib/cloudpipe.py
+index dcdc87d..fcdde9e 100644
+--- a/nova/api/openstack/compute/contrib/cloudpipe.py
++++ b/nova/api/openstack/compute/contrib/cloudpipe.py
+@@ -16,13 +16,13 @@
+ 
+ import os
+ 
+-from nova.api.openstack import common
+ from nova.api.openstack import wsgi
+ from nova.api.openstack import xmlutil
+ from nova.api.openstack import extensions
+ from nova.auth import manager
+ from nova.cloudpipe import pipelib
+ from nova import compute
++from nova.compute import utils as compute_utils
+ from nova.compute import vm_states
+ from nova import db
+ from nova import exception
+@@ -91,7 +91,7 @@ class CloudpipeController(object):
+             return rv
+         rv['instance_id'] = instance['uuid']
+         rv['created_at'] = utils.isotime(instance['created_at'])
+-        nw_info = common.get_nw_info_for_instance(elevated, instance)
++        nw_info = compute_utils.get_nw_info_for_instance(instance)
+         if not nw_info:
+             return rv
+         vif = nw_info[0]
+diff --git a/nova/compute/manager.py b/nova/compute/manager.py
+index ed41874..784727f 100644
+--- a/nova/compute/manager.py
++++ b/nova/compute/manager.py
+@@ -246,7 +246,7 @@ class ComputeManager(manager.SchedulerDependentManager):
+             LOG.debug(_('Current state is %(drv_state)s, state in DB is '
+                         '%(db_state)s.'), locals(), instance=instance)
+ 
+-            net_info = self._get_instance_nw_info(context, instance)
++            net_info = compute_utils.get_nw_info_for_instance(instance)
+             if ((expect_running and FLAGS.resume_guests_state_on_host_boot) or
+                 FLAGS.start_guests_on_host_boot):
+                 LOG.info(_('Rebooting instance after nova-compute restart.'),
+diff --git a/nova/compute/utils.py b/nova/compute/utils.py
+index 1e5eb8b..6104c10 100644
+--- a/nova/compute/utils.py
++++ b/nova/compute/utils.py
+@@ -77,6 +77,12 @@ def notify_usage_exists(instance_ref, current_period=False):
+                         usage_info)
+ 
+ 
++def get_nw_info_for_instance(instance):
++    info_cache = instance['info_cache'] or {}
++    cached_nwinfo = info_cache.get('network_info') or []
++    return network_model.NetworkInfo.hydrate(cached_nwinfo)
++
++
+ def legacy_network_info(network_model):
+     """
+     Return the legacy network_info representation of the network_model
+diff --git a/nova/tests/api/openstack/compute/contrib/test_cloudpipe.py b/nova/tests/api/openstack/compute/contrib/test_cloudpipe.py
+index 531590c..4dfa97d 100644
+--- a/nova/tests/api/openstack/compute/contrib/test_cloudpipe.py
++++ b/nova/tests/api/openstack/compute/contrib/test_cloudpipe.py
+@@ -17,9 +17,9 @@ import datetime
+ 
+ from lxml import etree
+ 
+-from nova.api.openstack import common
+ from nova.api.openstack import wsgi
+ from nova.api.openstack.compute.contrib import cloudpipe
++from nova.compute import utils as compute_utils
+ from nova import db
+ from nova import flags
+ from nova import test
+@@ -67,11 +67,11 @@ class CloudpipeTest(test.TestCase):
+ 
+     def test_cloudpipe_list_no_network(self):
+ 
+-        def common_get_nw_info_for_instance(context, instance):
++        def fake_get_nw_info_for_instance(instance):
+             return {}
+ 
+-        self.stubs.Set(common, "get_nw_info_for_instance",
+-                       common_get_nw_info_for_instance)
++        self.stubs.Set(compute_utils, "get_nw_info_for_instance",
++                       fake_get_nw_info_for_instance)
+         self.stubs.Set(self.controller.compute_api, "get_all",
+                        compute_api_get_all)
+         req = fakes.HTTPRequest.blank('/v2/fake/os-cloudpipe')
+@@ -88,12 +88,12 @@ class CloudpipeTest(test.TestCase):
+             return {'vpn_public_address': '127.0.0.1',
+                     'vpn_public_port': 22}
+ 
+-        def common_get_nw_info_for_instance(context, instance):
++        def fake_get_nw_info_for_instance(instance):
+             return fake_network.fake_get_instance_nw_info(self.stubs,
+                                                           spectacular=True)
+ 
+-        self.stubs.Set(common, "get_nw_info_for_instance",
+-                       common_get_nw_info_for_instance)
++        self.stubs.Set(compute_utils, "get_nw_info_for_instance",
++                       fake_get_nw_info_for_instance)
+         self.stubs.Set(self.controller.network_api, "get",
+                        network_api_get)
+         self.stubs.Set(self.controller.compute_api, "get_all",

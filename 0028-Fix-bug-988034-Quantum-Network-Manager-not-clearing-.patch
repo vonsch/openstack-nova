@@ -1,0 +1,83 @@
+From 3426030d3524e4e38c5843be0b9515805b67b04f Mon Sep 17 00:00:00 2001
+From: Somik Behera <somikbehera@gmail.com>
+Date: Mon, 30 Apr 2012 17:43:14 -0700
+Subject: [PATCH] Fix bug 988034 - Quantum Network Manager - not clearing ips
+
+Added a line in nova_ipam_lib.QuantumNovaIPAMLib init
+method to ensure we clean up IPs and explanation of whats
+going on.
+
+Also, nuked release_fixed_ip as that is not
+needed in QuantumManager anymore.
+
+Change-Id: I3971b4d4c464ce68ba9370c9f5d8ca7840e0a72a
+---
+ Authors                               |    1 +
+ nova/network/quantum/manager.py       |    8 --------
+ nova/network/quantum/nova_ipam_lib.py |   15 +++++++++++++++
+ 3 files changed, 16 insertions(+), 8 deletions(-)
+
+diff --git a/Authors b/Authors
+index b9ad28b..d6d12fa 100644
+--- a/Authors
++++ b/Authors
+@@ -172,6 +172,7 @@ Salvatore Orlando <salvatore.orlando@eu.citrix.com>
+ Sandy Walsh <sandy.walsh@rackspace.com>
+ Sateesh Chodapuneedi <sateesh.chodapuneedi@citrix.com>
+ Scott Moser <smoser@ubuntu.com>
++Somik Behera <somikbehera@gmail.com>
+ Soren Hansen <soren.hansen@rackspace.com>
+ Stanislaw Pitucha <stanislaw.pitucha@hp.com>
+ Stephanie Reese <reese.sm@gmail.com>
+diff --git a/nova/network/quantum/manager.py b/nova/network/quantum/manager.py
+index 498b5f0..1fd949a 100644
+--- a/nova/network/quantum/manager.py
++++ b/nova/network/quantum/manager.py
+@@ -668,14 +668,6 @@ class QuantumManager(manager.FloatingIP, manager.FlatManager):
+             if not (is_tenant_net or is_provider_net):
+                 raise exception.NetworkNotFound(network_id=net_id)
+ 
+-    # NOTE(bgh): deallocate_for_instance will take care of this..  The reason
+-    # we're providing this is so that NetworkManager::release_fixed_ip() isn't
+-    # called.  It does some database operations that we don't want to happen
+-    # and since the majority of the stuff that it does is already taken care
+-    # of in our deallocate_for_instance call we don't need to do anything.
+-    def release_fixed_ip(self, context, address):
+-        pass
+-
+     def get_dhcp_hosts_text(self, context, subnet_id, project_id=None):
+         ips = self.ipam.get_allocated_ips(context, subnet_id, project_id)
+         hosts_text = ""
+diff --git a/nova/network/quantum/nova_ipam_lib.py b/nova/network/quantum/nova_ipam_lib.py
+index b594913..7b138b8 100644
+--- a/nova/network/quantum/nova_ipam_lib.py
++++ b/nova/network/quantum/nova_ipam_lib.py
+@@ -47,6 +47,10 @@ class QuantumNovaIPAMLib(object):
+         """
+         self.net_manager = net_manager
+ 
++        # NOTE(s0mik) : If DHCP is not in use, we need to timeout IPs
++        # periodically.  See comment in deallocate_ips_by_vif for more
++        self.net_manager.timeout_fixed_ips = not self.net_manager.DHCP
++
+     def create_subnet(self, context, label, tenant_id,
+                       quantum_net_id, priority, cidr=None,
+                       gateway=None, gateway_v6=None, cidr_v6=None,
+@@ -213,6 +217,17 @@ class QuantumNovaIPAMLib(object):
+         admin_context = context.elevated()
+         fixed_ips = db.fixed_ips_by_virtual_interface(admin_context,
+                                                          vif_ref['id'])
++        # NOTE(s0mik): Sets fixed-ip to deallocated, but leaves the entry
++        # associated with the instance-id.  This prevents us from handing it
++        # out again immediately, as allocating it to a new instance before
++        # a DHCP lease has timed-out is bad.  Instead, the fixed-ip will
++        # be disassociated with the instance-id by a call to one of two
++        # methods inherited from FlatManager:
++        # - if DHCP is in use, a lease expiring in dnsmasq triggers
++        #   a call to release_fixed_ip in the network manager.
++        # - otherwise, _disassociate_stale_fixed_ips is called periodically
++        #   to disassociate all fixed ips that are unallocated
++        #   but still associated with an instance-id.
+         for fixed_ip in fixed_ips:
+             db.fixed_ip_update(admin_context, fixed_ip['address'],
+                                {'allocated': False,

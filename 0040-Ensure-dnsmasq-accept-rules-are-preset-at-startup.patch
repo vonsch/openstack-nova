@@ -1,0 +1,32 @@
+From bc621bca08d51076bd81f15e29e8b89ea946503a Mon Sep 17 00:00:00 2001
+From: Russell Bryant <rbryant@redhat.com>
+Date: Thu, 14 Jun 2012 12:34:08 -0400
+Subject: [PATCH] Ensure dnsmasq accept rules are preset at startup.
+
+Fix bug 1000853.
+
+This bug reported that after restarting nova-network, the dnsmasq ACCEPT
+iptables rules were no longer present, causing instances to lose their
+IP addresses.  This patch updates the restart_dhcp() function in the
+linux_net driver to ensure these rules are present even if dnsmasq was
+already running.  Before this was only done when first starting dnsmasq.
+
+(cherry picked from commit aa1e71d1b313f80f5581b1422e3f3e5719569e50)
+
+Change-Id: Icda3364d3a61018b912cea7a4c96b2cbcc1fbdd7
+---
+ nova/network/linux_net.py |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/nova/network/linux_net.py b/nova/network/linux_net.py
+index a1054bb..1869857 100755
+--- a/nova/network/linux_net.py
++++ b/nova/network/linux_net.py
+@@ -689,6 +689,7 @@ def restart_dhcp(context, dev, network_ref):
+         if conffile.split("/")[-1] in out:
+             try:
+                 _execute('kill', '-HUP', pid, run_as_root=True)
++                _add_dnsmasq_accept_rules(dev)
+                 return
+             except Exception as exc:  # pylint: disable=W0703
+                 LOG.error(_('Hupping dnsmasq threw %s'), exc)

@@ -4,7 +4,7 @@
 
 Name:             %{_openstack_name}-%{release_name}-nova
 Version:          2012.1
-Release:          9%{?dist}.gdc2
+Release:          10%{?dist}.gdc1
 
 #
 # - GoodData customization
@@ -87,14 +87,26 @@ Patch0024: 0024-Generate-a-Changelog-for-Nova.patch
 Patch0025: 0025-Fix-type-of-snapshot_id-column-to-match-db.patch
 Patch0026: 0026-handle-updated-qemu-img-info-output.patch
 Patch0027: 0027-Nail-pep8-dependencies-to-1.0.1.patch
-Patch0028: 0028-Fix-Multi_Scheduler-to-process-host-capabilities.patch
-Patch0029: 0029-Add-libvirt-get_console_output-tests-pty-and-file.patch
-Patch0030: 0030-Report-memory-correctly-on-Xen.-Fixes-bug-997014.patch
-Patch0031: 0031-Fix-up-protocol-case-handling-for-security-groups.patch
-Patch0032: 0032-ensure-atomic-manipulation-of-libvirt-disk-images.patch
-Patch0033: 0033-Ensure-we-don-t-access-the-net-when-building-docs.patch
-Patch0034: 0034-fix-useexisting-deprecation-warnings.patch
-Patch0035: 0035-support-a-configurable-libvirt-injection-partition.patch
+Patch0028: 0028-Fix-bug-988034-Quantum-Network-Manager-not-clearing-.patch
+Patch0029: 0029-Fix-Multi_Scheduler-to-process-host-capabilities.patch
+Patch0030: 0030-bug-999953-xenapi-driver-intermittently-fail-to-deta.patch
+Patch0031: 0031-Add-libvirt-get_console_output-tests-pty-and-file.patch
+Patch0032: 0032-Report-memory-correctly-on-Xen.-Fixes-bug-997014.patch
+Patch0033: 0033-Fix-up-protocol-case-handling-for-security-groups.patch
+Patch0034: 0034-Fix-bug-1006664-describe-non-existent-ec2-keypair.patch
+Patch0035: 0035-Create-a-utf8-version-of-the-dns_domains-table.patch
+Patch0036: 0036-Only-invoke-.lower-on-non-None-protocols.patch
+Patch0037: 0037-Implements-resume_state_on_host_boot-for-libvirt.patch
+Patch0038: 0038-Add-caching-to-openstack.common.cfg.patch
+Patch0040: 0040-Ensure-dnsmasq-accept-rules-are-preset-at-startup.patch
+Patch0041: 0041-Add-missing-ack-to-impl_qpid.patch
+Patch0042: 0042-Updates-the-cache.patch
+Patch0043: 0043-Don-t-query-nova-network-on-startup.patch
+Patch0044: 0044-ensure-atomic-manipulation-of-libvirt-disk-images.patch
+Patch0045: 0045-Ensure-we-don-t-access-the-net-when-building-docs.patch
+Patch0046: 0046-fix-useexisting-deprecation-warnings.patch
+Patch0047: 0047-support-a-configurable-libvirt-injection-partition.patch
+Patch0048: 0048-repeat-fusermount-to-avoid-business.patch
 
 # This is EPEL specific and not upstream
 Patch0500: openstack-nova-newdeps.patch
@@ -170,6 +182,7 @@ Group:            Applications/System
 Requires:         vconfig
 Requires:         PyXML
 Requires:         curl
+Requires:         python-crypto
 Requires:         m2crypto
 Requires:         libvirt-python
 Requires:         python-anyjson
@@ -187,6 +200,8 @@ Requires:         python-gflags
 Requires:         python-iso8601
 Requires:         python-lockfile
 Requires:         python-lxml
+Requires:         python-memcached
+Requires:         python-paramiko
 Requires:         python-mox
 Requires:         python-redis
 #Requires:         python-routes1.12
@@ -536,6 +551,10 @@ fi
 %endif
 
 %changelog
+* Mon Jun 18 2012 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 2012.1-10.gdc1
+- update performance and stability fixes from essex stable
+- fix an exception caused by the fix for CVE-2012-2654
+
 * Fri Jun 15 2012 Branislav Zarnovican <branislav.zarnovican@gooddata.com> 2012.1-9.gdc2
 - added 3s startup delay to init scripts
 

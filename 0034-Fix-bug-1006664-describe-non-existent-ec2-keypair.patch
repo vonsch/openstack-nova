@@ -1,0 +1,44 @@
+From cc8fd971fcfc61f4d691990d2eaf578b37413af9 Mon Sep 17 00:00:00 2001
+From: Joe Gordon <jogo@cloudscaling.com>
+Date: Wed, 30 May 2012 18:33:24 -0700
+Subject: [PATCH] Fix bug 1006664: describe non existent ec2 keypair
+
+Change-Id: I92bfd6b51aa31abb06e21893174101da31baffd8
+(cherry picked from commit 29baa0ec661c2578ad0aabd138a6b84e5c7a0b40)
+---
+ nova/api/ec2/cloud.py            |    5 +++++
+ nova/tests/api/ec2/test_cloud.py |    5 +++++
+ 2 files changed, 10 insertions(+), 0 deletions(-)
+
+diff --git a/nova/api/ec2/cloud.py b/nova/api/ec2/cloud.py
+index ac445c2..91182e8 100644
+--- a/nova/api/ec2/cloud.py
++++ b/nova/api/ec2/cloud.py
+@@ -357,6 +357,11 @@ class CloudController(object):
+         if not key_name is None:
+             key_pairs = [x for x in key_pairs if x['name'] in key_name]
+ 
++        #If looking for non existent key pair
++        if key_name != None and key_pairs == []:
++            msg = _('Could not find key pair(s): %s') % ','.join(key_name)
++            raise exception.EC2APIError(msg)
++
+         result = []
+         for key_pair in key_pairs:
+             # filter out the vpn keys
+diff --git a/nova/tests/api/ec2/test_cloud.py b/nova/tests/api/ec2/test_cloud.py
+index 427509c..4ed3c04 100644
+--- a/nova/tests/api/ec2/test_cloud.py
++++ b/nova/tests/api/ec2/test_cloud.py
+@@ -1482,6 +1482,11 @@ class CloudTestCase(test.TestCase):
+         self.assertTrue(filter(lambda k: k['keyName'] == 'test1', keys))
+         self.assertTrue(filter(lambda k: k['keyName'] == 'test2', keys))
+ 
++    def test_describe_bad_key_pairs(self):
++        self.assertRaises(exception.EC2APIError,
++            self.cloud.describe_key_pairs, self.context,
++            key_name=['DoesNotExist'])
++
+     def test_import_key_pair(self):
+         pubkey_path = os.path.join(os.path.dirname(__file__), 'public_key')
+         f = open(pubkey_path + '/dummy.pub', 'r')

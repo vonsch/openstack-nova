@@ -1,0 +1,63 @@
+From 3ee026e4252cd4140b50675e857695b195ab5065 Mon Sep 17 00:00:00 2001
+From: Soren Hansen <sorhanse@cisco.com>
+Date: Mon, 11 Jun 2012 09:23:33 +0200
+Subject: [PATCH] Only invoke .lower() on non-None protocols
+
+When using source group based security group rules (rather than CIDR
+based ones), it's permissible to not set a protocol and port. However,
+Nova would always try to convert the protocol to lower case, which would
+fail if the protocol wasn't set.
+
+Fixes bug 1010514
+
+Change-Id: I9b1519a52ececd16a497acebfe022508cbe96126
+---
+ .mailmap                   |    1 +
+ nova/tests/test_libvirt.py |    7 +++++++
+ nova/virt/firewall.py      |    6 +++++-
+ 3 files changed, 13 insertions(+), 1 deletions(-)
+
+diff --git a/.mailmap b/.mailmap
+index 1537739..38783c9 100644
+diff --git a/nova/tests/test_libvirt.py b/nova/tests/test_libvirt.py
+index ac8cdca..af30051 100644
+--- a/nova/tests/test_libvirt.py
++++ b/nova/tests/test_libvirt.py
+@@ -1718,6 +1718,10 @@ class IptablesFirewallTestCase(test.TestCase):
+                                        'to_port': 81,
+                                        'group_id': src_secgroup['id']})
+ 
++        db.security_group_rule_create(admin_ctxt,
++                                      {'parent_group_id': secgroup['id'],
++                                       'group_id': src_secgroup['id']})
++
+         db.instance_add_security_group(admin_ctxt, instance_ref['uuid'],
+                                        secgroup['id'])
+         db.instance_add_security_group(admin_ctxt, src_instance_ref['uuid'],
+@@ -1798,6 +1802,9 @@ class IptablesFirewallTestCase(test.TestCase):
+                                '--dports 80:81 -s %s' % ip['address'])
+             self.assertTrue(len(filter(regex.match, self.out_rules)) > 0,
+                             "TCP port 80/81 acceptance rule wasn't added")
++            regex = re.compile('-A .* -j ACCEPT -s %s' % ip['address'])
++            self.assertTrue(len(filter(regex.match, self.out_rules)) > 0,
++                            "Protocol/port-less acceptance rule wasn't added")
+ 
+         regex = re.compile('-A .* -j ACCEPT -p tcp '
+                            '-m multiport --dports 80:81 -s 192.168.10.0/24')
+diff --git a/nova/virt/firewall.py b/nova/virt/firewall.py
+index a41ece6..f0f1594 100644
+--- a/nova/virt/firewall.py
++++ b/nova/virt/firewall.py
+@@ -300,7 +300,11 @@ class IptablesFirewallDriver(FirewallDriver):
+                 else:
+                     fw_rules = ipv6_rules
+ 
+-                protocol = rule.protocol.lower()
++                protocol = rule.protocol
++
++                if protocol:
++                    protocol = rule.protocol.lower()
++
+                 if version == 6 and protocol == 'icmp':
+                     protocol = 'icmpv6'
+ 
