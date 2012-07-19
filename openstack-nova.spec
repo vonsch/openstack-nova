@@ -4,7 +4,7 @@
 
 Name:             %{_openstack_name}-%{release_name}-nova
 Version:          2012.1.1
-Release:          1%{?dist}.gdc1
+Release:          1%{?dist}.gdc2
 
 #
 # - GoodData customization
@@ -83,7 +83,7 @@ Patch1000: 1000-libvirt-target-dev-attribute-accept-basename-only.patch
 # https://jira.gooddata.com/jira/browse/GD-25784
 Patch1001: 1001-force-ext4-creation-on-nonblock.patch
 # https://jira.gooddata.com/jira/browse/GD-25782
-Patch1002: 1002-volumes_from_snapshot_on_cluster_deployment_1008866_v4.patch
+Patch1002: 1002-volumes_from_snapshot_on_cluster_deployment_1008866_v5.patch
 
 BuildArch:        noarch
 BuildRequires:    intltool
@@ -493,6 +493,9 @@ fi
 %endif
 
 %changelog
+* Wed Jul 18 2012 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 2012.1.1-1.gdc2
+- API "create_volume_from_snapshot" (v5 of #1008866) (do not use iscsi discovery)
+
 * Wed Jul 18 2012 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 2012.1.1-1.gdc1
 - Update to latest essex stable branch
 - Distinguish volume overlimit exceptions
