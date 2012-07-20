@@ -4,7 +4,7 @@
 
 Name:             %{_openstack_name}-%{release_name}-nova
 Version:          2012.1.1
-Release:          1%{?dist}.gdc2
+Release:          1%{?dist}.gdc3
 
 #
 # - GoodData customization
@@ -84,6 +84,8 @@ Patch1000: 1000-libvirt-target-dev-attribute-accept-basename-only.patch
 Patch1001: 1001-force-ext4-creation-on-nonblock.patch
 # https://jira.gooddata.com/jira/browse/GD-25782
 Patch1002: 1002-volumes_from_snapshot_on_cluster_deployment_1008866_v5.patch
+# https://jira.gooddata.com/jira/browse/GD-27146
+Patch1003: 1003-force-snapshot-create-in-EC2-api.patch
 
 BuildArch:        noarch
 BuildRequires:    intltool
@@ -260,6 +262,7 @@ This package contains documentation files for nova.
 %patch1000 -p1
 %patch1001 -p1
 %patch1002 -p1
+%patch1003 -p1
 
 find . \( -name .gitignore -o -name .placeholder \) -delete
 
@@ -493,6 +496,9 @@ fi
 %endif
 
 %changelog
+* Wed Jul 19 2012 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 2012.1.1-1.gdc3
+- Force snapshot create in EC2 api.
+
 * Wed Jul 18 2012 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 2012.1.1-1.gdc2
 - API "create_volume_from_snapshot" (v5 of #1008866) (do not use iscsi discovery)
 
