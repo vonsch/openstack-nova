@@ -1,0 +1,13 @@
+diff --git a/nova/api/ec2/cloud.py b/nova/api/ec2/cloud.py
+index 91182e8..64fa0a5 100644
+--- a/nova/api/ec2/cloud.py
++++ b/nova/api/ec2/cloud.py
+@@ -339,7 +339,7 @@ class CloudController(object):
+                   context=context)
+         volume_id = ec2utils.ec2_id_to_id(volume_id)
+         volume = self.volume_api.get(context, volume_id)
+-        snapshot = self.volume_api.create_snapshot(
++        snapshot = self.volume_api.create_snapshot_force(
+                 context,
+                 volume,
+                 None,

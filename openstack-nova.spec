@@ -3,8 +3,8 @@
 %global with_doc %{!?_without_doc:1}%{?_without_doc:0}
 
 Name:             %{_openstack_name}-%{release_name}-nova
-Version:          2012.1
-Release:          10%{?dist}.gdc1
+Version:          2012.1.1
+Release:          1%{?dist}.gdc3
 
 #
 # - GoodData customization
@@ -36,7 +36,7 @@ Summary:          OpenStack Compute (nova)
 Group:            Applications/System
 License:          ASL 2.0
 URL:              http://openstack.org/projects/compute/
-Source0:          http://launchpad.net/nova/essex/2012.1/+download/nova-2012.1.tar.gz
+Source0:          http://launchpad.net/nova/essex/%{version}/+download/nova-%{version}.tar.gz
 Source1:          nova.conf
 Source6:          nova.logrotate
 
@@ -58,55 +58,19 @@ Source21:         nova-polkit.pkla
 Source22:         nova-ifc-template
 
 #
-# patches_base=2012.1
+# patches_base=2012.1.1
 #
-Patch0001: 0001-fix-bug-where-nova-ignores-glance-host-in-imageref.patch
-Patch0002: 0002-Stop-libvirt-test-from-deleting-instances-dir.patch
-Patch0003: 0003-Allow-unprivileged-RADOS-users-to-access-rbd-volumes.patch
-Patch0004: 0004-Fixed-bug-962840-added-a-test-case.patch
-Patch0005: 0005-Fix-errors-in-os-networks-extension.patch
-Patch0006: 0006-Create-compute.api.BaseAPI-for-compute-APIs-to-use.patch
-Patch0007: 0007-Populate-image-properties-with-project_id-again.patch
-Patch0008: 0008-Use-project_id-in-ec2.cloud._format_image.patch
-Patch0009: 0009-Implement-quotas-for-security-groups.patch
-Patch0010: 0010-Delete-fixed_ips-when-network-is-deleted.patch
-Patch0011: 0011-Xen-Pass-session-to-destroy_vdi.patch
-Patch0012: 0012-add-libvirt_inject_key-flag.patch
-Patch0013: 0013-Cloudpipe-tap-vpn-not-always-working.patch
-Patch0014: 0014-Don-t-leak-RPC-connections-on-timeouts-or-other-exce.patch
-Patch0015: 0015-Fixes-bug-987335.patch
-Patch0016: 0016-Fix-timeout-in-EC2-CloudController.create_image.patch
-Patch0017: 0017-Update-KillFilter-to-handle-deleted-exe-s.patch
-Patch0018: 0018-Get-unit-tests-functional-in-OS-X.patch
-Patch0019: 0019-Introduced-flag-base_dir_name.-Fixes-bug-973194.patch
-Patch0020: 0020-Fix-bug-983206-_try_convert-parsing-string.patch
-Patch0021: 0021-QuantumManager-will-start-dnsmasq-during-startup.-Fi.patch
-Patch0022: 0022-Fixes-bug-952176.patch
-Patch0023: 0023-Fix-nova.tests.test_nova_rootwrap-on-Fedora-17.patch
-Patch0024: 0024-Generate-a-Changelog-for-Nova.patch
-Patch0025: 0025-Fix-type-of-snapshot_id-column-to-match-db.patch
-Patch0026: 0026-handle-updated-qemu-img-info-output.patch
-Patch0027: 0027-Nail-pep8-dependencies-to-1.0.1.patch
-Patch0028: 0028-Fix-bug-988034-Quantum-Network-Manager-not-clearing-.patch
-Patch0029: 0029-Fix-Multi_Scheduler-to-process-host-capabilities.patch
-Patch0030: 0030-bug-999953-xenapi-driver-intermittently-fail-to-deta.patch
-Patch0031: 0031-Add-libvirt-get_console_output-tests-pty-and-file.patch
-Patch0032: 0032-Report-memory-correctly-on-Xen.-Fixes-bug-997014.patch
-Patch0033: 0033-Fix-up-protocol-case-handling-for-security-groups.patch
-Patch0034: 0034-Fix-bug-1006664-describe-non-existent-ec2-keypair.patch
-Patch0035: 0035-Create-a-utf8-version-of-the-dns_domains-table.patch
-Patch0036: 0036-Only-invoke-.lower-on-non-None-protocols.patch
-Patch0037: 0037-Implements-resume_state_on_host_boot-for-libvirt.patch
-Patch0038: 0038-Add-caching-to-openstack.common.cfg.patch
-Patch0040: 0040-Ensure-dnsmasq-accept-rules-are-preset-at-startup.patch
-Patch0041: 0041-Add-missing-ack-to-impl_qpid.patch
-Patch0042: 0042-Updates-the-cache.patch
-Patch0043: 0043-Don-t-query-nova-network-on-startup.patch
-Patch0044: 0044-ensure-atomic-manipulation-of-libvirt-disk-images.patch
-Patch0045: 0045-Ensure-we-don-t-access-the-net-when-building-docs.patch
-Patch0046: 0046-fix-useexisting-deprecation-warnings.patch
-Patch0047: 0047-support-a-configurable-libvirt-injection-partition.patch
-Patch0048: 0048-repeat-fusermount-to-avoid-business.patch
+Patch0002: 0002-Call-libvirt_volume_driver-with-right-mountpoint.patch
+Patch0003: 0003-Prevent-file-injection-writing-to-host-filesystem.patch
+Patch0004: 0004-Stop-nova_ipam_lib-from-changing-the-timeout-setting.patch
+Patch0005: 0005-ensure-atomic-manipulation-of-libvirt-disk-images.patch
+Patch0006: 0006-Ensure-we-don-t-access-the-net-when-building-docs.patch
+Patch0007: 0007-fix-useexisting-deprecation-warnings.patch
+Patch0008: 0008-support-a-configurable-libvirt-injection-partition.patch
+Patch0009: 0009-repeat-fusermount-to-avoid-business.patch
+Patch0010: 0010-only-mount-guest-image-once-when-injecting-files.patch
+Patch0011: 0011-set-correct-SELinux-context-for-injected-ssh-keys.patch
+Patch0012: 0012-Distinguish-over-quota-for-volume-size-and-number.patch
 
 # This is EPEL specific and not upstream
 Patch0500: openstack-nova-newdeps.patch
@@ -119,7 +83,9 @@ Patch1000: 1000-libvirt-target-dev-attribute-accept-basename-only.patch
 # https://jira.gooddata.com/jira/browse/GD-25784
 Patch1001: 1001-force-ext4-creation-on-nonblock.patch
 # https://jira.gooddata.com/jira/browse/GD-25782
-Patch1002: 1002-volumes_from_snapshot_on_cluster_deployment_1008866_v4.patch
+Patch1002: 1002-volumes_from_snapshot_on_cluster_deployment_1008866_v5.patch
+# https://jira.gooddata.com/jira/browse/GD-27146
+Patch1003: 1003-force-snapshot-create-in-EC2-api.patch
 
 BuildArch:        noarch
 BuildRequires:    intltool
@@ -187,6 +153,8 @@ Requires:         m2crypto
 Requires:         libvirt-python
 Requires:         python-anyjson
 Requires:         python-IPy
+Requires:         python-cheetah
+# TODO: remove common-python-boto, python-boto 2.5 is available in EPEL now
 Requires:         common-python-boto
 # TODO: make these messaging libs optional
 Requires:         python-qpid
@@ -274,7 +242,6 @@ This package contains documentation files for nova.
 %prep
 %setup -q -n nova-%{version}
 
-%patch0001 -p1
 %patch0002 -p1
 %patch0003 -p1
 %patch0004 -p1
@@ -286,29 +253,6 @@ This package contains documentation files for nova.
 %patch0010 -p1
 %patch0011 -p1
 %patch0012 -p1
-%patch0013 -p1
-%patch0014 -p1
-%patch0015 -p1
-%patch0016 -p1
-%patch0017 -p1
-%patch0018 -p1
-%patch0019 -p1
-%patch0020 -p1
-%patch0021 -p1
-%patch0022 -p1
-%patch0023 -p1
-%patch0024 -p1
-%patch0025 -p1
-%patch0026 -p1
-%patch0027 -p1
-%patch0028 -p1
-%patch0029 -p1
-%patch0030 -p1
-%patch0031 -p1
-%patch0032 -p1
-%patch0033 -p1
-%patch0034 -p1
-%patch0035 -p1
 
 # Apply EPEL patch
 %patch0500 -p1
@@ -318,6 +262,7 @@ This package contains documentation files for nova.
 %patch1000 -p1
 %patch1001 -p1
 %patch1002 -p1
+%patch1003 -p1
 
 find . \( -name .gitignore -o -name .placeholder \) -delete
 
@@ -551,6 +496,18 @@ fi
 %endif
 
 %changelog
+* Wed Jul 19 2012 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 2012.1.1-1.gdc3
+- Force snapshot create in EC2 api.
+
+* Wed Jul 18 2012 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 2012.1.1-1.gdc2
+- API "create_volume_from_snapshot" (v5 of #1008866) (do not use iscsi discovery)
+
+* Wed Jul 18 2012 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 2012.1.1-1.gdc1
+- Update to latest essex stable branch
+- Distinguish volume overlimit exceptions
+- Prohibit host file corruption through file injection (CVE-2012-3360, CVE-2012-3361)
+- Improve performance and stability of file injection
+
 * Mon Jun 18 2012 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 2012.1-10.gdc1
 - update performance and stability fixes from essex stable
 - fix an exception caused by the fix for CVE-2012-2654
