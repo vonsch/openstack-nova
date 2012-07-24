@@ -4,7 +4,7 @@
 
 Name:             %{_openstack_name}-%{release_name}-nova
 Version:          2012.1.1
-Release:          1%{?dist}.gdc3
+Release:          1%{?dist}.gdc4
 
 #
 # - GoodData customization
@@ -86,6 +86,8 @@ Patch1001: 1001-force-ext4-creation-on-nonblock.patch
 Patch1002: 1002-volumes_from_snapshot_on_cluster_deployment_1008866_v5.patch
 # https://jira.gooddata.com/jira/browse/GD-27146
 Patch1003: 1003-force-snapshot-create-in-EC2-api.patch
+# https://jira.gooddata.com/jira/browse/GD-23657
+Patch1004: 1004-force-lvm-snapshot-delete-when-volue-delete.patch
 
 BuildArch:        noarch
 BuildRequires:    intltool
@@ -263,6 +265,7 @@ This package contains documentation files for nova.
 %patch1001 -p1
 %patch1002 -p1
 %patch1003 -p1
+%patch1004 -p1
 
 find . \( -name .gitignore -o -name .placeholder \) -delete
 
@@ -496,6 +499,9 @@ fi
 %endif
 
 %changelog
+* Tue Jul 24 2012 Branislav Zarnovican <branislav.zarnovican@gooddata.com> 2012.1.1-1.gdc4
+- added patch to remove non-openstack lvm snapshots together with volume delete
+
 * Wed Jul 19 2012 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 2012.1.1-1.gdc3
 - Force snapshot create in EC2 api.
 
