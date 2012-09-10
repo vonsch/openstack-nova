@@ -1,0 +1,43 @@
+From 2f35f8ec54d303dc48040c46cb950c7fbff9731e Mon Sep 17 00:00:00 2001
+From: David Besen <david.besen@hp.com>
+Date: Wed, 8 Aug 2012 10:35:32 -0600
+Subject: [PATCH 01/10] Make flavorextradata ignore deleted flavors.
+
+In _get_flavor_refs, don't retrieve inactive flavors. Fixes bug 1026210.
+
+This change was made on trunk in https://review.openstack.org/#/c/9995/
+
+Change-Id: I967faa661cd4177a54079a966ca8912923c5f61b
+---
+ Authors                                               | 1 +
+ nova/api/openstack/compute/contrib/flavorextradata.py | 2 +-
+ 2 files changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/Authors b/Authors
+index 73dd444..4467cdd 100644
+--- a/Authors
++++ b/Authors
+@@ -43,6 +43,7 @@ Dan Wendlandt <dan@nicira.com>
+ Daniel P. Berrange <berrange@redhat.com>
+ Dave Lapsley <dlapsley@nicira.com>
+ Dave Walker <Dave.Walker@canonical.com>
++David Besen <david.besen@hp.com>
+ David McNally <dave.mcnally@hp.com>
+ David Pravec <David.Pravec@danix.org>
+ David Subiros <david.perez5@hp.com>
+diff --git a/nova/api/openstack/compute/contrib/flavorextradata.py b/nova/api/openstack/compute/contrib/flavorextradata.py
+index 2e9e927..58ae3bf 100644
+--- a/nova/api/openstack/compute/contrib/flavorextradata.py
++++ b/nova/api/openstack/compute/contrib/flavorextradata.py
+@@ -37,7 +37,7 @@ authorize = extensions.soft_extension_authorizer('compute', 'flavorextradata')
+ class FlavorextradataController(wsgi.Controller):
+     def _get_flavor_refs(self):
+         """Return a dictionary mapping flavorid to flavor_ref."""
+-        flavor_refs = instance_types.get_all_types(True)
++        flavor_refs = instance_types.get_all_types()
+         rval = {}
+         for name, obj in flavor_refs.iteritems():
+             rval[obj['flavorid']] = obj
+-- 
+1.7.11.4
+

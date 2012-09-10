@@ -1,0 +1,232 @@
+From 09217abddc07bd4fbaca6c300075df2c68ffedf7 Mon Sep 17 00:00:00 2001
+From: Rafi Khardalian <rafi@metacloud.com>
+Date: Mon, 13 Aug 2012 20:53:43 +0000
+Subject: [PATCH 03/10] Restore libvirt block storage connections on reboot.
+
+Fixes bug 1036902 -- Backported version for stable/essex.
+
+There are a number of cases where block storage connections are not
+properly restored, impacting libvirt in particular. The most common
+case is a VM which has block storage attached via iSCSI, whereby the
+physical system is rebooted. When the system comes back up and
+starts nova-compute, the iSCSI connections are NOT recreated for the
+instances slated to be resumed (assuming
+resume_guests_state_on_host_boot is set).
+
+The patch changes the compute manager to pass block_storage_info via
+driver.reboot() and driver.resume_state_on_host_boot(). The fix is
+actually only present in the libvirt driver. However, all the other
+drivers were updated to accept the additional, optional function
+arg.
+
+With the changes in place, iSCSI connections for libvirt are
+re-established after a hypervisor reboot with
+resume_guests_state_on_host_boot=True and on every hard_reboot.
+The latter is intended so that users have a last ditch option for
+recovering their VMs without administrative involvement.
+
+Change-Id: I8ab3a138b559ee0aa1535a928282e9c372ec5651
+---
+ Authors                         |  1 +
+ nova/compute/manager.py         | 14 ++++++++++++--
+ nova/virt/driver.py             |  6 ++++--
+ nova/virt/fake.py               |  6 ++++--
+ nova/virt/libvirt/connection.py | 26 +++++++++++++++++++++-----
+ nova/virt/vmwareapi_conn.py     |  3 ++-
+ nova/virt/xenapi_conn.py        |  3 ++-
+ 7 files changed, 46 insertions(+), 13 deletions(-)
+
+diff --git a/Authors b/Authors
+index 73dd444..4d784ca 100644
+--- a/Authors
++++ b/Authors
+@@ -162,6 +162,7 @@ Paul Voccio <paul@openstack.org>
+ Peng Yong <ppyy@pubyun.com>
+ Phil Day <philip.day@hp.com>
+ Philip Knouff <philip.knouff@mailtrust.com>
++Rafi Khardalian <rafi@metacloud.com>
+ Ralf Haferkamp <rhafer@suse.de>
+ Renuka Apte <renuka.apte@citrix.com>
+ Ricardo Carrillo Cruz <emaildericky@gmail.com>
+diff --git a/nova/compute/manager.py b/nova/compute/manager.py
+index 0ce6e31..ca51fc5 100644
+--- a/nova/compute/manager.py
++++ b/nova/compute/manager.py
+@@ -258,9 +258,15 @@ class ComputeManager(manager.SchedulerDependentManager):
+                 FLAGS.start_guests_on_host_boot):
+                 LOG.info(_('Rebooting instance after nova-compute restart.'),
+                          locals(), instance=instance)
++
++                block_device_info = \
++                    self._get_instance_volume_block_device_info(context,
++                                                                instance['id'])
++
+                 try:
+                     self.driver.resume_state_on_host_boot(context, instance,
+-                                self._legacy_nw_info(net_info))
++                                self._legacy_nw_info(net_info),
++                                                 block_device_info)
+                 except NotImplementedError:
+                     LOG.warning(_('Hypervisor driver does not support '
+                                   'resume guests'), instance=instance)
+@@ -913,8 +919,12 @@ class ComputeManager(manager.SchedulerDependentManager):
+                      context=context)
+ 
+         network_info = self._get_instance_nw_info(context, instance)
++
++        block_device_info = self._get_instance_volume_block_device_info(
++                            context, instance['id'])
++
+         self.driver.reboot(instance, self._legacy_nw_info(network_info),
+-                           reboot_type)
++                           reboot_type, block_device_info)
+ 
+         current_power_state = self._get_power_state(context, instance)
+         self._instance_update(context,
+diff --git a/nova/virt/driver.py b/nova/virt/driver.py
+index 5a3862e..2687904 100644
+--- a/nova/virt/driver.py
++++ b/nova/virt/driver.py
+@@ -209,7 +209,8 @@ class ComputeDriver(object):
+         # TODO(Vek): Need to pass context in for access to auth_token
+         raise NotImplementedError()
+ 
+-    def reboot(self, instance, network_info, reboot_type):
++    def reboot(self, instance, network_info, reboot_type,
++               block_device_info=None):
+         """Reboot the specified instance.
+ 
+         :param instance: Instance object as returned by DB layer.
+@@ -335,7 +336,8 @@ class ComputeDriver(object):
+         # TODO(Vek): Need to pass context in for access to auth_token
+         raise NotImplementedError()
+ 
+-    def resume_state_on_host_boot(self, context, instance, network_info):
++    def resume_state_on_host_boot(self, context, instance, network_info,
++                                  block_device_info=None):
+         """resume guest state when a host is booted"""
+         raise NotImplementedError()
+ 
+diff --git a/nova/virt/fake.py b/nova/virt/fake.py
+index 60620ec..b48472c 100644
+--- a/nova/virt/fake.py
++++ b/nova/virt/fake.py
+@@ -112,7 +112,8 @@ class FakeConnection(driver.ComputeDriver):
+         if not instance['name'] in self.instances:
+             raise exception.InstanceNotRunning()
+ 
+-    def reboot(self, instance, network_info, reboot_type):
++    def reboot(self, instance, network_info, reboot_type,
++               block_device_info=None):
+         pass
+ 
+     @staticmethod
+@@ -131,7 +132,8 @@ class FakeConnection(driver.ComputeDriver):
+     def agent_update(self, instance, url, md5hash):
+         pass
+ 
+-    def resume_state_on_host_boot(self, context, instance, network_info):
++    def resume_state_on_host_boot(self, context, instance, network_info,
++                                  block_device_info=None):
+         pass
+ 
+     def rescue(self, context, instance, network_info, image_meta):
+diff --git a/nova/virt/libvirt/connection.py b/nova/virt/libvirt/connection.py
+index ed94f15..1a0c7f2 100644
+--- a/nova/virt/libvirt/connection.py
++++ b/nova/virt/libvirt/connection.py
+@@ -714,7 +714,8 @@ class LibvirtConnection(driver.ComputeDriver):
+                                      image_file)
+ 
+     @exception.wrap_exception()
+-    def reboot(self, instance, network_info, reboot_type='SOFT'):
++    def reboot(self, instance, network_info, reboot_type='SOFT',
++               block_device_info=None):
+         """Reboot a virtual machine, given an instance reference."""
+         if reboot_type == 'SOFT':
+             # NOTE(vish): This will attempt to do a graceful shutdown/restart.
+@@ -725,7 +726,8 @@ class LibvirtConnection(driver.ComputeDriver):
+             else:
+                 LOG.info(_("Failed to soft reboot instance."),
+                          instance=instance)
+-        return self._hard_reboot(instance, network_info)
++        return self._hard_reboot(instance, network_info,
++                                 block_device_info=block_device_info)
+ 
+     def _soft_reboot(self, instance):
+         """Attempt to shutdown and restart the instance gracefully.
+@@ -760,7 +762,8 @@ class LibvirtConnection(driver.ComputeDriver):
+             greenthread.sleep(1)
+         return False
+ 
+-    def _hard_reboot(self, instance, network_info, xml=None):
++    def _hard_reboot(self, instance, network_info, xml=None,
++                     block_device_info=None):
+         """Reboot a virtual machine, given an instance reference.
+ 
+         This method actually destroys and re-creates the domain to ensure the
+@@ -769,6 +772,17 @@ class LibvirtConnection(driver.ComputeDriver):
+         If xml is set, it uses the passed in xml in place of the xml from the
+         existing domain.
+         """
++
++        block_device_mapping = driver.block_device_info_get_mapping(
++            block_device_info)
++
++        for vol in block_device_mapping:
++            connection_info = vol['connection_info']
++            mount_device = vol['mount_device'].rpartition("/")[2]
++            self.volume_driver_method('connect_volume',
++                                      connection_info,
++                                      mount_device)
++
+         virt_dom = self._conn.lookupByName(instance['name'])
+         # NOTE(itoumsn): Use XML delived from the running instance
+         # instead of using to_xml(instance, network_info). This is almost
+@@ -825,11 +839,13 @@ class LibvirtConnection(driver.ComputeDriver):
+         dom.create()
+ 
+     @exception.wrap_exception()
+-    def resume_state_on_host_boot(self, context, instance, network_info):
++    def resume_state_on_host_boot(self, context, instance, network_info,
++                                  block_device_info=None):
+         """resume guest state when a host is booted"""
+         # NOTE(dprince): use hard reboot to ensure network and firewall
+         # rules are configured
+-        self._hard_reboot(instance, network_info)
++        self._hard_reboot(instance, network_info,
++                          block_device_info=block_device_info)
+ 
+     @exception.wrap_exception()
+     def rescue(self, context, instance, network_info, image_meta):
+diff --git a/nova/virt/vmwareapi_conn.py b/nova/virt/vmwareapi_conn.py
+index 88b0b66..7d3f65e 100644
+--- a/nova/virt/vmwareapi_conn.py
++++ b/nova/virt/vmwareapi_conn.py
+@@ -138,7 +138,8 @@ class VMWareESXConnection(driver.ComputeDriver):
+         """Create snapshot from a running VM instance."""
+         self._vmops.snapshot(context, instance, name)
+ 
+-    def reboot(self, instance, network_info, reboot_type):
++    def reboot(self, instance, network_info, reboot_type,
++               block_device_info=None):
+         """Reboot VM instance."""
+         self._vmops.reboot(instance, network_info)
+ 
+diff --git a/nova/virt/xenapi_conn.py b/nova/virt/xenapi_conn.py
+index 54eb886..d9b40d4 100644
+--- a/nova/virt/xenapi_conn.py
++++ b/nova/virt/xenapi_conn.py
+@@ -203,7 +203,8 @@ class XenAPIConnection(driver.ComputeDriver):
+         """ Create snapshot from a running VM instance """
+         self._vmops.snapshot(context, instance, image_id)
+ 
+-    def reboot(self, instance, network_info, reboot_type):
++    def reboot(self, instance, network_info, reboot_type,
++               block_device_info=None):
+         """Reboot VM instance"""
+         self._vmops.reboot(instance, reboot_type)
+ 
+-- 
+1.7.11.4
+
