@@ -128,9 +128,9 @@ BuildRequires:    python-setuptools
 BuildRequires:    python-netaddr
 BuildRequires:    python-lockfile
 # These are required to build due to the requirements check added
-BuildRequires:    python-paste-deploy1.5
 BuildRequires:    python-routes1.12
-#BuildRequires:    python-paste-deploy >= 1.5
+BuildRequires:    python-paste-deploy >= 1.5
+#BuildRequires:    python-paste-deploy1.5
 #BuildRequires:    common-python-routes >= 1.12
 BuildRequires:    python-sqlalchemy0.7
 BuildRequires:    python-webob1.0
@@ -217,8 +217,8 @@ Requires:         python-webob1.0
 # TODO: remove the following dependency which is minimal
 Requires:         common-python-glance
 Requires:         common-python-novaclient
-Requires:         python-paste-deploy1.5
-#Requires:         python-paste-deploy >= 1.5
+#Requires:         python-paste-deploy1.5
+Requires:         python-paste-deploy >= 1.5
 Requires:         python-migrate
 Requires:         python-ldap
 Requires:         radvd
@@ -253,8 +253,8 @@ BuildRequires:    python-eventlet
 BuildRequires:    python-gflags
 
 # Use it after it is in EPEL6 repo
-#BuildRequires:    python-routes1.12
-BuildRequires:    common-python-routes >= 1.12
+BuildRequires:    python-routes1.12
+#BuildRequires:    common-python-routes >= 1.12
 
 BuildRequires:    python-sqlalchemy0.7
 BuildRequires:    python-tornado
@@ -335,7 +335,6 @@ find . \( -name .gitignore -o -name .placeholder \) -delete
 find nova -name \*.py -exec sed -i '/\/usr\/bin\/env python/{d;q}' {} +
 
 %build
-. /etc/opt/common-python/profile.d/common-python-routes.sh
 %{__python} setup.py build
 
 %install
@@ -561,6 +560,7 @@ fi
 %changelog
 * Mon Sep 10 2012 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 2012.1.1-2.gdc1
 - sync with openstack-nova-2012.1.1-15.el6
+- replace common-python-routes >= 1.12 with python-routes1.12
 
 * Mon Sep 10 2012 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 2012.1.1-1.gdc5
 - add dnsmasq-utils to requires section
