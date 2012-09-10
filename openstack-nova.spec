@@ -4,7 +4,7 @@
 
 Name:             %{_openstack_name}-%{release_name}-nova
 Version:          2012.1.1
-Release:          1%{?dist}.gdc4
+Release:          1%{?dist}.gdc5
 
 #
 # - GoodData customization
@@ -113,8 +113,7 @@ Requires:         python-setuptools
 Requires:         bridge-utils
 # tunctl is needed where `ip tuntap` is not available
 Requires:         tunctl
-#TODO: Enable when available in RHEL 6.3
-#Requires:         dnsmasq-utils
+Requires:         dnsmasq-utils
 Requires:         libguestfs-mount >= 1.7.17
 # The fuse dependency should be added to libguestfs-mount
 Requires:         fuse
@@ -499,6 +498,9 @@ fi
 %endif
 
 %changelog
+* Mon Sep 10 2012 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 2012.1.1-1.gdc5
+- add dnsmasq-utils to requires section
+
 * Tue Jul 24 2012 Branislav Zarnovican <branislav.zarnovican@gooddata.com> 2012.1.1-1.gdc4
 - added patch to remove non-openstack lvm snapshots together with volume delete
 
