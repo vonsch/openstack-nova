@@ -561,6 +561,7 @@ fi
 * Mon Sep 10 2012 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 2012.1.1-2.gdc1
 - sync with openstack-nova-2012.1.1-15.el6
 - replace common-python-routes >= 1.12 with python-routes1.12
+- replace common-python-boto with python-boto
 
 * Mon Sep 10 2012 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 2012.1.1-1.gdc5
 - add dnsmasq-utils to requires section
