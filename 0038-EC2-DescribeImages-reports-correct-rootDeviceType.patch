@@ -1,0 +1,66 @@
+From d18beab9fb9c5f61b7a8ec9d64dc95839ccc537e Mon Sep 17 00:00:00 2001
+From: Eoghan Glynn <eglynn@redhat.com>
+Date: Sat, 14 Jul 2012 21:30:43 +0100
+Subject: [PATCH] EC2 DescribeImages reports correct rootDeviceType
+
+Fixes LP 1024354
+
+A root device type of instance-store was incorrectly reported for
+boot-from-volume images (i.e. the analogue of EBS-backed AMIs).
+
+When comparing the block device mapping device name with the root
+device name, we now tolerate a missing leading '/dev/' path.
+
+Change-Id: I1d3bda780deee52f5d41e3af041aba7e6305dfde
+---
+ nova/api/ec2/cloud.py            |    4 +++-
+ nova/block_device.py             |    2 +-
+ nova/tests/api/ec2/test_cloud.py |    2 ++
+ 3 files changed, 6 insertions(+), 2 deletions(-)
+
+diff --git a/nova/api/ec2/cloud.py b/nova/api/ec2/cloud.py
+index 47325af..7172954 100644
+--- a/nova/api/ec2/cloud.py
++++ b/nova/api/ec2/cloud.py
+@@ -1445,8 +1445,10 @@ class CloudController(object):
+         properties = image['properties']
+         root_device_name = block_device.properties_root_device_name(properties)
+         root_device_type = 'instance-store'
++
+         for bdm in properties.get('block_device_mapping', []):
+-            if (bdm.get('device_name') == root_device_name and
++            if (block_device.strip_dev(bdm.get('device_name')) ==
++                block_device.strip_dev(root_device_name) and
+                 ('snapshot_id' in bdm or 'volume_id' in bdm) and
+                 not bdm.get('no_device')):
+                 root_device_type = 'ebs'
+diff --git a/nova/block_device.py b/nova/block_device.py
+index 1b7d381..1ddac43 100644
+--- a/nova/block_device.py
++++ b/nova/block_device.py
+@@ -71,4 +71,4 @@ _dev = re.compile('^/dev/')
+ 
+ def strip_dev(device_name):
+     """remove leading '/dev/'"""
+-    return _dev.sub('', device_name)
++    return _dev.sub('', device_name) if device_name else device_name
+diff --git a/nova/tests/api/ec2/test_cloud.py b/nova/tests/api/ec2/test_cloud.py
+index 01ac95a..d8da26d 100644
+--- a/nova/tests/api/ec2/test_cloud.py
++++ b/nova/tests/api/ec2/test_cloud.py
+@@ -2071,6 +2071,7 @@ class CloudTestCase(test.TestCase):
+                         delete_on_termination=False)]
+             props = dict(kernel_id='cedef40a-ed67-4d10-800e-17455edce175',
+                          ramdisk_id='76fa36fc-c930-4bf3-8c8a-ea2a2420deb6',
++                         root_device_name='/dev/vda',
+                          block_device_mapping=bdm)
+             return dict(id=id,
+                         properties=props,
+@@ -2116,6 +2117,7 @@ class CloudTestCase(test.TestCase):
+                           'snap-%08x' % snapshots[0])
+         self.assertEquals(created_image.get('kernelId'), 'aki-00000001')
+         self.assertEquals(created_image.get('ramdiskId'), 'ari-00000002')
++        self.assertEquals(created_image.get('rootDeviceType'), 'ebs')
+ 
+         self.cloud.terminate_instances(self.context, [ec2_instance_id])
+         for vol in volumes:

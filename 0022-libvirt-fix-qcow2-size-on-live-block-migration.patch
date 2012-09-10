@@ -1,0 +1,30 @@
+From f6d1f552875a918084907c53085d140d58fb1c37 Mon Sep 17 00:00:00 2001
+From: Yaguang Tang <heut2008@gmail.com>
+Date: Wed, 9 May 2012 17:45:58 +0800
+Subject: [PATCH] libvirt: fix qcow2 size on live block migration
+
+When using live block migration, ephemeral disks with qcow2 format
+should be created in the destination with the same virtual size as
+before.
+
+bug 977007
+
+Change-Id: I5c5b1295bdb3e4dc281698eba38c5ce697aa9bc2
+(cherry picked from commit ee705d048418d63667136cad3951655178861d46)
+---
+ nova/virt/libvirt/connection.py |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/nova/virt/libvirt/connection.py b/nova/virt/libvirt/connection.py
+index da44ac4..ed94f15 100644
+--- a/nova/virt/libvirt/connection.py
++++ b/nova/virt/libvirt/connection.py
+@@ -2160,7 +2160,7 @@ class LibvirtConnection(driver.ComputeDriver):
+                     image_id=instance_ref['image_ref'],
+                     user_id=instance_ref['user_id'],
+                     project_id=instance_ref['project_id'],
+-                    size=info['disk_size'])
++                    size=info['virt_disk_size'])
+ 
+         # if image has kernel and ramdisk, just download
+         # following normal way.

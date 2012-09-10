@@ -1,0 +1,108 @@
+From 2efc87cc08e227d5623ff58c5c6fdfd02c8578df Mon Sep 17 00:00:00 2001
+From: Vishvananda Ishaya <vishvananda@gmail.com>
+Date: Fri, 1 Jun 2012 12:29:24 -0700
+Subject: [PATCH] Fixes affinity filters when hints is None
+
+ * Fixes bug 1007573
+ * Includes failing tests
+
+Change-Id: I827588f0694c5dd7b5e8ff3173d4794a55946d81
+(cherry picked from commit 4803074f2c02c87310c486f66fb66be98533805f)
+---
+ nova/scheduler/filters/affinity_filter.py |    6 ++--
+ nova/tests/scheduler/test_host_filters.py |   37 +++++++++++++++++++++++++++++
+ 2 files changed, 40 insertions(+), 3 deletions(-)
+
+diff --git a/nova/scheduler/filters/affinity_filter.py b/nova/scheduler/filters/affinity_filter.py
+index 81d9442..c2812ef 100644
+--- a/nova/scheduler/filters/affinity_filter.py
++++ b/nova/scheduler/filters/affinity_filter.py
+@@ -38,7 +38,7 @@ class DifferentHostFilter(AffinityFilter):
+ 
+     def host_passes(self, host_state, filter_properties):
+         context = filter_properties['context']
+-        scheduler_hints = filter_properties['scheduler_hints']
++        scheduler_hints = filter_properties.get('scheduler_hints') or {}
+         me = host_state.host
+ 
+         affinity_uuids = scheduler_hints.get('different_host', [])
+@@ -57,7 +57,7 @@ class SameHostFilter(AffinityFilter):
+ 
+     def host_passes(self, host_state, filter_properties):
+         context = filter_properties['context']
+-        scheduler_hints = filter_properties['scheduler_hints']
++        scheduler_hints = filter_properties.get('scheduler_hints') or {}
+         me = host_state.host
+ 
+         affinity_uuids = scheduler_hints.get('same_host', [])
+@@ -71,7 +71,7 @@ class SameHostFilter(AffinityFilter):
+ 
+ class SimpleCIDRAffinityFilter(AffinityFilter):
+     def host_passes(self, host_state, filter_properties):
+-        scheduler_hints = filter_properties['scheduler_hints']
++        scheduler_hints = filter_properties.get('scheduler_hints') or {}
+ 
+         affinity_cidr = scheduler_hints.get('cidr', '/24')
+         affinity_host_addr = scheduler_hints.get('build_near_host_ip')
+diff --git a/nova/tests/scheduler/test_host_filters.py b/nova/tests/scheduler/test_host_filters.py
+index f56a145..1648c58 100644
+--- a/nova/tests/scheduler/test_host_filters.py
++++ b/nova/tests/scheduler/test_host_filters.py
+@@ -107,6 +107,18 @@ class HostFiltersTestCase(test.TestCase):
+ 
+         self.assertFalse(filt_cls.host_passes(host, filter_properties))
+ 
++    def test_affinity_different_filter_handles_none(self):
++        filt_cls = self.class_map['DifferentHostFilter']()
++        host = fakes.FakeHostState('host1', 'compute', {})
++        instance = fakes.FakeInstance(context=self.context,
++                                         params={'host': 'host2'})
++        instance_uuid = instance.uuid
++
++        filter_properties = {'context': self.context.elevated(),
++                             'scheduler_hints': None}
++
++        self.assertTrue(filt_cls.host_passes(host, filter_properties))
++
+     def test_affinity_same_filter_passes(self):
+         filt_cls = self.class_map['SameHostFilter']()
+         host = fakes.FakeHostState('host1', 'compute', {})
+@@ -133,6 +145,18 @@ class HostFiltersTestCase(test.TestCase):
+ 
+         self.assertFalse(filt_cls.host_passes(host, filter_properties))
+ 
++    def test_affinity_same_filter_handles_none(self):
++        filt_cls = self.class_map['SameHostFilter']()
++        host = fakes.FakeHostState('host1', 'compute', {})
++        instance = fakes.FakeInstance(context=self.context,
++                                         params={'host': 'host2'})
++        instance_uuid = instance.uuid
++
++        filter_properties = {'context': self.context.elevated(),
++                             'scheduler_hints': None}
++
++        self.assertTrue(filt_cls.host_passes(host, filter_properties))
++
+     def test_affinity_simple_cidr_filter_passes(self):
+         filt_cls = self.class_map['SimpleCIDRAffinityFilter']()
+         host = fakes.FakeHostState('host1', 'compute', {})
+@@ -163,6 +187,19 @@ class HostFiltersTestCase(test.TestCase):
+ 
+         self.assertFalse(filt_cls.host_passes(host, filter_properties))
+ 
++    def test_affinity_simple_cidr_filter_handles_none(self):
++        filt_cls = self.class_map['SimpleCIDRAffinityFilter']()
++        host = fakes.FakeHostState('host1', 'compute', {})
++
++        affinity_ip = flags.FLAGS.my_ip.split('.')[0:3]
++        affinity_ip.append('100')
++        affinity_ip = str.join('.', affinity_ip)
++
++        filter_properties = {'context': self.context.elevated(),
++                             'scheduler_hints': None}
++
++        self.assertTrue(filt_cls.host_passes(host, filter_properties))
++
+     def test_compute_filter_passes(self):
+         self._stub_service_is_up(True)
+         filt_cls = self.class_map['ComputeFilter']()

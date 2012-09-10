@@ -1,0 +1,43 @@
+From 1c1b858e919248d6e3fb11c1022532ba40e75844 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?P=C3=A1draig=20Brady?= <pbrady@redhat.com>
+Date: Tue, 10 Jul 2012 15:22:39 +0100
+Subject: [PATCH] ensure libguestfs has completed before proceeding
+
+This avoids a FUSE issue referenced here:
+http://code.google.com/p/s3ql/issues/detail?id=159
+which in turn references this thread on the subject from 2006:
+http://thread.gmane.org/gmane.comp.file-systems.fuse.devel/3903
+And another case from 2008:
+http://permalink.gmane.org/gmane.comp.file-systems.fuse.devel/6502
+
+The vast majority of this work was reproducing and classifying
+done by David Naori and Richard W.M. Jones at:
+https://bugzilla.redhat.com/show_bug.cgi?id=835466
+
+Fixes bug: 1013689
+Change-Id: I36fd11d5f01562f65a6b6f07e759ea066490b067
+---
+ nova/virt/disk/guestfs.py |   12 ++++++++++++
+ 1 files changed, 12 insertions(+), 0 deletions(-)
+
+diff --git a/nova/virt/disk/guestfs.py b/nova/virt/disk/guestfs.py
+index 20e3eda..f2ff3c3 100644
+--- a/nova/virt/disk/guestfs.py
++++ b/nova/virt/disk/guestfs.py
+@@ -91,4 +91,16 @@ class Mount(mount.Mount):
+         # root users don't need a specific unmnt_dev()
+         # but ordinary users do
+         utils.execute('fusermount', '-u', self.mount_dir, run_as_root=True)
++
++        # Unfortunately FUSE has an issue where it doesn't wait
++        # for processes associated with the mount to terminate.
++        # Therefore we do this manually here.  Note later versions
++        # of guestmount have the --pid-file option to help with this.
++        # Here we check every .2 seconds whether guestmount is finished
++        # but do this for at most 10 seconds.
++        wait_cmd = 'until ! ps -C guestmount -o args= | grep -qF "%s"; '
++        wait_cmd += 'do sleep .2; done'
++        wait_cmd %= self.mount_dir
++        utils.execute('timeout', '10s', 'sh', '-c', wait_cmd)
++
+         self.mounted = False

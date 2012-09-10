@@ -1,0 +1,94 @@
+From cf6a85a6d4ac982875c1cfab44acdea1e1962930 Mon Sep 17 00:00:00 2001
+From: Ralf Haferkamp <rhafer@suse.de>
+Date: Wed, 20 Jun 2012 11:28:22 +0200
+Subject: [PATCH] Addtional CommandFilters to fix rootwrap on SLES
+
+Fixes bug 1013147 (for SLES)
+
+(cherry picked from commit a519752eef157aaa03c9f6169eba1ff1b5a9f1bd)
+
+Change-Id: Ib362c913b809f7601a9a4faedede89b22794dfb7
+---
+ Authors                  |    1 +
+ nova/rootwrap/compute.py |    7 +++++++
+ nova/rootwrap/network.py |    5 +++++
+ 3 files changed, 13 insertions(+), 0 deletions(-)
+
+diff --git a/Authors b/Authors
+index 2a7a82a..65ba31c 100644
+--- a/Authors
++++ b/Authors
+@@ -157,6 +157,7 @@ Pádraig Brady <pbrady@redhat.com>
+ Paul Voccio <paul@openstack.org>
+ Peng Yong <ppyy@pubyun.com>
+ Philip Knouff <philip.knouff@mailtrust.com>
++Ralf Haferkamp <rhafer@suse.de>
+ Renuka Apte <renuka.apte@citrix.com>
+ Ricardo Carrillo Cruz <emaildericky@gmail.com>
+ Rick Clark <rick@openstack.org>
+diff --git a/nova/rootwrap/compute.py b/nova/rootwrap/compute.py
+index bb53abc..a3d7ec0 100755
+--- a/nova/rootwrap/compute.py
++++ b/nova/rootwrap/compute.py
+@@ -100,6 +100,7 @@ filterlist = [
+     # nova/virt/libvirt/vif.py: 'tunctl', '-b', '-t', dev
+     # nova/network/linux_net.py: 'tunctl', '-b', '-t', dev
+     filters.CommandFilter("/usr/sbin/tunctl", "root"),
++    filters.CommandFilter("/bin/tunctl", "root"),
+ 
+     # nova/virt/libvirt/vif.py: 'ovs-vsctl', ...
+     # nova/virt/libvirt/vif.py: 'ovs-vsctl', 'del-port', ...
+@@ -118,6 +119,7 @@ filterlist = [
+     # nova/virt/xenapi/vm_utils.py: "parted", "--script", ...
+     # nova/virt/xenapi/vm_utils.py: 'parted', '--script', dev_path, ..*.
+     filters.CommandFilter("/sbin/parted", "root"),
++    filters.CommandFilter("/usr/sbin/parted", "root"),
+ 
+     # nova/virt/xenapi/vm_utils.py: fdisk %(dev_path)s
+     filters.CommandFilter("/sbin/fdisk", "root"),
+@@ -130,15 +132,20 @@ filterlist = [
+ 
+     # nova/network/linux_net.py: 'ip[6]tables-save' % (cmd,), '-t', ...
+     filters.CommandFilter("/sbin/iptables-save", "root"),
++    filters.CommandFilter("/usr/sbin/iptables-save", "root"),
+     filters.CommandFilter("/sbin/ip6tables-save", "root"),
++    filters.CommandFilter("/usr/sbin/ip6tables-save", "root"),
+ 
+     # nova/network/linux_net.py: 'ip[6]tables-restore' % (cmd,)
+     filters.CommandFilter("/sbin/iptables-restore", "root"),
++    filters.CommandFilter("/usr/sbin/iptables-restore", "root"),
+     filters.CommandFilter("/sbin/ip6tables-restore", "root"),
++    filters.CommandFilter("/usr/sbin/ip6tables-restore", "root"),
+ 
+     # nova/network/linux_net.py: 'arping', '-U', floating_ip, '-A', '-I', ...
+     # nova/network/linux_net.py: 'arping', '-U', network_ref['dhcp_server'],..
+     filters.CommandFilter("/usr/bin/arping", "root"),
++    filters.CommandFilter("/sbin/arping", "root"),
+ 
+     # nova/network/linux_net.py: 'route', '-n'
+     # nova/network/linux_net.py: 'route', 'del', 'default', 'gw'
+diff --git a/nova/rootwrap/network.py b/nova/rootwrap/network.py
+index 0a93a63..fbac613 100755
+--- a/nova/rootwrap/network.py
++++ b/nova/rootwrap/network.py
+@@ -40,15 +40,20 @@ filterlist = [
+ 
+     # nova/network/linux_net.py: 'ip[6]tables-save' % (cmd,), '-t', ...
+     filters.CommandFilter("/sbin/iptables-save", "root"),
++    filters.CommandFilter("/usr/sbin/iptables-save", "root"),
+     filters.CommandFilter("/sbin/ip6tables-save", "root"),
++    filters.CommandFilter("/usr/sbin/ip6tables-save", "root"),
+ 
+     # nova/network/linux_net.py: 'ip[6]tables-restore' % (cmd,)
+     filters.CommandFilter("/sbin/iptables-restore", "root"),
++    filters.CommandFilter("/usr/sbin/iptables-restore", "root"),
+     filters.CommandFilter("/sbin/ip6tables-restore", "root"),
++    filters.CommandFilter("/usr/sbin/ip6tables-restore", "root"),
+ 
+     # nova/network/linux_net.py: 'arping', '-U', floating_ip, '-A', '-I', ...
+     # nova/network/linux_net.py: 'arping', '-U', network_ref['dhcp_server'],..
+     filters.CommandFilter("/usr/bin/arping", "root"),
++    filters.CommandFilter("/sbin/arping", "root"),
+ 
+     # nova/network/linux_net.py: 'route', '-n'
+     # nova/network/linux_net.py: 'route', 'del', 'default', 'gw'

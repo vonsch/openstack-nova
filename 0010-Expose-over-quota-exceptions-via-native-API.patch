@@ -1,0 +1,139 @@
+From 4c49df742d1730b124f81e30f12e61602966a819 Mon Sep 17 00:00:00 2001
+From: Eoghan Glynn <eglynn@redhat.com>
+Date: Fri, 6 Jul 2012 10:10:28 +0000
+Subject: [PATCH] Expose over-quota exceptions via native API.
+
+Fixes bug LP 1021373.
+
+Previously an over-quota condition would be exposed via the EC2 API,
+but hidden in the corresponding call via the native API (in the sense
+of the exception detail being replaced with a generic 500 Server Error
+response).
+
+We now report any NovaException declared to be safe. In this patch,
+the set of safe exception types includes any subclass of QuotaError,
+but in subsequent patches the net should be widened to include
+exceptions that do not expose senstive information.
+
+Change-Id: I3cc36337c7e67cf487ca49de646c437c217ae538
+---
+ nova/api/openstack/__init__.py               |   30 ++++++++++++++++++-------
+ nova/exception.py                            |    2 +
+ nova/tests/api/openstack/compute/test_api.py |   24 ++++++++++++++++++++
+ 3 files changed, 47 insertions(+), 9 deletions(-)
+
+diff --git a/nova/api/openstack/__init__.py b/nova/api/openstack/__init__.py
+index 82e958a..92b4731 100644
+--- a/nova/api/openstack/__init__.py
++++ b/nova/api/openstack/__init__.py
+@@ -25,6 +25,7 @@ import webob.dec
+ import webob.exc
+ 
+ from nova.api.openstack import wsgi
++from nova import exception
+ from nova import log as logging
+ from nova import wsgi as base_wsgi
+ 
+@@ -35,20 +36,31 @@ LOG = logging.getLogger(__name__)
+ class FaultWrapper(base_wsgi.Middleware):
+     """Calls down the middleware stack, making exceptions into faults."""
+ 
++    def _error(self, inner, req, safe=False):
++        LOG.exception(_("Caught error: %s"), unicode(inner))
++        msg_dict = dict(url=req.url, status=500)
++        LOG.info(_("%(url)s returned with HTTP %(status)d") % msg_dict)
++        outer = webob.exc.HTTPInternalServerError()
++        # NOTE(johannes): We leave the explanation empty here on
++        # purpose. It could possibly have sensitive information
++        # that should not be returned back to the user. See
++        # bugs 868360 and 874472
++        # NOTE(eglynn): However, it would be over-conservative and
++        # inconsistent with the EC2 API to hide every exception,
++        # including those that are safe to expose, see bug 1021373
++        if safe:
++            outer.explanation = '%s: %s' % (inner.__class__.__name__,
++                                            unicode(inner))
++        return wsgi.Fault(outer)
++
+     @webob.dec.wsgify(RequestClass=wsgi.Request)
+     def __call__(self, req):
+         try:
+             return req.get_response(self.application)
++        except exception.NovaException as ex:
++            return self._error(ex, req, ex.safe)
+         except Exception as ex:
+-            LOG.exception(_("Caught error: %s"), unicode(ex))
+-            msg_dict = dict(url=req.url, status=500)
+-            LOG.info(_("%(url)s returned with HTTP %(status)d") % msg_dict)
+-            exc = webob.exc.HTTPInternalServerError()
+-            # NOTE(johannes): We leave the explanation empty here on
+-            # purpose. It could possibly have sensitive information
+-            # that should not be returned back to the user. See
+-            # bugs 868360 and 874472
+-            return wsgi.Fault(exc)
++            return self._error(ex, req)
+ 
+ 
+ class APIMapper(routes.Mapper):
+diff --git a/nova/exception.py b/nova/exception.py
+index da067b6..8dd6033 100644
+--- a/nova/exception.py
++++ b/nova/exception.py
+@@ -153,6 +153,7 @@ class NovaException(Exception):
+ 
+     """
+     message = _("An unknown exception occurred.")
++    safe = False
+ 
+     def __init__(self, message=None, **kwargs):
+         self.kwargs = kwargs
+@@ -952,6 +953,7 @@ class WillNotSchedule(NovaException):
+ 
+ class QuotaError(NovaException):
+     message = _("Quota exceeded") + ": code=%(code)s"
++    safe = True
+ 
+ 
+ class AggregateError(NovaException):
+diff --git a/nova/tests/api/openstack/compute/test_api.py b/nova/tests/api/openstack/compute/test_api.py
+index 99210cc..974b588 100644
+--- a/nova/tests/api/openstack/compute/test_api.py
++++ b/nova/tests/api/openstack/compute/test_api.py
+@@ -23,6 +23,7 @@ import webob.exc
+ import webob.dec
+ 
+ import nova.context
++from nova import exception
+ from nova import test
+ from nova.api import openstack as openstack_api
+ from nova.api.openstack import wsgi
+@@ -121,6 +122,29 @@ class APITest(test.TestCase):
+         self.assertTrue('<computeFault' in resp.body, resp.body)
+         self.assertEqual(resp.status_int, 500, resp.body)
+ 
++    def _do_test_exception_safety_reflected_in_faults(self, expose):
++        class ExceptionWithSafety(exception.NovaException):
++            safe = expose
++
++        @webob.dec.wsgify
++        def fail(req):
++            raise ExceptionWithSafety('some explanation')
++
++        api = self._wsgi_app(fail)
++        resp = webob.Request.blank('/').get_response(api)
++        self.assertTrue('{"computeFault' in resp.body, resp.body)
++        expected = ('ExceptionWithSafety: some explanation' if expose else
++                    'The server has either erred or is incapable '
++                    'of performing the requested operation.')
++        self.assertTrue(expected in resp.body, resp.body)
++        self.assertEqual(resp.status_int, 500, resp.body)
++
++    def test_safe_exceptions_are_described_in_faults(self):
++        self._do_test_exception_safety_reflected_in_faults(True)
++
++    def test_unsafe_exceptions_are_not_described_in_faults(self):
++        self._do_test_exception_safety_reflected_in_faults(False)
++
+     def test_request_id_in_response(self):
+         req = webob.Request.blank('/')
+         req.method = 'GET'

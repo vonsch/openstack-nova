@@ -1,0 +1,97 @@
+From 3feabf6a93104a1eb0da3106288a8c4c65056c57 Mon Sep 17 00:00:00 2001
+From: Phil Day <philip.day@hp.com>
+Date: Wed, 11 Jul 2012 09:26:11 +0100
+Subject: [PATCH] Convert remaining network API casts to calls
+
+Fix for Bug 1021340
+
+During compute/terminate_instance networking is de-allocated by a call to
+network/api/deallocate_for_instance(), which is implemented as an rpc.cast to
+the network manager. This in turn will eventually call
+network/manager/deallocate_fixed_ip(), which in turn call the compute API to
+trigger a security group refresh, which will get the instance from the database
+
+However because original call to the network manager is a cast there is a chance
+that the compute manager will delete the instance record in the DB before the
+compute API (in the network manager) tries to retrieve the instance. At this
+point the security group refresh fails (leaving rules in place which are a
+security risk when the IP is reused), and potentially stopping otheraspects
+of the network deallocation from completing.
+
+Changing this from rpc.call to rpc.cast will fix this issue.
+
+Aside from this specific use of a cast there are 4 other casts in the
+network API:
+  add_fixed_ip_to_instance
+  remove_fixed_ip_from_instance
+  add_network_to_project
+  release_floating_ip
+
+and to avoid other timing issues these will also be converted to calls.
+
+Change-Id: I5cdcc628293d3e7cf165c5ffe4883f138783f73f
+(cherry picked from commit 34f9d7e974d0e09c723e0a04ed6eecd1b482e77d)
+---
+ Authors             |    1 +
+ nova/network/api.py |   10 +++++-----
+ 2 files changed, 6 insertions(+), 5 deletions(-)
+
+diff --git a/Authors b/Authors
+index 97734ee..d28e842 100644
+--- a/Authors
++++ b/Authors
+@@ -159,6 +159,7 @@ Ollie Leahy <oliver.leahy@hp.com>
+ Pádraig Brady <pbrady@redhat.com>
+ Paul Voccio <paul@openstack.org>
+ Peng Yong <ppyy@pubyun.com>
++Phil Day <philip.day@hp.com>
+ Philip Knouff <philip.knouff@mailtrust.com>
+ Ralf Haferkamp <rhafer@suse.de>
+ Renuka Apte <renuka.apte@citrix.com>
+diff --git a/nova/network/api.py b/nova/network/api.py
+index 96a7a2f..6748950 100644
+--- a/nova/network/api.py
++++ b/nova/network/api.py
+@@ -126,7 +126,7 @@ class API(base.Base):
+     def release_floating_ip(self, context, address,
+                             affect_auto_assigned=False):
+         """Removes floating ip with address from a project. (deallocates)"""
+-        rpc.cast(context,
++        rpc.call(context,
+                  FLAGS.network_topic,
+                  {'method': 'deallocate_floating_ip',
+                   'args': {'address': address,
+@@ -185,7 +185,7 @@ class API(base.Base):
+         args['instance_id'] = instance['id']
+         args['project_id'] = instance['project_id']
+         args['host'] = instance['host']
+-        rpc.cast(context, FLAGS.network_topic,
++        rpc.call(context, FLAGS.network_topic,
+                  {'method': 'deallocate_for_instance',
+                   'args': args})
+ 
+@@ -194,7 +194,7 @@ class API(base.Base):
+         args = {'instance_id': instance['id'],
+                 'host': instance['host'],
+                 'network_id': network_id}
+-        rpc.cast(context, FLAGS.network_topic,
++        rpc.call(context, FLAGS.network_topic,
+                  {'method': 'add_fixed_ip_to_instance',
+                   'args': args})
+ 
+@@ -204,13 +204,13 @@ class API(base.Base):
+         args = {'instance_id': instance['id'],
+                 'host': instance['host'],
+                 'address': address}
+-        rpc.cast(context, FLAGS.network_topic,
++        rpc.call(context, FLAGS.network_topic,
+                  {'method': 'remove_fixed_ip_from_instance',
+                   'args': args})
+ 
+     def add_network_to_project(self, context, project_id):
+         """Force adds another network to a project."""
+-        rpc.cast(context, FLAGS.network_topic,
++        rpc.call(context, FLAGS.network_topic,
+                  {'method': 'add_network_to_project',
+                   'args': {'project_id': project_id}})
+ 

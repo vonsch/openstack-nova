@@ -1,4 +1,4 @@
-From aee4d472fc80726bc9a18d7175627d9c5d1fab5c Mon Sep 17 00:00:00 2001
+From 1e01e15630e654cee6cda5c327754f7ffc9e86b6 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?P=C3=A1draig=20Brady?= <pbrady@redhat.com>
 Date: Wed, 18 Apr 2012 23:27:31 +0100
 Subject: [PATCH] support a configurable libvirt injection partition
@@ -47,7 +47,7 @@ index 4fb5dda..11959b2 100644
              else:
                  self.mapped_device = map_path
 diff --git a/nova/virt/libvirt/connection.py b/nova/virt/libvirt/connection.py
-index f909886..ad084b2 100644
+index 5bc9ce0..c38283f 100644
 --- a/nova/virt/libvirt/connection.py
 +++ b/nova/virt/libvirt/connection.py
 @@ -108,6 +108,11 @@ libvirt_opts = [

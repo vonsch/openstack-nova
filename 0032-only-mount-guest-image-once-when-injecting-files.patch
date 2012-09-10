@@ -1,4 +1,4 @@
-From 8843f1e61d5b648306398f6e8b8448c1442f58bf Mon Sep 17 00:00:00 2001
+From b12fa5ea79d7b8adb272795ccb996c8da6578d5c Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?P=C3=A1draig=20Brady?= <pbrady@redhat.com>
 Date: Mon, 25 Jun 2012 13:52:46 +0100
 Subject: [PATCH] only mount guest image once when injecting files
@@ -111,7 +111,7 @@ index 04feb76..d6d6007 100644
  
      admin_password is a root password
 diff --git a/nova/virt/libvirt/connection.py b/nova/virt/libvirt/connection.py
-index ad084b2..9f85419 100644
+index c38283f..11e5b34 100644
 --- a/nova/virt/libvirt/connection.py
 +++ b/nova/virt/libvirt/connection.py
 @@ -970,12 +970,6 @@ class LibvirtConnection(driver.ComputeDriver):

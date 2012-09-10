@@ -1,0 +1,108 @@
+From d3a87a247e1c4a9dc9aa7b432d23b9c3c27d469a Mon Sep 17 00:00:00 2001
+From: Phlip Knouff <philip.knouff@mailtrust.com>
+Date: Mon, 26 Mar 2012 22:16:27 +0000
+Subject: [PATCH] Fix marker behavior for flavors
+
+Fixes Bug #956096
+
+(cherry-picked from commit 497502cbf833d063c964975448dfacd0e1db2ef4)
+
+Change-Id: I700770b17d0a38f120fce002167c8b6a8bbecbb2
+---
+ nova/api/openstack/common.py                     |    6 ++++-
+ nova/api/openstack/compute/flavors.py            |   13 ++++++----
+ nova/tests/api/openstack/compute/test_flavors.py |   28 ++++++++++++++++++++++
+ 3 files changed, 41 insertions(+), 6 deletions(-)
+
+diff --git a/nova/api/openstack/common.py b/nova/api/openstack/common.py
+index 38f3821..8e3daaa 100644
+--- a/nova/api/openstack/common.py
++++ b/nova/api/openstack/common.py
+@@ -192,7 +192,11 @@ def limited_by_marker(items, request, max_limit=FLAGS.osapi_max_limit):
+     if marker:
+         start_index = -1
+         for i, item in enumerate(items):
+-            if item['id'] == marker or item.get('uuid') == marker:
++            if 'flavorid' in item:
++                if item['flavorid'] == marker:
++                    start_index = i + 1
++                    break
++            elif item['id'] == marker or item.get('uuid') == marker:
+                 start_index = i + 1
+                 break
+         if start_index < 0:
+diff --git a/nova/api/openstack/compute/flavors.py b/nova/api/openstack/compute/flavors.py
+index 99f6f44..8c159c5 100644
+--- a/nova/api/openstack/compute/flavors.py
++++ b/nova/api/openstack/compute/flavors.py
+@@ -73,15 +73,13 @@ class Controller(wsgi.Controller):
+     def index(self, req):
+         """Return all flavors in brief."""
+         flavors = self._get_flavors(req)
+-        limited_flavors = common.limited_by_marker(flavors.values(), req)
+-        return self._view_builder.index(req, limited_flavors)
++        return self._view_builder.index(req, flavors)
+ 
+     @wsgi.serializers(xml=FlavorsTemplate)
+     def detail(self, req):
+         """Return all flavors in detail."""
+         flavors = self._get_flavors(req)
+-        limited_flavors = common.limited_by_marker(flavors.values(), req)
+-        return self._view_builder.detail(req, limited_flavors)
++        return self._view_builder.detail(req, flavors)
+ 
+     @wsgi.serializers(xml=FlavorTemplate)
+     def show(self, req, id):
+@@ -108,7 +106,12 @@ class Controller(wsgi.Controller):
+             except ValueError:
+                 pass  # ignore bogus values per spec
+ 
+-        return instance_types.get_all_types(filters=filters)
++        flavors = instance_types.get_all_types(filters=filters)
++        flavors_list = flavors.values()
++        sorted_flavors = sorted(flavors_list,
++                                key=lambda item: item['flavorid'])
++        limited_flavors = common.limited_by_marker(sorted_flavors, req)
++        return limited_flavors
+ 
+ 
+ def create_resource():
+diff --git a/nova/tests/api/openstack/compute/test_flavors.py b/nova/tests/api/openstack/compute/test_flavors.py
+index 7d03a62..599e86b 100644
+--- a/nova/tests/api/openstack/compute/test_flavors.py
++++ b/nova/tests/api/openstack/compute/test_flavors.py
+@@ -195,6 +195,34 @@ class FlavorsTest(test.TestCase):
+         }
+         self.assertEqual(flavor, expected)
+ 
++    def test_get_flavor_list_with_marker(self):
++        self.maxDiff = None
++        req = fakes.HTTPRequest.blank('/v2/fake/flavors?limit=1&marker=1')
++        flavor = self.controller.index(req)
++        expected = {
++            "flavors": [
++                {
++                    "id": "2",
++                    "name": "flavor 2",
++                    "links": [
++                        {
++                            "rel": "self",
++                            "href": "http://localhost/v2/fake/flavors/2",
++                        },
++                        {
++                            "rel": "bookmark",
++                            "href": "http://localhost/fake/flavors/2",
++                        },
++                    ],
++                },
++            ],
++            'flavors_links': [
++                {'href': 'http://localhost/v2/fake/flavors?limit=1&marker=2',
++               'rel': 'next'}
++            ]
++        }
++        self.assertDictMatch(flavor, expected)
++
+     def test_get_flavor_detail_with_limit(self):
+         req = fakes.HTTPRequest.blank('/v2/fake/flavors/detail?limit=1')
+         response = self.controller.index(req)

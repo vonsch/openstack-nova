@@ -1,0 +1,140 @@
+From 6e873bccc078e1013987698cd71c69deebf2e99f Mon Sep 17 00:00:00 2001
+From: Eoghan Glynn <eglynn@redhat.com>
+Date: Mon, 9 Jul 2012 21:09:06 +0100
+Subject: [PATCH] Return 413 status on over-quota in the native API.
+
+Related to LP 1021373.
+
+Previously, we returned a generic 500 Server Error on an over-quota
+conditions, whereas this is arguably more appropriately reported
+as a 413 status.
+
+Change-Id: I5c1cdc9db54804c512d60e4179c1faa13516d6f9
+---
+ nova/api/openstack/__init__.py               |   21 +++++++++++++++++----
+ nova/exception.py                            |    4 ++++
+ nova/tests/api/openstack/compute/test_api.py |   16 ++++++++++++++++
+ nova/utils.py                                |   13 +++++++++++++
+ 4 files changed, 50 insertions(+), 4 deletions(-)
+
+diff --git a/nova/api/openstack/__init__.py b/nova/api/openstack/__init__.py
+index 92b4731..00b3f3e 100644
+--- a/nova/api/openstack/__init__.py
++++ b/nova/api/openstack/__init__.py
+@@ -27,6 +27,7 @@ import webob.exc
+ from nova.api.openstack import wsgi
+ from nova import exception
+ from nova import log as logging
++from nova import utils
+ from nova import wsgi as base_wsgi
+ 
+ 
+@@ -36,11 +37,23 @@ LOG = logging.getLogger(__name__)
+ class FaultWrapper(base_wsgi.Middleware):
+     """Calls down the middleware stack, making exceptions into faults."""
+ 
+-    def _error(self, inner, req, safe=False):
++    _status_to_type = {}
++
++    @staticmethod
++    def status_to_type(status):
++        if not FaultWrapper._status_to_type:
++            for clazz in utils.walk_class_hierarchy(webob.exc.HTTPError):
++                FaultWrapper._status_to_type[clazz.code] = clazz
++        return FaultWrapper._status_to_type.get(
++                                  status, webob.exc.HTTPInternalServerError)()
++
++    def _error(self, inner, req, headers=None, status=500, safe=False):
+         LOG.exception(_("Caught error: %s"), unicode(inner))
+-        msg_dict = dict(url=req.url, status=500)
++        msg_dict = dict(url=req.url, status=status)
+         LOG.info(_("%(url)s returned with HTTP %(status)d") % msg_dict)
+-        outer = webob.exc.HTTPInternalServerError()
++        outer = self.status_to_type(status)
++        if headers:
++            outer.headers = headers
+         # NOTE(johannes): We leave the explanation empty here on
+         # purpose. It could possibly have sensitive information
+         # that should not be returned back to the user. See
+@@ -58,7 +71,7 @@ class FaultWrapper(base_wsgi.Middleware):
+         try:
+             return req.get_response(self.application)
+         except exception.NovaException as ex:
+-            return self._error(ex, req, ex.safe)
++            return self._error(ex, req, ex.headers, ex.code, ex.safe)
+         except Exception as ex:
+             return self._error(ex, req)
+ 
+diff --git a/nova/exception.py b/nova/exception.py
+index 8dd6033..107d926 100644
+--- a/nova/exception.py
++++ b/nova/exception.py
+@@ -153,6 +153,8 @@ class NovaException(Exception):
+ 
+     """
+     message = _("An unknown exception occurred.")
++    code = 500
++    headers = {}
+     safe = False
+ 
+     def __init__(self, message=None, **kwargs):
+@@ -953,6 +955,8 @@ class WillNotSchedule(NovaException):
+ 
+ class QuotaError(NovaException):
+     message = _("Quota exceeded") + ": code=%(code)s"
++    code = 413
++    headers = {'Retry-After': 0}
+     safe = True
+ 
+ 
+diff --git a/nova/tests/api/openstack/compute/test_api.py b/nova/tests/api/openstack/compute/test_api.py
+index 974b588..a9e186a 100644
+--- a/nova/tests/api/openstack/compute/test_api.py
++++ b/nova/tests/api/openstack/compute/test_api.py
+@@ -145,6 +145,22 @@ class APITest(test.TestCase):
+     def test_unsafe_exceptions_are_not_described_in_faults(self):
+         self._do_test_exception_safety_reflected_in_faults(False)
+ 
++    def _do_test_exception_mapping(self, exception_type):
++        @webob.dec.wsgify
++        def fail(req):
++            raise exception_type('too many used')
++
++        api = self._wsgi_app(fail)
++        resp = webob.Request.blank('/').get_response(api)
++        self.assertTrue('too many used' in resp.body, resp.body)
++        self.assertEqual(resp.status_int, exception_type.code, resp.body)
++        for (key, value) in exception_type.headers.iteritems():
++            self.assertTrue(key in resp.headers)
++            self.assertEquals(resp.headers[key], value)
++
++    def test_quota_error_mapping(self):
++        self._do_test_exception_mapping(exception.QuotaError)
++
+     def test_request_id_in_response(self):
+         req = webob.Request.blank('/')
+         req.method = 'GET'
+diff --git a/nova/utils.py b/nova/utils.py
+index 819929a..de2da9f 100644
+--- a/nova/utils.py
++++ b/nova/utils.py
+@@ -1687,6 +1687,19 @@ def strcmp_const_time(s1, s2):
+     return result == 0
+ 
+ 
++def walk_class_hierarchy(clazz, encountered=None):
++    """Walk class hierarchy, yielding most derived classes first"""
++    if not encountered:
++        encountered = []
++    for subclass in clazz.__subclasses__():
++        if subclass not in encountered:
++            encountered.append(subclass)
++            # drill down to leaves first
++            for subsubclass in walk_class_hierarchy(subclass, encountered):
++                yield subsubclass
++            yield subclass
++
++
+ class UndoManager(object):
+     """Provides a mechanism to facilitate rolling back a series of actions
+     when an exception is raised.

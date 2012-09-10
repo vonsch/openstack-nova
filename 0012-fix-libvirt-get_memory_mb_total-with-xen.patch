@@ -1,0 +1,54 @@
+From 835ba4f23eb32c69aaeb1da590a297565b60388d Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?P=C3=A1draig=20Brady?= <pbrady@redhat.com>
+Date: Mon, 25 Jun 2012 16:48:24 +0100
+Subject: [PATCH] fix libvirt get_memory_mb_total() with xen
+
+Fixes bug 1004298 in stable/essex.
+
+Commit 5b93a576 failed to remove the 'staticmethod'
+decorator from the method, to allow it to access
+object variables.
+
+Also there is no need to have the libvirt getInfo() call
+be xen specific.  In the LXC/QEMU/UML drivers this call
+uses GNULIB's physmem module, which is cross-OS portable.
+
+Change-Id: I565eda78f6c468cf6bd227756cfc068725069218
+(cherry picked from commit 78352b98a96946145bec9010872d8f2769691ac2)
+---
+ nova/virt/libvirt/connection.py |   16 ++--------------
+ 1 files changed, 2 insertions(+), 14 deletions(-)
+
+diff --git a/nova/virt/libvirt/connection.py b/nova/virt/libvirt/connection.py
+index 5ec029a..da44ac4 100644
+--- a/nova/virt/libvirt/connection.py
++++ b/nova/virt/libvirt/connection.py
+@@ -1703,26 +1703,14 @@ class LibvirtConnection(driver.ComputeDriver):
+                        "This error can be safely ignored for now."))
+             return 0
+ 
+-    @staticmethod
+-    def get_memory_mb_total():
++    def get_memory_mb_total(self):
+         """Get the total memory size(MB) of physical computer.
+ 
+         :returns: the total amount of memory(MB).
+ 
+         """
+ 
+-        if sys.platform.upper() not in ['LINUX2', 'LINUX3']:
+-            return 0
+-
+-        if FLAGS.libvirt_type == 'xen':
+-            meminfo = self._conn.getInfo()[1]
+-            # this is in MB
+-            return meminfo
+-        else:
+-            meminfo = open('/proc/meminfo').read().split()
+-            idx = meminfo.index('MemTotal:')
+-            # transforming KB to MB
+-            return int(meminfo[idx + 1]) / 1024
++        return self._conn.getInfo()[1]
+ 
+     @staticmethod
+     def get_local_gb_total():

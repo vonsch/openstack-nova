@@ -1,0 +1,27 @@
+From 48e5f46f799ea5832f8d18cb2f34e98df9cda15a Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?P=C3=A1draig=20Brady?= <pbrady@redhat.com>
+Date: Sat, 7 Jul 2012 10:37:46 +0100
+Subject: [PATCH] fix metadata file injection with xen
+
+The metadata parameter was misordered in commit 1463839f
+
+Cherry picked from commit a2032924
+Fixes Bug: 1022036
+Change-Id: Ica0e2f51b6852c8572bdc3c995cc8c2588b9a25c
+---
+ nova/virt/xenapi/vm_utils.py |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/nova/virt/xenapi/vm_utils.py b/nova/virt/xenapi/vm_utils.py
+index 012b6fb..a9a2670 100644
+--- a/nova/virt/xenapi/vm_utils.py
++++ b/nova/virt/xenapi/vm_utils.py
+@@ -1756,7 +1756,7 @@ def _mounted_processing(device, key, net, metadata):
+                     # for xenapi, we don't 'inject' admin_password here,
+                     # it's handled at instance startup time
+                     disk.inject_data_into_fs(tmpdir,
+-                                             key, net, None, metadata,
++                                             key, net, metadata, None,
+                                              utils.execute)
+             finally:
+                 utils.execute('umount', dev_path, run_as_root=True)

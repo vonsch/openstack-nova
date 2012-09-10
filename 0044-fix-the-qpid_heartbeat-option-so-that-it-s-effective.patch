@@ -1,0 +1,27 @@
+From 6331ce6abb9c7cd1afe9590cd6496b8fff23e9a6 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?P=C3=A1draig=20Brady?= <pbrady@redhat.com>
+Date: Mon, 30 Jul 2012 01:54:14 +0100
+Subject: [PATCH] fix the qpid_heartbeat option so that it's effective
+
+The 'hearbeat' typo caused this setting to be ineffective.
+
+Present Since: essex-1-861-gbe96c43
+Fixes bug: 1030430
+Change-Id: Ibb9d7484b9d11a6904cc9e2a8dde6d9164ee05b1
+---
+ nova/rpc/impl_qpid.py |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/nova/rpc/impl_qpid.py b/nova/rpc/impl_qpid.py
+index 289f21b..e19079e 100644
+--- a/nova/rpc/impl_qpid.py
++++ b/nova/rpc/impl_qpid.py
+@@ -317,7 +317,7 @@ class Connection(object):
+                     FLAGS.qpid_reconnect_interval_min)
+         if FLAGS.qpid_reconnect_interval:
+             self.connection.reconnect_interval = FLAGS.qpid_reconnect_interval
+-        self.connection.hearbeat = FLAGS.qpid_heartbeat
++        self.connection.heartbeat = FLAGS.qpid_heartbeat
+         self.connection.protocol = FLAGS.qpid_protocol
+         self.connection.tcp_nodelay = FLAGS.qpid_tcp_nodelay
+ 

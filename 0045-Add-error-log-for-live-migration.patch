@@ -1,0 +1,31 @@
+From 2b0c67544787182a6ff908ab65b7a2ae34a4d38f Mon Sep 17 00:00:00 2001
+From: Takaaki Suzuki <suzuki@midokura.com>
+Date: Wed, 8 Aug 2012 11:21:55 +0900
+Subject: [PATCH] Add error log for live migration.
+
+Fixes bug: 917615
+Change-Id: I740c0def3b1f759aec3d4ae5fe3264484c704807
+Signed-off-by: Takaaki Suzuki <suzuki@midokura.com>
+
+Conflicts:
+
+	nova/virt/libvirt/connection.py
+---
+ nova/virt/libvirt/connection.py |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
+
+diff --git a/nova/virt/libvirt/connection.py b/nova/virt/libvirt/connection.py
+index 11e5b34..05458b4 100644
+--- a/nova/virt/libvirt/connection.py
++++ b/nova/virt/libvirt/connection.py
+@@ -2082,7 +2082,9 @@ class LibvirtConnection(driver.ComputeDriver):
+                              None,
+                              FLAGS.live_migration_bandwidth)
+ 
+-        except Exception:
++        except Exception as e:
++            LOG.error(_("Live Migration failure: %(e)s") % locals(),
++                      instance=instance_ref)
+             with utils.save_and_reraise_exception():
+                 recover_method(ctxt, instance_ref, dest, block_migration)
+ 

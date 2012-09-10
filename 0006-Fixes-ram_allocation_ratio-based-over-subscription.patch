@@ -1,0 +1,87 @@
+From 5d8431b765a991b8cff4c349c3225f532d015b43 Mon Sep 17 00:00:00 2001
+From: Joe Gordon <jogo@cloudscaling.com>
+Date: Thu, 21 Jun 2012 16:41:17 -0700
+Subject: [PATCH] Fixes ram_allocation_ratio based over subscription
+
+Fix for bug 1016273
+
+Change-Id: I7f7b227e71e93b4bcded150791fb0b9e9df98e4c
+(cherry picked from commit 1b40708287808243be27b83791b7d23f8b51b194)
+---
+ doc/source/devref/filter_scheduler.rst    |    4 +++-
+ nova/scheduler/filters/ram_filter.py      |    5 ++++-
+ nova/scheduler/host_manager.py            |    2 ++
+ nova/tests/scheduler/test_host_filters.py |   16 ++++++++++++++--
+ 4 files changed, 23 insertions(+), 4 deletions(-)
+
+diff --git a/doc/source/devref/filter_scheduler.rst b/doc/source/devref/filter_scheduler.rst
+index 9f51462..92ee898 100644
+--- a/doc/source/devref/filter_scheduler.rst
++++ b/doc/source/devref/filter_scheduler.rst
+@@ -58,7 +58,9 @@ code. For example class |RamFilter| has the next realization:
+             instance_type = filter_properties.get('instance_type')
+             requested_ram = instance_type['memory_mb']
+             free_ram_mb = host_state.free_ram_mb
+-            return free_ram_mb * FLAGS.ram_allocation_ratio >= requested_ram
++            total_usable_ram_mb = host_state.total_usable_ram_mb
++            used_ram_mb = total_usable_ram_mb - free_ram_mb
++            return total_usable_ram_mb * FLAGS.ram_allocation_ratio  - used_ram_mb >= requested_ram
+ 
+ Here `ram_allocation_ratio` means the virtual RAM to physical RAM allocation
+ ratio (it is 1.5 by default). Really, nice and simple.
+diff --git a/nova/scheduler/filters/ram_filter.py b/nova/scheduler/filters/ram_filter.py
+index 65889d4..4bc84c2 100644
+--- a/nova/scheduler/filters/ram_filter.py
++++ b/nova/scheduler/filters/ram_filter.py
+@@ -37,4 +37,7 @@ class RamFilter(filters.BaseHostFilter):
+         instance_type = filter_properties.get('instance_type')
+         requested_ram = instance_type['memory_mb']
+         free_ram_mb = host_state.free_ram_mb
+-        return free_ram_mb * FLAGS.ram_allocation_ratio >= requested_ram
++        total_usable_ram_mb = host_state.total_usable_ram_mb
++        used_ram_mb = total_usable_ram_mb - free_ram_mb
++        return (total_usable_ram_mb * FLAGS.ram_allocation_ratio -
++                used_ram_mb >= requested_ram)
+diff --git a/nova/scheduler/host_manager.py b/nova/scheduler/host_manager.py
+index f5ba724..289ac27 100644
+--- a/nova/scheduler/host_manager.py
++++ b/nova/scheduler/host_manager.py
+@@ -124,7 +124,9 @@ class HostState(object):
+             all_disk_mb -= FLAGS.reserved_host_disk_mb
+         if FLAGS.reserved_host_memory_mb > 0:
+             all_ram_mb -= FLAGS.reserved_host_memory_mb
++        #NOTE(jogo) free_ram_mb can be negative
+         self.free_ram_mb = all_ram_mb
++        self.total_usable_ram_mb = all_ram_mb
+         self.free_disk_mb = all_disk_mb
+         self.vcpus_total = vcpus_total
+ 
+diff --git a/nova/tests/scheduler/test_host_filters.py b/nova/tests/scheduler/test_host_filters.py
+index f56a145..19b42fd 100644
+--- a/nova/tests/scheduler/test_host_filters.py
++++ b/nova/tests/scheduler/test_host_filters.py
+@@ -182,10 +182,22 @@ class HostFiltersTestCase(test.TestCase):
+         capabilities = {'enabled': True}
+         service = {'disabled': False}
+         host = fakes.FakeHostState('host1', 'compute',
+-                {'free_ram_mb': 1023, 'capabilities': capabilities,
+-                 'service': service})
++                {'free_ram_mb': 1023, 'total_usable_ram_mb': 1024,
++                 'capabilities': capabilities, 'service': service})
+         self.assertFalse(filt_cls.host_passes(host, filter_properties))
+ 
++    def test_ram_filter_oversubscribe(self):
++        self._stub_service_is_up(True)
++        filt_cls = self.class_map['RamFilter']()
++        self.flags(ram_allocation_ratio=2.0)
++        filter_properties = {'instance_type': {'memory_mb': 1024}}
++        capabilities = {'enabled': True}
++        service = {'disabled': False}
++        host = fakes.FakeHostState('host1', 'compute',
++                {'free_ram_mb': -1024, 'total_usable_ram_mb': 2048,
++                 'capabilities': capabilities, 'service': service})
++        self.assertTrue(filt_cls.host_passes(host, filter_properties))
++
+     def test_compute_filter_fails_on_service_disabled(self):
+         self._stub_service_is_up(True)
+         filt_cls = self.class_map['ComputeFilter']()

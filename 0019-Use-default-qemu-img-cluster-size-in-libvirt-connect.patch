@@ -1,0 +1,64 @@
+From 7b215ed439a7b29b8681ced133e2e5b5ad074c0c Mon Sep 17 00:00:00 2001
+From: Jim Fehlig <jfehlig@suse.com>
+Date: Thu, 10 May 2012 13:20:20 -0700
+Subject: [PATCH] Use default qemu-img cluster size in libvirt connection
+ driver
+
+The recommended cluster size [1] for qcow2 is 64k, which is the default
+when invoking 'qemu-img create ...'.  Remove the cluster_size option
+from qemu-img invocation.
+
+[1] http://www.mail-archive.com/openstack@lists.launchpad.net/msg11371.html
+
+V2: Fix test.
+
+Note: This patch is needed in the stable/essex branch too, otherwise it
+is not possible to start Xen instances that use qcow2 images.  The old
+qemu 0.10 in Xen cannot cope with cluster size > 64k.
+
+Change-Id: Iafc290720a820cb5f57ded10a2f584fdc5cd5b49
+(cherry picked from commit de5cb27e64267ec59e12a495a59880412cecb5e8)
+---
+ Authors                    |    1 +
+ nova/tests/test_libvirt.py |    2 +-
+ nova/virt/libvirt/utils.py |    2 +-
+ 3 files changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/Authors b/Authors
+index 2a7a82a..6a9dc98 100644
+--- a/Authors
++++ b/Authors
+@@ -84,6 +84,7 @@ Jason Koelker <jason@koelker.net>
+ Jay Pipes <jaypipes@gmail.com>
+ JC Martin <jcmartin@ebaysf.com>
+ Jesse Andrews <anotherjesse@gmail.com>
++Jim Fehlig <jfehlig@suse.com>
+ Jimmy Bergman <jimmy@sigint.se>
+ Joe Gordon <jogo@cloudscaling.com>
+ Joe Heck <heckj@mac.com>
+diff --git a/nova/tests/test_libvirt.py b/nova/tests/test_libvirt.py
+index 659ac63..bd13e0a 100644
+--- a/nova/tests/test_libvirt.py
++++ b/nova/tests/test_libvirt.py
+@@ -2135,7 +2135,7 @@ class LibvirtUtilsTestCase(test.TestCase):
+     def test_create_cow_image(self):
+         self.mox.StubOutWithMock(utils, 'execute')
+         utils.execute('qemu-img', 'create', '-f', 'qcow2',
+-                      '-o', 'cluster_size=2M,backing_file=/some/path',
++                      '-o', 'backing_file=/some/path',
+                       '/the/new/cow')
+         # Start test
+         self.mox.ReplayAll()
+diff --git a/nova/virt/libvirt/utils.py b/nova/virt/libvirt/utils.py
+index 977eda8..ffb7477 100644
+--- a/nova/virt/libvirt/utils.py
++++ b/nova/virt/libvirt/utils.py
+@@ -69,7 +69,7 @@ def create_cow_image(backing_file, path):
+     :param path: Desired location of the COW image
+     """
+     execute('qemu-img', 'create', '-f', 'qcow2', '-o',
+-             'cluster_size=2M,backing_file=%s' % backing_file, path)
++             'backing_file=%s' % backing_file, path)
+ 
+ 
+ def get_disk_size(path):
