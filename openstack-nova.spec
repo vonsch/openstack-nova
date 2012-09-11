@@ -4,7 +4,7 @@
 
 Name:             %{_openstack_name}-%{release_name}-nova
 Version:          2012.1.2
-Release:          1%{?dist}.gdc1
+Release:          1%{?dist}.gdc2
 
 #
 # - GoodData customization
@@ -507,6 +507,9 @@ fi
 %endif
 
 %changelog
+* Tue Sep 11 2012 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 2012.1.2-1.gdc2
+- Dynamic suffix of network, api, scheduler, compute and volume services
+
 * Mon Sep 10 2012 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 2012.1.2-1.gdc1
 - OpenStack Nova 2012.1.2
 
