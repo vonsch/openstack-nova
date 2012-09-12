@@ -4,7 +4,7 @@
 
 Name:             %{_openstack_name}-%{release_name}-nova
 Version:          2012.1.2
-Release:          1%{?dist}.gdc2
+Release:          2%{?dist}.gdc1
 
 #
 # - GoodData customization
@@ -95,6 +95,8 @@ Patch1002: 1002-volumes_from_snapshot_on_cluster_deployment_1008866_v5.patch
 Patch1003: 1003-force-snapshot-create-in-EC2-api.patch
 # https://jira.gooddata.com/jira/browse/GD-23657
 Patch1004: 1004-force-lvm-snapshot-delete-when-volue-delete.patch
+# https://jira.gooddata.com/jira/browse/PCI-141
+Patch1005: 1005-use-local-LVM-volume-instead-of-iSCSI-device-on-same.patch
 
 BuildArch:        noarch
 BuildRequires:    intltool
@@ -278,6 +280,7 @@ This package contains documentation files for nova.
 %patch1002 -p1
 %patch1003 -p1
 %patch1004 -p1
+%patch1005 -p1
 
 find . \( -name .gitignore -o -name .placeholder \) -delete
 
@@ -507,6 +510,9 @@ fi
 %endif
 
 %changelog
+* Wed Sep 12 2012 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 2012.1.2-2.gdc1
+- apply 1005-use-local-LVM-volume-instead-of-iSCSI-device-on-same.patch
+
 * Tue Sep 11 2012 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 2012.1.2-1.gdc2
 - Dynamic suffix of network, api, scheduler, compute and volume services
 
