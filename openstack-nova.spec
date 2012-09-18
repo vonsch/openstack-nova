@@ -4,7 +4,7 @@
 
 Name:             %{_openstack_name}-%{release_name}-nova
 Version:          2012.1.2
-Release:          2%{?dist}.gdc1
+Release:          3%{?dist}.gdc1
 
 #
 # - GoodData customization
@@ -67,6 +67,9 @@ Patch0005: 0005-fix-unmounting-of-LXC-containers.patch
 Patch0006: 0006-Add-error-log-for-live-migration.patch
 Patch0007: 0007-Fix-exception-handling-in-libvirt-attach_volume.patch
 Patch0008: 0008-Ensure-hairpin_mode-is-set-whenever-vifs-is-added-to.patch
+Patch0009: 0009-Fix-simple_tenant_usage-s-handing-of-future-end-time.patch
+Patch0010: 0010-Redefine-the-domain-s-XML-on-volume-attach-detach.patch
+Patch0011: 0011-Yield-to-another-greenthread-when-some-time-consumin.patch
 
 Patch0028: 0028-ensure-atomic-manipulation-of-libvirt-disk-images.patch
 Patch0029: 0029-Ensure-we-don-t-access-the-net-when-building-docs.patch
@@ -97,6 +100,8 @@ Patch1003: 1003-force-snapshot-create-in-EC2-api.patch
 Patch1004: 1004-force-lvm-snapshot-delete-when-volue-delete.patch
 # https://jira.gooddata.com/jira/browse/PCI-141
 Patch1005: 1005-use-local-LVM-volume-instead-of-iSCSI-device-on-same.patch
+# https://jira.gooddata.com/jira/browse/PCI-156 (PCI-110)
+Patch1006: 1006-Setting-promisc-on-VLAN-bridge.patch
 
 BuildArch:        noarch
 BuildRequires:    intltool
@@ -259,6 +264,10 @@ This package contains documentation files for nova.
 %patch0006 -p1
 %patch0007 -p1
 %patch0008 -p1
+%patch0009 -p1
+%patch0010 -p1
+%patch0011 -p1
+
 %patch0028 -p1
 %patch0029 -p1
 %patch0030 -p1
@@ -281,6 +290,7 @@ This package contains documentation files for nova.
 %patch1003 -p1
 %patch1004 -p1
 %patch1005 -p1
+%patch1006 -p1
 
 find . \( -name .gitignore -o -name .placeholder \) -delete
 
@@ -510,6 +520,10 @@ fi
 %endif
 
 %changelog
+* Tue Sep 18 2012 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 2012.1.2-3.gdc1
+- enable promisc mode on VLAN bridge
+- sync with OpenStack Essex upstream branch
+
 * Wed Sep 12 2012 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 2012.1.2-2.gdc1
 - apply 1005-use-local-LVM-volume-instead-of-iSCSI-device-on-same.patch
 
