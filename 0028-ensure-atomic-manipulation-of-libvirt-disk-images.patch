@@ -17,47 +17,10 @@ converted images are protected.
 * nova/virt/libvirt/connection.py: Ensure all the images in
 the image cache and instance dirs are protected.
 
-Change-Id: I81a5407665a6998128c0dee41387ef00ebddeb4d
----
- nova/utils.py                   |   21 +++++++++--
- nova/virt/images.py             |   69 +++++++++++++++++----------------------
- nova/virt/libvirt/connection.py |   16 ++++++---
- 3 files changed, 57 insertions(+), 49 deletions(-)
-
 diff --git a/nova/utils.py b/nova/utils.py
 index 01a52b5..0e5855a 100644
 --- a/nova/utils.py
 +++ b/nova/utils.py
-@@ -21,6 +21,7 @@
- 
- import contextlib
- import datetime
-+import errno
- import functools
- import hashlib
- import inspect
-@@ -1013,8 +1014,8 @@ def cleanup_file_locks():
-             continue
-         try:
-             stat_info = os.stat(os.path.join(FLAGS.lock_path, filename))
--        except OSError as (errno, strerror):
--            if errno == 2:  # doesn't exist
-+        except OSError as e:
-+            if e.errno == errno.ENOENT:
-                 continue
-             else:
-                 raise
-@@ -1033,8 +1034,8 @@ def delete_if_exists(pathname):
- 
-     try:
-         os.unlink(pathname)
--    except OSError as (errno, strerror):
--        if errno == 2:  # doesn't exist
-+    except OSError as e:
-+        if e.errno == errno.ENOENT:
-             return
-         else:
-             raise
 @@ -1344,6 +1345,18 @@ def logging_error(message):
              LOG.exception(message)
  
