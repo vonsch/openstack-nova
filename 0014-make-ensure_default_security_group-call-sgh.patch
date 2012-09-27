@@ -1,0 +1,46 @@
+From 40c5e94d56bfdb3ec1e1ac8c0e501d66cd9691ec Mon Sep 17 00:00:00 2001
+From: Aaron Rosen <arosen@nicira.com>
+Date: Fri, 14 Sep 2012 12:15:07 -0400
+Subject: [PATCH 14/21] make ensure_default_security_group() call sgh
+
+This change makes sure that sgh is called when default
+security group is created. Fixes bug 1050982
+
+Change-Id: I483e33d8977b2bfbd7456a7c7c0d1fe7803708f8
+---
+ Authors             | 1 +
+ nova/compute/api.py | 2 ++
+ 2 files changed, 3 insertions(+)
+
+diff --git a/Authors b/Authors
+index 2653a63..586cee5 100644
+--- a/Authors
++++ b/Authors
+@@ -1,3 +1,4 @@
++Aaron Rosen <arosen@nicira.com>
+ Aaron Lee <aaron.lee@rackspace.com>
+ Adam Gandelman <adamg@canonical.com>
+ Adam Johnson <adjohn@gmail.com>
+diff --git a/nova/compute/api.py b/nova/compute/api.py
+index 48f3d47..f64a10c 100644
+--- a/nova/compute/api.py
++++ b/nova/compute/api.py
+@@ -166,6 +166,7 @@ class API(BaseAPI):
+ 
+         self.network_api = network_api or network.API()
+         self.volume_api = volume_api or volume.API()
++        self.sgh = utils.import_object(FLAGS.security_group_handler)
+         super(API, self).__init__(**kwargs)
+ 
+     def _check_injected_file_quota(self, context, injected_files):
+@@ -708,6 +709,7 @@ class API(BaseAPI):
+                       'user_id': context.user_id,
+                       'project_id': context.project_id}
+             self.db.security_group_create(context, values)
++            self.sgh.trigger_security_group_create_refresh(context, values)
+ 
+     def trigger_security_group_rules_refresh(self, context, security_group_id):
+         """Called when a rule is added to or removed from a security_group."""
+-- 
+1.7.11.4
+

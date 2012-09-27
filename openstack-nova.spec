@@ -4,7 +4,7 @@
 
 Name:             %{_openstack_name}-%{release_name}-nova
 Version:          2012.1.2
-Release:          3%{?dist}.gdc1
+Release:          4%{?dist}.gdc1
 
 #
 # - GoodData customization
@@ -70,6 +70,10 @@ Patch0008: 0008-Ensure-hairpin_mode-is-set-whenever-vifs-is-added-to.patch
 Patch0009: 0009-Fix-simple_tenant_usage-s-handing-of-future-end-time.patch
 Patch0010: 0010-Redefine-the-domain-s-XML-on-volume-attach-detach.patch
 Patch0011: 0011-Yield-to-another-greenthread-when-some-time-consumin.patch
+Patch0012: 0012-Use-bare-container-format-by-default.patch
+Patch0013: 0013-fix-cleanup_file_locks-with-restricted-permissions.patch
+Patch0014: 0014-make-ensure_default_security_group-call-sgh.patch
+Patch0015: 0015-fix-unmounting-of-LXC-containers-in-the-presence-of-.patch
 
 Patch0028: 0028-ensure-atomic-manipulation-of-libvirt-disk-images.patch
 Patch0029: 0029-Ensure-we-don-t-access-the-net-when-building-docs.patch
@@ -102,6 +106,10 @@ Patch1004: 1004-force-lvm-snapshot-delete-when-volue-delete.patch
 Patch1005: 1005-use-local-LVM-volume-instead-of-iSCSI-device-on-same.patch
 # https://jira.gooddata.com/jira/browse/PCI-156 (PCI-110)
 Patch1006: 1006-Setting-promisc-on-VLAN-bridge.patch
+# https://bugs.launchpad.net/nova/+bug/1026029
+# https://bugs.launchpad.net/nova/+bug/1057467
+# not final fix, please update it after the tickets are closed
+Patch1007: 1007-1026029-libvirtError_Domain_not_found-temp_fix.patch
 
 BuildArch:        noarch
 BuildRequires:    intltool
@@ -267,6 +275,10 @@ This package contains documentation files for nova.
 %patch0009 -p1
 %patch0010 -p1
 %patch0011 -p1
+%patch0012 -p1
+%patch0013 -p1
+%patch0014 -p1
+%patch0015 -p1
 
 %patch0028 -p1
 %patch0029 -p1
@@ -291,6 +303,7 @@ This package contains documentation files for nova.
 %patch1004 -p1
 %patch1005 -p1
 %patch1006 -p1
+%patch1007 -p1
 
 find . \( -name .gitignore -o -name .placeholder \) -delete
 
@@ -520,6 +533,10 @@ fi
 %endif
 
 %changelog
+* Tue Sep 18 2012 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 2012.1.2-4.gdc1
+- partial fix of "libvirtError: Domain not found" after host reboot
+- sync with OpenStack Essex upstream branch
+
 * Tue Sep 18 2012 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 2012.1.2-3.gdc1
 - enable promisc mode on VLAN bridge
 - sync with OpenStack Essex upstream branch
