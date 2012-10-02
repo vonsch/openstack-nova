@@ -1,10 +1,10 @@
-%global release_name 		essex
+%global release_name 		folsom
 %global _openstack_name		openstack
 %global with_doc %{!?_without_doc:1}%{?_without_doc:0}
 
 Name:             %{_openstack_name}-%{release_name}-nova
-Version:          2012.1.2
-Release:          4%{?dist}.gdc1
+Version:          2012.2
+Release:          1%{?dist}.gdc1
 
 #
 # - GoodData customization
@@ -36,7 +36,7 @@ Summary:          OpenStack Compute (nova)
 Group:            Applications/System
 License:          ASL 2.0
 URL:              http://openstack.org/projects/compute/
-Source0:          http://launchpad.net/nova/essex/%{version}/+download/nova-%{version}.tar.gz
+Source0:          http://launchpad.net/nova/folsom/%{version}/+download/nova-%{version}.tar.gz
 Source1:          nova.conf
 Source6:          nova.logrotate
 
@@ -58,33 +58,9 @@ Source21:         nova-polkit.pkla
 Source22:         nova-ifc-template
 
 #
-# patches_base=2012.1.2
+# patches_base=2012.2
 #
-Patch0001: 0001-Make-flavorextradata-ignore-deleted-flavors.patch
-Patch0003: 0003-Restore-libvirt-block-storage-connections-on-reboot.patch
-Patch0004: 0004-Makes-sure-instance-deletion-ok-with-deleted-data.patch
-Patch0005: 0005-fix-unmounting-of-LXC-containers.patch
-Patch0006: 0006-Add-error-log-for-live-migration.patch
-Patch0007: 0007-Fix-exception-handling-in-libvirt-attach_volume.patch
-Patch0008: 0008-Ensure-hairpin_mode-is-set-whenever-vifs-is-added-to.patch
-Patch0009: 0009-Fix-simple_tenant_usage-s-handing-of-future-end-time.patch
-Patch0010: 0010-Redefine-the-domain-s-XML-on-volume-attach-detach.patch
-Patch0011: 0011-Yield-to-another-greenthread-when-some-time-consumin.patch
-Patch0012: 0012-Use-bare-container-format-by-default.patch
-Patch0013: 0013-fix-cleanup_file_locks-with-restricted-permissions.patch
-Patch0014: 0014-make-ensure_default_security_group-call-sgh.patch
-Patch0015: 0015-fix-unmounting-of-LXC-containers-in-the-presence-of-.patch
-
-Patch0028: 0028-ensure-atomic-manipulation-of-libvirt-disk-images.patch
-Patch0029: 0029-Ensure-we-don-t-access-the-net-when-building-docs.patch
-Patch0030: 0030-fix-useexisting-deprecation-warnings.patch
-Patch0031: 0031-support-a-configurable-libvirt-injection-partition.patch
-Patch0032: 0032-only-mount-guest-image-once-when-injecting-files.patch
-Patch0036: 0036-Tolerance-when-parsing-null-connection-info-in-BDM.patch
-Patch0037: 0037-Support-EC2-CreateImage-API-for-boot-from-volume.patch
-Patch0038: 0038-EC2-DescribeImages-reports-correct-rootDeviceType.patch
-Patch0039: 0039-Reject-EC2-CreateImage-for-instance-store.patch
-Patch0040: 0040-Fix-EC2-CreateImage-no_reboot-logic.patch
+Patch0001: 0001-Ensure-we-don-t-access-the-net-when-building-docs.patch
 
 # This is EPEL specific and not upstream
 Patch0500: openstack-nova-newdeps.patch
@@ -197,7 +173,6 @@ Requires:         python-paramiko
 Requires:         python-mox
 Requires:         python-redis
 Requires:         python-routes1.12
-#Requires:         common-python-routes >= 1.12
 Requires:         python-sqlalchemy0.7
 Requires:         python-tornado
 Requires:         python-twisted-core
@@ -244,7 +219,6 @@ BuildRequires:    python-gflags
 
 # Use it after it is in EPEL6 repo
 BuildRequires:    python-routes1.12
-#BuildRequires:    common-python-routes >= 1.12
 
 BuildRequires:    python-sqlalchemy0.7
 BuildRequires:    python-tornado
@@ -266,30 +240,6 @@ This package contains documentation files for nova.
 %setup -q -n nova-%{version}
 
 %patch0001 -p1
-%patch0003 -p1
-%patch0004 -p1
-%patch0005 -p1
-%patch0006 -p1
-%patch0007 -p1
-%patch0008 -p1
-%patch0009 -p1
-%patch0010 -p1
-%patch0011 -p1
-%patch0012 -p1
-%patch0013 -p1
-%patch0014 -p1
-%patch0015 -p1
-
-%patch0028 -p1
-%patch0029 -p1
-%patch0030 -p1
-%patch0031 -p1
-%patch0032 -p1
-%patch0036 -p1
-%patch0037 -p1
-%patch0038 -p1
-%patch0039 -p1
-%patch0040 -p1
 
 # Apply EPEL patch
 %patch0500 -p1
@@ -533,98 +483,5 @@ fi
 %endif
 
 %changelog
-* Tue Sep 18 2012 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 2012.1.2-4.gdc1
-- partial fix of "libvirtError: Domain not found" after host reboot
-- sync with OpenStack Essex upstream branch
-
-* Tue Sep 18 2012 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 2012.1.2-3.gdc1
-- enable promisc mode on VLAN bridge
-- sync with OpenStack Essex upstream branch
-
-* Wed Sep 12 2012 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 2012.1.2-2.gdc1
-- apply 1005-use-local-LVM-volume-instead-of-iSCSI-device-on-same.patch
-
-* Tue Sep 11 2012 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 2012.1.2-1.gdc2
-- Dynamic suffix of network, api, scheduler, compute and volume services
-
-* Mon Sep 10 2012 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 2012.1.2-1.gdc1
-- OpenStack Nova 2012.1.2
-
-* Mon Sep 10 2012 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 2012.1.1-2.gdc1
-- sync with openstack-nova-2012.1.1-15.el6
-- replace common-python-routes >= 1.12 with python-routes1.12
-- replace common-python-boto with python-boto
-
-* Mon Sep 10 2012 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 2012.1.1-1.gdc5
-- add dnsmasq-utils to requires section
-
-* Tue Jul 24 2012 Branislav Zarnovican <branislav.zarnovican@gooddata.com> 2012.1.1-1.gdc4
-- added patch to remove non-openstack lvm snapshots together with volume delete
-
-* Wed Jul 19 2012 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 2012.1.1-1.gdc3
-- Force snapshot create in EC2 api.
-
-* Wed Jul 18 2012 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 2012.1.1-1.gdc2
-- API "create_volume_from_snapshot" (v5 of #1008866) (do not use iscsi discovery)
-
-* Wed Jul 18 2012 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 2012.1.1-1.gdc1
-- Update to latest essex stable branch
-- Distinguish volume overlimit exceptions
-- Prohibit host file corruption through file injection (CVE-2012-3360, CVE-2012-3361)
-- Improve performance and stability of file injection
-
-* Mon Jun 18 2012 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 2012.1-10.gdc1
-- update performance and stability fixes from essex stable
-- fix an exception caused by the fix for CVE-2012-2654
-
-* Fri Jun 15 2012 Branislav Zarnovican <branislav.zarnovican@gooddata.com> 2012.1-9.gdc2
-- added 3s startup delay to init scripts
-
-* Mon Jun 11 2012 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 2012.1-9.gdc1
-- Sync up with Essex stable branch
-- Fix for protocol case handling (#829441, CVE-2012-2654)
-
-* Thu Jun 07 2012 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 2012.1-8.gdc4
-- v4 of #1008866
-
-* Wed Jun 06 2012 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 2012.1-8.gdc3
-- synchronize API "create_volume_from_snapshot" (v3 of #1008866)
-
-* Wed Jun 06 2012 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 2012.1-8.gdc2
-- fix indenting in "1001-force-ext4-creation-on-nonblock.patch"
-
-* Wed Jun 06 2012 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 2012.1-8.gdc1
-- Fix https://bugs.launchpad.net/nova/+bug/1008866
-- Fix https://bugs.launchpad.net/nova/+bug/1009041
-
-* Sat Jun 03 2012 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 2012.1-7.gdc2
-- Fix type of snapshot_id column to match db (https://bugs.launchpad.net/nova/+bug/962615)
-
-* Thu May 31 2012 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 2012.1-7
-- GD-25542: libvirt's xml, "target" element, "dev" attribute accept basename of device only
-
-* Wed May 30 2012 Branislav Zarnovican <branislav.zarnovican@gooddata.com> 2012.1-6.gdc2
-- added sourcing of profile.d for missing PYTHONPATH
-
-* Wed May 17 2012 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 2012.1-6
-- Depend on tunctl which can be used when `ip tuntap` is unavailable
-- Sync up with Essex stable branch
-- Handle updated qemu-img info output
-- Remove the socat dependency no longer needed by Essex
-- Start the services later in the boot sequence
-
-* Fri May 04 2012 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 2012.1-5
-- fix metadata-api rc script
-
-* Wed May 02 2012 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 2012.1-4
-- Add the lookup for the install of common-python-routes >= 1.12 and python-paste-deploy >= 1.5
-
-* Fri Apr 20 2012 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 2012.1-3
-- openstack nova api depends on new version of python-paste-deploy
-
-* Wed Apr 18 2012 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 2012.1-2
-- be more compatible with EL6
-
-* Wed Apr 18 2012 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 2012.1-1
-- Initial import based on F17 openstack-nova 2012.1-1
-- Change prefix to /opt/openstack
+* Tue Oct 02 2012 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 2012.2-1.gdc1
+- Folsom release
