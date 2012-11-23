@@ -66,10 +66,6 @@ Patch0001: 0001-Ensure-we-don-t-access-the-net-when-building-docs.patch
 Patch0500: openstack-nova-newdeps.patch
 
 # GDC patchset
-# https://jira.gooddata.com/jira/browse/GD-25542
-Patch1000: 1000-libvirt-target-dev-attribute-accept-basename-only.patch
-# https://jira.gooddata.com/jira/browse/GD-25784
-Patch1001: 1001-force-ext4-creation-on-nonblock.patch
 # https://jira.gooddata.com/jira/browse/GD-25782
 Patch1002: 1002-volumes_from_snapshot_on_cluster_deployment_1008866_v5.patch
 # https://jira.gooddata.com/jira/browse/GD-27146
@@ -258,8 +254,6 @@ This package contains documentation files for nova.
 %patch0500 -p1
 
 # GDC Patches
-%patch1000 -p1
-%patch1001 -p1
 %patch1002 -p1
 %patch1003 -p1
 %patch1004 -p1
