@@ -1,7 +1,7 @@
-From 0c86671d3f0e2ac4cae06a5e713584ee26724cec Mon Sep 17 00:00:00 2001
+From 46497fd0254c4c8201b89937262eab2837309aa6 Mon Sep 17 00:00:00 2001
 From: Jaroslav Pulchart <jaroslav.pulchart@gooddata.com>
 Date: Tue, 18 Sep 2012 16:23:55 +0200
-Subject: [PATCH 16/16] Setting promisc on VLAN bridge.
+Subject: [PATCH 6/8] Setting promisc on VLAN bridge.
 
 ---
  nova/network/linux_net.py | 3 +++
@@ -22,5 +22,5 @@ index 1869857..2c592f8 100755
  
      @classmethod
 -- 
-1.7.11.4
+1.7.11.7
 

@@ -1,7 +1,7 @@
-From befe6d31a3d885cf5679d23ba5d8dc06a8718613 Mon Sep 17 00:00:00 2001
+From c8d220680acd2b8e3da23aafaac5533d98f87c3a Mon Sep 17 00:00:00 2001
 From: Jaroslav Pulchart <jaroslav.pulchart@gooddata.com>
 Date: Thu, 27 Sep 2012 14:12:31 +0200
-Subject: [PATCH 21/21] 1026029-libvirtError_Domain_not_found-temp_fix
+Subject: [PATCH 7/8] 1026029-libvirtError_Domain_not_found-temp_fix
 
 ---
  nova/virt/libvirt/connection.py | 14 ++++++++++----
@@ -38,5 +38,5 @@ index 8a14234..e81e661 100644
          self.firewall_driver.setup_basic_filtering(instance, network_info)
          self.firewall_driver.prepare_instance_filter(instance, network_info)
 -- 
-1.7.11.4
+1.7.11.7
 

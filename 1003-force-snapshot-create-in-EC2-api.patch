@@ -1,3 +1,12 @@
+From 92dd804cb54421d9a48fcf2c180115d40c5910e6 Mon Sep 17 00:00:00 2001
+From: Jaroslav Pulchart <jaroslav.pulchart@gooddata.com>
+Date: Fri, 20 Jul 2012 11:22:34 +0200
+Subject: [PATCH 3/8] Force snapshot create in EC2 api.
+
+---
+ nova/api/ec2/cloud.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
 diff --git a/nova/api/ec2/cloud.py b/nova/api/ec2/cloud.py
 index 91182e8..64fa0a5 100644
 --- a/nova/api/ec2/cloud.py
@@ -11,3 +20,6 @@ index 91182e8..64fa0a5 100644
                  context,
                  volume,
                  None,
+-- 
+1.7.11.7
+

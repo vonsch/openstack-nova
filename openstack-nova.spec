@@ -36,7 +36,7 @@ Summary:          OpenStack Compute (nova)
 Group:            Applications/System
 License:          ASL 2.0
 URL:              http://openstack.org/projects/compute/
-Source0:          http://launchpad.net/nova/folsom/%{version}/+download/nova-%{version}.tar.gz
+Source0:          http://launchpad.net/nova/%{release_name}/%{version}/+download/nova-%{version}.tar.gz
 Source1:          nova.conf
 Source6:          nova.logrotate
 
@@ -86,6 +86,19 @@ Patch1006: 1006-Setting-promisc-on-VLAN-bridge.patch
 # https://bugs.launchpad.net/nova/+bug/1057467
 # not final fix, please update it after the tickets are closed
 Patch1007: 1007-1026029-libvirtError_Domain_not_found-temp_fix.patch
+# https://bugs.launchpad.net/nova/+bug/1061628
+Patch1008: 1008-Workaround-for-bug-1061628.patch
+# https://bugs.launchpad.net/nova/+bug/1016633
+# not final fix, please update it after the tickets is closed
+Patch1009: 1009-Do-not-run-RPC-call-for-simple-db-look-at-fixed_ip-s_v1.patch
+# https://jira.gooddata.com/jira/browse/PCI-271
+Patch1010: 1010-fix_netapp_set_default_description.patch
+# https://jira.gooddata.com/jira/browse/PCI-272
+Patch1011: 1011-fix_netapp_ensure_export_host_arg.patch
+# AMI based instance cannot be resized
+Patch1012: 1012-Get-size-of-root-block-device-from-mapping-table.patch
+# Nova network after restart switch the order of associted floating IPs
+Patch1013: 1013-Ensure-that-public-ips-are-at-the-end-of-the-floatin.patch
 
 BuildArch:        noarch
 BuildRequires:    intltool
@@ -228,6 +241,8 @@ BuildRequires:    python-webob1.0
 # while not strictly required, quiets the build down when building docs.
 BuildRequires:    python-carrot, python-mox, python-suds, m2crypto, bpython, python-memcached, python-migrate, python-iso8601
 
+Obsoletes: openstack-essex-nova
+
 %description      doc
 OpenStack Compute (codename Nova) is open source software designed to
 provision and manage large networks of virtual machines, creating a
@@ -254,6 +269,12 @@ This package contains documentation files for nova.
 %patch1005 -p1
 %patch1006 -p1
 %patch1007 -p1
+%patch1008 -p1
+%patch1009 -p1
+%patch1010 -p1
+%patch1011 -p1
+%patch1012 -p1
+%patch1013 -p1
 
 find . \( -name .gitignore -o -name .placeholder \) -delete
 
@@ -329,6 +350,7 @@ install -p -D -m 755 %{SOURCE10} %{buildroot}%{_initrddir}/%{name}-api
 install -p -D -m 755 %{SOURCE11} %{buildroot}%{_initrddir}/%{name}-cert
 install -p -D -m 755 %{SOURCE12} %{buildroot}%{_initrddir}/%{name}-compute
 install -p -D -m 755 %{SOURCE13} %{buildroot}%{_initrddir}/%{name}-network
+install -p -D -m 755 %{SOURCE13} %{buildroot}%{_initrddir}/%{name}-networkvlan
 install -p -D -m 755 %{SOURCE14} %{buildroot}%{_initrddir}/%{name}-objectstore
 install -p -D -m 755 %{SOURCE15} %{buildroot}%{_initrddir}/%{name}-scheduler
 install -p -D -m 755 %{SOURCE16} %{buildroot}%{_initrddir}/%{name}-volume
@@ -407,13 +429,13 @@ exit 0
 
 %post
 # Register the services
-for svc in api cert compute console consoleauth direct-api metadata-api network objectstore scheduler volume xvpvncproxy; do
+for svc in api cert compute console consoleauth direct-api metadata-api network networkvlan objectstore scheduler volume xvpvncproxy; do
     /sbin/chkconfig --add %{name}-${svc}
 done
 
 %preun
 if [ $1 -eq 0 ] ; then
-    for svc in api cert compute console consoleauth direct-api metadata-api network objectstore scheduler volume xvpvncproxy; do
+    for svc in api cert compute console consoleauth direct-api metadata-api network networkvlan objectstore scheduler volume xvpvncproxy; do
         /sbin/service %{name}-${svc} stop > /dev/null 2>&1
         /sbin/chkconfig --del %{name}-${svc} > /dev/null 2>&1
     done
@@ -421,7 +443,7 @@ fi
 
 %postun
 if [ "$1" -ge 1 ] ; then
-    for svc in api cert compute console consoleauth direct-api metadata-api network objectstore scheduler volume xvpvncproxy; do
+    for svc in api cert compute console consoleauth direct-api metadata-api network networkvlan objectstore scheduler volume xvpvncproxy; do
         /sbin/service %{name}-${svc} condrestart > /dev/null 2>&1
     done
 fi
@@ -483,5 +505,5 @@ fi
 %endif
 
 %changelog
-* Tue Oct 02 2012 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 2012.2-1.gdc1
+* Fri Nov 23 2012 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 2012.2-1.gdc1
 - Folsom release

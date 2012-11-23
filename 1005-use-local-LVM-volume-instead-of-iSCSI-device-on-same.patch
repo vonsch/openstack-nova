@@ -1,7 +1,7 @@
-From 4e9bbf1f28c55485683c613fbacddb893e62d218 Mon Sep 17 00:00:00 2001
+From c6f271af7635b8ea50a00c4f88f2c1aa0af92be2 Mon Sep 17 00:00:00 2001
 From: Jaroslav Pulchart <jaroslav.pulchart@gooddata.com>
 Date: Wed, 12 Sep 2012 11:07:07 +0200
-Subject: [PATCH 13/13] use local LVM volume instead of iSCSI device on same
+Subject: [PATCH 5/8] use local LVM volume instead of iSCSI device on same
  host with volume
 
 ---
@@ -45,5 +45,5 @@ index 9680a05..9624e59 100644
                       <driver name='%s' type='raw' cache='none'/>
                       <source dev='%s'/>
 -- 
-1.7.11.4
+1.7.11.7
 

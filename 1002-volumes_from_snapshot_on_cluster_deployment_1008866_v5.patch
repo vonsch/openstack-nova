@@ -1,3 +1,25 @@
+From d394f5d9ec98cae96a42472cd962da673195eaa4 Mon Sep 17 00:00:00 2001
+From: Jaroslav Pulchart <jaroslav.pulchart@gooddata.com>
+Date: Tue, 5 Jun 2012 12:01:49 +0200
+Subject: [PATCH 2/8] Be able to create a volume from a snapshot on
+ real/production/multicluster installation of OpenStack.
+ - nova/db: Added new 'snapshot_get_host' and
+ 'snapshot_get_all_by_host' API calls. - nova/volume:
+ Export all snapshot as iSCSI targets. - nova/volume:
+ Use iSCSI snapshot target as source for volume
+ creating, filtered by 'iscsi_ip_filter' parameter.
+ (version 5) Fixes from v4 to v5 - Do not use iscsi
+ discovery if we know host name.
+
+---
+ nova/db/api.py            |  11 ++-
+ nova/db/sqlalchemy/api.py |  49 +++++++++-
+ nova/rootwrap/volume.py   |   1 +
+ nova/volume/driver.py     | 236 ++++++++++++++++++++++++++++++++++++----------
+ nova/volume/iscsi.py      |   3 +
+ nova/volume/manager.py    |  33 ++++++-
+ 6 files changed, 276 insertions(+), 57 deletions(-)
+
 diff --git a/nova/db/api.py b/nova/db/api.py
 index 27f80f6..0ae8fa5 100644
 --- a/nova/db/api.py
@@ -29,10 +51,10 @@ index 27f80f6..0ae8fa5 100644
  def snapshot_get_all_by_project(context, project_id):
      """Get all snapshots belonging to a project."""
 diff --git a/nova/db/sqlalchemy/api.py b/nova/db/sqlalchemy/api.py
-index 03ac987..19fdc02 100644
+index 55eec9e..0e1dfef 100644
 --- a/nova/db/sqlalchemy/api.py
 +++ b/nova/db/sqlalchemy/api.py
-@@ -2446,10 +2446,16 @@ def volume_get_instance(context, volume_id):
+@@ -2448,10 +2448,16 @@ def volume_get_instance(context, volume_id):
  
  
  @require_admin_context
@@ -53,7 +75,7 @@ index 03ac987..19fdc02 100644
  
      if not result:
          raise exception.ISCSITargetNotFoundForVolume(volume_id=volume_id)
-@@ -2573,7 +2579,9 @@ def snapshot_destroy(context, snapshot_id):
+@@ -2575,7 +2581,9 @@ def snapshot_destroy(context, snapshot_id):
                  update({'deleted': True,
                          'deleted_at': utils.utcnow(),
                          'updated_at': literal_column('updated_at')})
@@ -64,7 +86,7 @@ index 03ac987..19fdc02 100644
  
  @require_context
  def snapshot_get(context, snapshot_id, session=None):
-@@ -2592,6 +2600,37 @@ def snapshot_get(context, snapshot_id, session=None):
+@@ -2594,6 +2602,37 @@ def snapshot_get(context, snapshot_id, session=None):
  def snapshot_get_all(context):
      return model_query(context, models.Snapshot).all()
  
@@ -542,3 +564,6 @@ index ada3887..64d6312 100644
              self.db.snapshot_update(context,
                                      snapshot_ref['id'],
                                      {'status': 'available'})
+-- 
+1.7.11.7
+
