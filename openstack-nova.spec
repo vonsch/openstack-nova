@@ -66,8 +66,6 @@ Patch0001: 0001-Ensure-we-don-t-access-the-net-when-building-docs.patch
 Patch0500: openstack-nova-newdeps.patch
 
 # GDC patchset
-# Prefix changes default location of flagfile:
-Patch0501: default-flagfile-location.patch
 # https://jira.gooddata.com/jira/browse/GD-25542
 Patch1000: 1000-libvirt-target-dev-attribute-accept-basename-only.patch
 # https://jira.gooddata.com/jira/browse/GD-25784
@@ -258,7 +256,6 @@ This package contains documentation files for nova.
 
 # Apply EPEL patch
 %patch0500 -p1
-%patch0501 -p0
 
 # GDC Patches
 %patch1000 -p1
