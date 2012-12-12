@@ -202,6 +202,9 @@ libvirt_opts = [
             default=False,
             help='Create thin provisioned logical volumes (with virtualsize)'
                  ' if this flag is set to True.'),
+    cfg.BoolOpt('libvirt_iscsi_use_multipath',
+                default=False,
+                help='use multipath connection of the iSCSI volume'),
     ]
 
 FLAGS = flags.FLAGS

@@ -190,3 +190,6 @@ lvs: CommandFilter, /sbin/lvs, root
 
 # nova/virt/libvirt/utils.py:
 vgs: CommandFilter, /sbin/vgs, root
+
+# nova/virt/libvirt/volume.py: 'multipath' '-R'
+multipath: CommandFilter, /sbin/multipath, root
