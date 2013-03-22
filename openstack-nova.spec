@@ -98,6 +98,9 @@ Patch10120: 1012-ZPI-Get-size-of-root-block-device-from-mapping-table.patch
 # Nova network after restart switch the order of associted floating IPs
 Patch1013: 1013-Ensure-that-public-ips-are-at-the-end-of-the-floatin.patch
 
+# from some reason KOJI does not find setuptools_git
+Patch10133: 10133-ZPI-setuptools_git-not-found-KOJI.patch
+
 BuildArch:        noarch
 BuildRequires:    intltool
 BuildRequires:    python-sphinx10
@@ -278,6 +281,8 @@ This package contains documentation files for nova.
 ##%patch1012 -p1
 %patch10120
 %patch1013 -p1
+
+%patch10133 
 
 find . \( -name .gitignore -o -name .placeholder \) -delete
 

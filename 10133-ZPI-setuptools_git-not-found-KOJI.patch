@@ -1,0 +1,8 @@
+--- setup.py.orig	2013-03-22 14:35:34.535722356 +0100
++++ setup.py	2013-03-22 14:34:57.049696549 +0100
+@@ -61,4 +61,5 @@
+                'bin/nova-volume-usage-audit',
+                'bin/nova-xvpvncproxy',
+               ],
++        dependency_links = ['https://pypi.python.org/packages/source/s/setuptools-git/setuptools-git-1.0b1.tar.gz#md5=ac67cbaa1336b7de25b1b5ff93b4e90d'],
+         py_modules=[])
