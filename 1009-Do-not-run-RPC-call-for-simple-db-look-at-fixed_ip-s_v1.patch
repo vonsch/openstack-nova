@@ -45,6 +45,7 @@ index f0f1594..d056a1f 100644
 -                LOG.info('Using fw_rules: %r', fw_rules)
 +                LOG.info('Using fw_rules for instance: %s' % instance['id'])
 +                LOG.debug('%r', fw_rules)
+
          ipv4_rules += ['-j $sg-fallback']
          ipv6_rules += ['-j $sg-fallback']
  

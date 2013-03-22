@@ -75,21 +75,8 @@ index 1da10e6..73b39ca 100644
          if not manager:
 -            manager = FLAGS.get('%s_manager' % topic, None)
 +            manager = FLAGS.get('%s_manager' % binary.rpartition('nova-')[2], None)
-         if not report_interval:
+         if report_interval is None:
              report_interval = FLAGS.report_interval
-         if not periodic_interval:
-diff --git a/setup.py b/setup.py
-index 080d52d..26aec05 100644
---- a/setup.py
-+++ b/setup.py
-@@ -88,6 +88,7 @@ setuptools.setup(name='nova',
-                'bin/nova-direct-api',
-                'bin/nova-manage',
-                'bin/nova-network',
-+               'bin/nova-networkvlan',
-                'bin/nova-objectstore',
-                'bin/nova-rootwrap',
-                'bin/nova-scheduler',
--- 
+         if periodic_interval is None:
+--
 1.7.11.7
-

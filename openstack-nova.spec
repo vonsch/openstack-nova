@@ -3,7 +3,7 @@
 %global with_doc %{!?_without_doc:1}%{?_without_doc:0}
 
 Name:             %{_openstack_name}-%{release_name}-nova
-Version:          2012.2
+Version:          2012.2.4
 Release:          1%{?dist}.gdc1
 
 #
@@ -36,7 +36,7 @@ Summary:          OpenStack Compute (nova)
 Group:            Applications/System
 License:          ASL 2.0
 URL:              http://openstack.org/projects/compute/
-Source0:          http://launchpad.net/nova/%{release_name}/%{version}/+download/nova-%{version}.tar.gz
+Source0:          http://launchpad.net/nova/%{release_name}/%{version}/+download/openstack-nova-%{version}.tar.gz
 Source1:          nova.conf
 Source6:          nova.logrotate
 
@@ -82,15 +82,19 @@ Patch1006: 1006-Setting-promisc-on-VLAN-bridge.patch
 Patch1007: 1007-1026029-libvirtError_Domain_not_found-temp_fix.patch
 # https://bugs.launchpad.net/nova/+bug/1061628
 Patch1008: 1008-Workaround-for-bug-1061628.patch
+Patch10080: 10080-ZPI-Workaround-for-bug-1061628.patch
 # https://bugs.launchpad.net/nova/+bug/1016633
 # not final fix, please update it after the tickets is closed
 Patch1009: 1009-Do-not-run-RPC-call-for-simple-db-look-at-fixed_ip-s_v1.patch
+Patch10090: 1009-ZPI-Do-not-run-RPC-call-for-simple-db-look-at-fixed_ip-s_v1.patch
 # https://jira.gooddata.com/jira/browse/PCI-271
 Patch1010: 1010-fix_netapp_set_default_description.patch
 # https://jira.gooddata.com/jira/browse/PCI-272
 Patch1011: 1011-fix_netapp_ensure_export_host_arg.patch
+Patch10110: 1011-ZPI-fix_netapp_ensure_export_host_arg.patch
 # AMI based instance cannot be resized
 Patch1012: 1012-Get-size-of-root-block-device-from-mapping-table.patch
+Patch10120: 1012-ZPI-Get-size-of-root-block-device-from-mapping-table.patch
 # Nova network after restart switch the order of associted floating IPs
 Patch1013: 1013-Ensure-that-public-ips-are-at-the-end-of-the-floatin.patch
 
@@ -254,17 +258,25 @@ This package contains documentation files for nova.
 %patch0500 -p1
 
 # GDC Patches
-%patch1002 -p1
-%patch1003 -p1
+##%patch1002 -p1
+## 1003 already in mainstream
+## %patch1003 -p1
 %patch1004 -p1
-%patch1005 -p1
+## 1005 strange, not applicable patch from 2012.2
+## %patch1005 -p1
 %patch1006 -p1
-%patch1007 -p1
+## 1007 is deprecated apparently, nova/virt/libvirt/connection.py does not exist anymore
+##%patch1007 -p1
+%patch10080 
 %patch1008 -p1
-%patch1009 -p1
-%patch1010 -p1
-%patch1011 -p1
-%patch1012 -p1
+#%patch1009 -p1
+%patch10090 
+## 1010 already in mainstream
+##%patch1010 -p1
+##%patch1011
+%patch10110
+##%patch1012 -p1
+%patch10120
 %patch1013 -p1
 
 find . \( -name .gitignore -o -name .placeholder \) -delete
@@ -287,7 +299,7 @@ export PYTHONPATH="$( pwd ):$PYTHONPATH"
 # manually auto-generate to work around sphinx-build segfault
 # This was not required on python-sphinx-1.0.7 at least
 # but it's relatively quick at least
-doc/generate_autodoc_index.sh
+##doc/generate_autodoc_index.sh
 
 pushd doc
 
@@ -307,9 +319,11 @@ install -p -D -m 644 build/man/*.1 %{buildroot}%{_mandir}/man1/
 popd
 
 # Give stack, instance-usage-audit and clear_rabbit_queues a reasonable prefix
-mv %{buildroot}%{_bindir}/stack %{buildroot}%{_bindir}/nova-stack
-mv %{buildroot}%{_bindir}/instance-usage-audit %{buildroot}%{_bindir}/nova-instance-usage-audit
-mv %{buildroot}%{_bindir}/clear_rabbit_queues %{buildroot}%{_bindir}/nova-clear-rabbit-queues
+# stack not in folsom anymore
+#mv %{buildroot}%{_bindir}/stack %{buildroot}%{_bindir}/nova-stack
+# instance-usage-audit not used anymore - see https://github.com/openstack/nova/commit/2fdd73816c56b578a65466db4e
+#mv %{buildroot}%{_bindir}/instance-usage-audit %{buildroot}%{_bindir}/nova-instance-usage-audit
+#mv %{buildroot}%{_bindir}/clear_rabbit_queues %{buildroot}%{_bindir}/nova-clear-rabbit-queues
 
 # Setup directories
 install -d -m 755 %{buildroot}%{_sharedstatedir}/nova
@@ -361,10 +375,10 @@ install -p -D -m 644 %{SOURCE6} %{buildroot}/etc/logrotate.d/%{name}
 install -d -m 755 %{buildroot}%{_rundir}/nova
 
 # Install template files
-install -p -D -m 644 nova/auth/novarc.template %{buildroot}%{_datarootdir}/nova/novarc.template
+#install -p -D -m 644 nova/auth/novarc.template %{buildroot}%{_datarootdir}/nova/novarc.template
 install -p -D -m 644 nova/cloudpipe/client.ovpn.template %{buildroot}%{_datarootdir}/nova/client.ovpn.template
-install -p -D -m 644 nova/virt/libvirt.xml.template %{buildroot}%{_datarootdir}/nova/libvirt.xml.template
-install -p -D -m 644 nova/virt/interfaces.template %{buildroot}%{_datarootdir}/nova/interfaces.template
+#install -p -D -m 644 nova/virt/libvirt.xml.template %{buildroot}%{_datarootdir}/nova/libvirt.xml.template
+#install -p -D -m 644 nova/virt/interfaces.template %{buildroot}%{_datarootdir}/nova/interfaces.template
 install -p -D -m 644 %{SOURCE22} %{buildroot}%{_datarootdir}/nova/interfaces.template
 
 install -d -m 755 %{buildroot}/etc/polkit-1/localauthority/50-local.d
@@ -496,5 +510,9 @@ fi
 %endif
 
 %changelog
+* Wed Mar 22 2013 Zdenek Pizl <zdenek.pizl@gooddata.com> 2012.2.4-1.gdc1
+- Upgrade to Folsom release 2012.2.4 tarball
+
+
 * Fri Nov 23 2012 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 2012.2-1.gdc1
 - Folsom release

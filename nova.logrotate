@@ -1,6 +1,6 @@
 compress
 
-~logdir~/nova/*.log {
+/var/log/nova/*.log {
     weekly
     rotate 4
     missingok

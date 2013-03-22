@@ -1,0 +1,11 @@
+--- nova/volume/netapp.py.orig	2013-03-18 17:30:59.000000000 +0100
++++ nova/volume/netapp.py	2013-03-21 16:02:29.908369989 +0100
+@@ -594,7 +594,7 @@
+         lun = self._lookup_lun_for_volume(name, project)
+         return {'provider_location': lun.id}
+ 
+-    def ensure_export(self, context, volume):
++    def ensure_export(self, context, volume, host=None):
+         """Driver entry point to get the export info for an existing volume."""
+         return self._get_export(volume)
+ 

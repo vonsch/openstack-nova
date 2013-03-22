@@ -17,9 +17,7 @@ index 1ba559d..98e6c2b 100644
  
 -    def ensure_export(self, context, volume):
 +    def ensure_export(self, context, volume, host=None):
-         """
-         Driver entry point to get the iSCSI details about an existing volume
-         """
+         """Driver entry point to get the iSCSI details about an existing volume."""
 -- 
 1.7.10.4
 
