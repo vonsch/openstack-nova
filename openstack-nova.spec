@@ -1,10 +1,7 @@
+%global product_name		nova
 %global release_name 		folsom
 %global _openstack_name		openstack
 %global with_doc %{!?_without_doc:1}%{?_without_doc:0}
-
-Name:             %{_openstack_name}-%{release_name}-nova
-Version:          2012.2.4
-Release:          1%{?dist}.gdc1
 
 #
 # - GoodData customization
@@ -25,42 +22,45 @@ Release:          1%{?dist}.gdc1
 
 # system's Python prefix is /usr change prefix to /opt/common-python
 %global python_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib()" | sed "s:/usr:%{_python_prefix}:")
-%global pkgname openstack-nova
+%global pkgname %{_openstack_name}-%{product_name}
 
 #
 # ------------------------
 #
 
-Summary:          OpenStack Compute (nova)
+Name:		%{_openstack_name}-%{release_name}-%{product_name}
+Version:        2012.2.4
+Release:        1%{?dist}.gdc1
+Summary:        OpenStack Compute (Nova)
 
-Group:            Applications/System
-License:          ASL 2.0
-URL:              http://openstack.org/projects/compute/
-Source0:          http://launchpad.net/nova/%{release_name}/%{version}/+download/openstack-nova-%{version}.tar.gz
-Source1:          nova.conf
-Source6:          nova.logrotate
+Group:          Applications/System
+License:        ASL 2.0
+URL:            http://openstack.org/projects/compute/
+Source0:        http://launchpad.net/nova/%{release_name}/%{version}/+download/%{_openstack_name}-%{product_name}-%{version}.tar.gz
+Source1:        nova.conf
+Source6:        nova.logrotate
 
-Source10:         openstack-nova-api.init
-Source11:         openstack-nova-cert.init
-Source12:         openstack-nova-compute.init
-Source13:         openstack-nova-network.init
-Source14:         openstack-nova-objectstore.init
-Source15:         openstack-nova-scheduler.init
-Source16:         openstack-nova-volume.init
-Source17:         openstack-nova-direct-api.init
-Source18:         openstack-nova-xvpvncproxy.init
-Source19:         openstack-nova-console.init
-Source24:         openstack-nova-consoleauth.init
-Source25:         openstack-nova-metadata-api.init
+Source10:       openstack-nova-api.init
+Source11:       openstack-nova-cert.init
+Source12:       openstack-nova-compute.init
+Source13:       openstack-nova-network.init
+Source14:       openstack-nova-objectstore.init
+Source15:       openstack-nova-scheduler.init
+Source16:       openstack-nova-volume.init
+Source17:       openstack-nova-direct-api.init
+Source18:       openstack-nova-xvpvncproxy.init
+Source19:       openstack-nova-console.init
+Source24:       openstack-nova-consoleauth.init
+Source25:        openstack-nova-metadata-api.init
 
-Source20:         nova-sudoers
-Source21:         nova-polkit.pkla
-Source22:         nova-ifc-template
+Source20:       nova-sudoers
+Source21:       nova-polkit.pkla
+Source22:       nova-ifc-template
 
 #
 # patches_base=2012.2
 #
-Patch0001: 0001-Ensure-we-don-t-access-the-net-when-building-docs.patch
+Patch0001: 0001-ZPI-Ensure-we-don-t-access-the-net-when-building-docs.patch
 
 # This is EPEL specific and not upstream
 Patch0500: openstack-nova-newdeps.patch
@@ -98,8 +98,7 @@ Patch10120: 1012-ZPI-Get-size-of-root-block-device-from-mapping-table.patch
 # Nova network after restart switch the order of associted floating IPs
 Patch1013: 1013-Ensure-that-public-ips-are-at-the-end-of-the-floatin.patch
 
-# from some reason KOJI does not find setuptools_git
-Patch10133: 10133-ZPI-setuptools_git-not-found-KOJI.patch
+
 
 BuildArch:        noarch
 BuildRequires:    intltool
@@ -282,11 +281,15 @@ This package contains documentation files for nova.
 %patch10120
 %patch1013 -p1
 
-%patch10133 
+#%patch10133 
 
 find . \( -name .gitignore -o -name .placeholder \) -delete
 
 find nova -name \*.py -exec sed -i '/\/usr\/bin\/env python/{d;q}' {} +
+
+# from some reason KOJI does not find setuptools_git
+#Patch10133: 10133-ZPI-setuptools_git-not-found-KOJI.patch
+sed -i '/setuptools_git/d' setup.py
 
 %build
 %{__python} setup.py build
