@@ -1,34 +1,21 @@
-From c6f271af7635b8ea50a00c4f88f2c1aa0af92be2 Mon Sep 17 00:00:00 2001
-From: Jaroslav Pulchart <jaroslav.pulchart@gooddata.com>
-Date: Wed, 12 Sep 2012 11:07:07 +0200
-Subject: [PATCH 5/8] use local LVM volume instead of iSCSI device on same
- host with volume
-
----
- nova/virt/libvirt/volume.py | 16 +++++++++++++++-
- 1 file changed, 15 insertions(+), 1 deletion(-)
-
-diff --git a/nova/virt/libvirt/volume.py b/nova/virt/libvirt/volume.py
-index 9680a05..9624e59 100644
---- a/nova/virt/libvirt/volume.py
-+++ b/nova/virt/libvirt/volume.py
-@@ -18,9 +18,11 @@
- """Volume drivers for libvirt."""
+--- a/nova/virt/libvirt/volume.py.orig	2013-03-18 17:30:59.000000000 +0100
++++ b/nova/virt/libvirt/volume.py	2013-03-26 15:13:00.324665130 +0100
+@@ -19,7 +19,10 @@
  
  import os
--from os.path import  basename
+ import time
 +from os.path import basename
 +from os.path import islink
- import time
  
 +from nova.api.ec2 import ec2utils
  from nova import exception
  from nova import flags
- from nova import log as logging
-@@ -44,6 +46,18 @@ class LibvirtVolumeDriver(object):
-         """Connect the volume. Returns xml for libvirt."""
-         driver = self._pick_volume_driver()
-         device_path = connection_info['data']['device_path']
+ from nova.openstack.common import log as logging
+@@ -48,8 +51,21 @@
+         conf.target_dev = mount_device
+         conf.target_bus = "virtio"
+         conf.serial = connection_info.get('serial')
++
 +        volume_id = connection_info['data']['volume_id']
 +
 +        # TODO: ec2_volume_id have to be computed from FLAGS.volume_name_template
@@ -36,14 +23,13 @@ index 9680a05..9624e59 100644
 +        is_local_volume = islink(local_volume)
 +
 +        if is_local_volume:
-+             device_path = local_volume
++             conf.device_path = local_volume
 +             LOG.debug("Attaching local device %s as %s" % (local_volume, mount_device))
 +        else:
 +             LOG.debug("Attaching device %s as %s" % (device_path, mount_device))
+         return conf
+ 
 +
-         xml = """<disk type='block'>
-                      <driver name='%s' type='raw' cache='none'/>
-                      <source dev='%s'/>
--- 
-1.7.11.7
-
+     def disconnect_volume(self, connection_info, mount_device):
+         """Disconnect the volume"""
+         pass

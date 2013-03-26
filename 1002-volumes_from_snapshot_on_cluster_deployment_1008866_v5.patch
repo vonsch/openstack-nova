@@ -24,18 +24,21 @@ diff --git a/nova/db/api.py b/nova/db/api.py
 index 27f80f6..0ae8fa5 100644
 --- a/nova/db/api.py
 +++ b/nova/db/api.py
-@@ -978,9 +978,9 @@ def volume_get_instance(context, volume_id):
-     return IMPL.volume_get_instance(context, volume_id)
- 
- 
+@@ -1132,10 +1132,10 @@
+     return IMPL.volume_get_by_ec2_id(context, ec2_id)
+      
+       
 -def volume_get_iscsi_target_num(context, volume_id):
-+def volume_get_iscsi_target_num(context, volume_id, host = "all"):
-     """Get the target num (tid) allocated to the volume."""
+-    """Get the target num (tid) allocated to the volume."""
 -    return IMPL.volume_get_iscsi_target_num(context, volume_id)
+-
++def volume_get_iscsi_target_num(context, volume_id, host = "all"):
++     """Get the target num (tid) allocated to the volume."""
 +    return IMPL.volume_get_iscsi_target_num(context, volume_id, host)
- 
- 
- def volume_update(context, volume_id, values):
++     
+
+def volume_update(context, volume_id, values):
+ """Set the given properties on a volume and update it.              
 @@ -1014,6 +1014,13 @@ def snapshot_get_all(context):
      """Get all snapshots."""
      return IMPL.snapshot_get_all(context)

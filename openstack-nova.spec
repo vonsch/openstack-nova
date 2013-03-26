@@ -406,28 +406,29 @@ This package contains documentation files for nova.
 %patch0500 -p1
 
 # GDC Patches
-##%patch1002 -p1
+#%patch1002 -p1
 ## 1003 already in mainstream
 ## %patch1003 -p1
 %patch1004 -p1
 ## 1005 strange, not applicable patch from 2012.2
-## %patch1005 -p1
+%patch1005 -p1
 %patch1006 -p1
 ## 1007 is deprecated apparently, nova/virt/libvirt/connection.py does not exist anymore
 ##%patch1007 -p1
 %patch10080 
 %patch1008 -p1
-#%patch1009 -p1
+## Patch 1009 replaced by Patch10090
+##%patch1009 -p1
 %patch10090 
 ## 1010 already in mainstream
 ##%patch1010 -p1
+## Patch1011 replaced by Patch 10110 
 ##%patch1011
 %patch10110
+## Patch1012 replaced by Patch10120
 ##%patch1012 -p1
 %patch10120
 %patch1013 -p1
-
-#%patch10133 
 
 
 find . \( -name .gitignore -o -name .placeholder \) -delete
