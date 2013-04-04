@@ -56,7 +56,7 @@ Patch0500: openstack-nova-newdeps.patch
 
 # GDC patchset
 # https://jira.gooddata.com/jira/browse/GD-25782
-Patch1002: 1002-volumes_from_snapshot_on_cluster_deployment_1008866_v5.patch
+Patch1002: 1002-Create-a-volume-from-a-snapshot-from-different-avail.patch 
 # https://jira.gooddata.com/jira/browse/GD-27146
 Patch1003: 1003-force-snapshot-create-in-EC2-api.patch
 # https://jira.gooddata.com/jira/browse/GD-23657
@@ -406,7 +406,7 @@ This package contains documentation files for nova.
 %patch0500 -p1
 
 # GDC Patches
-#%patch1002 -p1
+%patch1002 -p1
 ## 1003 already in mainstream
 ## %patch1003 -p1
 %patch1004 -p1
