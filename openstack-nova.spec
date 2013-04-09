@@ -77,15 +77,31 @@ Patch10080: 10080-ZPI-Workaround-for-bug-1061628.patch
 Patch1009: 1009-Do-not-run-RPC-call-for-simple-db-look-at-fixed_ip-s_v1.patch
 Patch10090: 1009-ZPI-Do-not-run-RPC-call-for-simple-db-look-at-fixed_ip-s_v1.patch
 # https://jira.gooddata.com/jira/browse/PCI-271
-Patch1010: 1010-fix_netapp_set_default_description.patch
+#Patch1010: 1010-fix_netapp_set_default_description.patch
 # https://jira.gooddata.com/jira/browse/PCI-272
-Patch1011: 1011-fix_netapp_ensure_export_host_arg.patch
-Patch10110: 1011-ZPI-fix_netapp_ensure_export_host_arg.patch
+#Patch1011: 1011-fix_netapp_ensure_export_host_arg.patch
+#Patch10110: 1011-ZPI-fix_netapp_ensure_export_host_arg.patch
 # AMI based instance cannot be resized
 Patch1012: 1012-Get-size-of-root-block-device-from-mapping-table.patch
 Patch10120: 1012-ZPI-Get-size-of-root-block-device-from-mapping-table.patch
 # Nova network after restart switch the order of associted floating IPs
 Patch1013: 1013-Ensure-that-public-ips-are-at-the-end-of-the-floatin.patch
+
+# https://bugs.launchpad.net/cinder/+bug/1095633, Netapp Folsom FIX
+Patch1018: 1018-Netapp_1095633-Netapp-driver-repeat-DFM-lun-refresh.patch
+# https://bugs.launchpad.net/cinder/+bug/1091480, Netapp Folsom FIX
+Patch1019: 1019-Netapp_1091480-synchronize-dataset-edit.patch
+# https://bugs.launchpad.net/cinder/+bug/1099414, Netapp Folsom FIX
+Patch1020: 1020-Netapp_1099414_added-qtree-removal.patch
+# https://bugs.launchpad.net/cinder/+bug/1098581, Netapp Folsom FEATURE
+Patch1021: 1021-Netapp_1098581_create-volume-from-snapshot-of-smaller-size.patch
+# https://jira.gooddata.com/jira/browse/PCI-308, Netapp Folsom FEATURE (GDC only)
+Patch1022: 1022-Netapp_PCI-308_copy-LUN-instead-of-clone.patch
+# PCI-308, Netapp Folsom driver backport to (GDC) Essex
+Patch1024: 1024-Netapp_backport-for-GDC-version-of-driver-API.patch
+# https://jira.gooddata.com/browse/PCI-437
+Patch1026: 1026-Netapp_PCI-437-don-t-resize-parent-volume-for-new-LU.patch
+
 
 BuildArch:        noarch
 BuildRequires:    intltool
@@ -424,11 +440,20 @@ This package contains documentation files for nova.
 ##%patch1010 -p1
 ## Patch1011 replaced by Patch 10110 
 ##%patch1011
-%patch10110
+#%patch10110
 ## Patch1012 replaced by Patch10120
 ##%patch1012 -p1
 %patch10120
 %patch1013 -p1
+
+
+%patch1018 -p1
+%patch1019 -p1
+%patch1020 -p1
+%patch1021 -p1
+%patch1026 -p1
+%patch1022 -p1
+%patch1024 -p1
 
 
 find . \( -name .gitignore -o -name .placeholder \) -delete
