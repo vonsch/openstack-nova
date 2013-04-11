@@ -7,7 +7,7 @@
 
 Name:             openstack-nova
 Version:          2012.2.4
-Release:          2%{?dist}.gdc1
+Release:          3%{?dist}.gdc1
 Summary:          OpenStack Compute (nova)
 
 Group:            Applications/System
@@ -26,6 +26,7 @@ Source12:         openstack-nova-compute.init
 Source120:        openstack-nova-compute.upstart
 Source13:         openstack-nova-network.init
 Source130:        openstack-nova-network.upstart
+Source131:        openstack-nova-networkvlan.init
 Source14:         openstack-nova-objectstore.init
 Source140:        openstack-nova-objectstore.upstart
 Source15:         openstack-nova-scheduler.init
@@ -532,7 +533,7 @@ install -p -D -m 755 %{SOURCE10} %{buildroot}%{_initrddir}/openstack-nova-api
 install -p -D -m 755 %{SOURCE11} %{buildroot}%{_initrddir}/openstack-nova-cert
 install -p -D -m 755 %{SOURCE12} %{buildroot}%{_initrddir}/openstack-nova-compute
 install -p -D -m 755 %{SOURCE13} %{buildroot}%{_initrddir}/openstack-nova-network
-install -p -D -m 755 %{SOURCE13} %{buildroot}%{_initrddir}/openstack-nova-networkvlan
+install -p -D -m 755 %{SOURCE131} %{buildroot}%{_initrddir}/openstack-nova-networkvlan
 install -p -D -m 755 %{SOURCE14} %{buildroot}%{_initrddir}/openstack-nova-objectstore
 install -p -D -m 755 %{SOURCE15} %{buildroot}%{_initrddir}/openstack-nova-scheduler
 install -p -D -m 755 %{SOURCE16} %{buildroot}%{_initrddir}/openstack-nova-volume

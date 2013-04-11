@@ -26,7 +26,7 @@
 +             conf.device_path = local_volume
 +             LOG.debug("Attaching local device %s as %s" % (local_volume, mount_device))
 +        else:
-+             LOG.debug("Attaching device %s as %s" % (device_path, mount_device))
++             LOG.debug("Attaching device %s as %s" % (local_volume, mount_device))
          return conf
  
 +
