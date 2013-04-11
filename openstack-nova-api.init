@@ -30,7 +30,7 @@ suffix=`echo $basename | sed 's:.*-\([^-]\+\):\1:'`
 prog=nova-$suffix
 exec="/usr/bin/nova-$suffix"
 config="/etc/nova/nova.conf"
-pidfile="/etc/nova/nova-$suffix.pid"
+pidfile="/var/run/nova/nova-$suffix.pid"
 logfile="/var/log/openstack/nova/$suffix.log"
 
 # source PYTHONPATH for required modules (GD-25272)
