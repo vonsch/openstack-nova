@@ -27,6 +27,7 @@ Source120:        openstack-nova-compute.upstart
 Source13:         openstack-nova-network.init
 Source130:        openstack-nova-network.upstart
 Source131:        openstack-nova-networkvlan.init
+Source132:        nova-networkvlan
 Source14:         openstack-nova-objectstore.init
 Source140:        openstack-nova-objectstore.upstart
 Source15:         openstack-nova-scheduler.init
@@ -434,8 +435,10 @@ This package contains documentation files for nova.
 %patch1006 -p1
 ## 1007 is deprecated apparently, nova/virt/libvirt/connection.py does not exist anymore
 ##%patch1007 -p1
-%patch10080 
+##%patch10080 
 %patch1008 -p1
+
+
 ## Patch 1009 replaced by Patch10090
 ##%patch1009 -p1
 %patch10090 
@@ -534,6 +537,8 @@ install -p -D -m 755 %{SOURCE11} %{buildroot}%{_initrddir}/openstack-nova-cert
 install -p -D -m 755 %{SOURCE12} %{buildroot}%{_initrddir}/openstack-nova-compute
 install -p -D -m 755 %{SOURCE13} %{buildroot}%{_initrddir}/openstack-nova-network
 install -p -D -m 755 %{SOURCE131} %{buildroot}%{_initrddir}/openstack-nova-networkvlan
+# install nova-networkvlan too
+install -p -D -m 755 %{SOURCE132} %{buildroot}%{_bindir}/nova-networkvlan
 install -p -D -m 755 %{SOURCE14} %{buildroot}%{_initrddir}/openstack-nova-objectstore
 install -p -D -m 755 %{SOURCE15} %{buildroot}%{_initrddir}/openstack-nova-scheduler
 install -p -D -m 755 %{SOURCE16} %{buildroot}%{_initrddir}/openstack-nova-volume
@@ -581,6 +586,7 @@ rm -fr %{buildroot}%{python_sitelib}/nova/tests/
 rm -fr %{buildroot}%{python_sitelib}/run_tests.*
 rm -f %{buildroot}%{_bindir}/nova-combined
 rm -f %{buildroot}/usr/share/doc/nova/README*
+
 
 # We currently use the equivalent file from the novnc package
 rm -f %{buildroot}%{_bindir}/nova-novncproxy
