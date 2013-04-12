@@ -1,17 +1,6 @@
---- a/nova/virt/libvirt/volume.py.orig	2013-03-18 17:30:59.000000000 +0100
-+++ b/nova/virt/libvirt/volume.py	2013-03-26 15:13:00.324665130 +0100
-@@ -19,7 +19,10 @@
- 
- import os
- import time
-+from os.path import basename
-+from os.path import islink
- 
-+from nova.api.ec2 import ec2utils
- from nova import exception
- from nova import flags
- from nova.openstack.common import log as logging
-@@ -48,8 +51,21 @@
+--- a/nova/virt/libvirt/volume.py.orig	2013-04-12 15:38:38.292116416 +0200
++++ b/nova/virt/libvirt/volume.py	2013-04-12 15:38:33.109120902 +0200
+@@ -51,6 +51,23 @@
          conf.target_dev = mount_device
          conf.target_bus = "virtio"
          conf.serial = connection_info.get('serial')
@@ -19,17 +8,19 @@
 +        volume_id = connection_info['data']['volume_id']
 +
 +        # TODO: ec2_volume_id have to be computed from FLAGS.volume_name_template
-+        local_volume = "/dev/%s/%s" % (FLAGS.volume_group, ec2utils.id_to_ec2_vol_id(volume_id))
-+        is_local_volume = islink(local_volume)
++        local_volume_ec2id = "/dev/%s/%s" % (FLAGS.volume_group, ec2utils.id_to_ec2_vol_id(volume_id))
 +
-+        if is_local_volume:
-+             conf.device_path = local_volume
-+             LOG.debug("Attaching local device %s as %s" % (local_volume, mount_device))
++        local_volume_uuid = "/dev/%s/%s" % (FLAGS.volume_group, FLAGS.volume_name_template)
++        local_volume_uuid = local_volume_uuid % volume_id
++        is_local_volume_ec2id = islink(local_volume_ec2id)
++        is_local_volume_uuid = islink(local_volume_uuid)
++
++        if is_local_volume_uuid:
++             conf.source_path = local_volume_uuid
++        elif is_local_volume_ec2id:
++             conf.source_path = local_volume_ec2id
 +        else:
-+             LOG.debug("Attaching device %s as %s" % (local_volume, mount_device))
++             LOG.debug("Attaching device %s as %s" % (conf.source_path, mount_device))
          return conf
  
-+
      def disconnect_volume(self, connection_info, mount_device):
-         """Disconnect the volume"""
-         pass
