@@ -5,4 +5,4 @@ stop on runlevel [S016]
 
 respawn
 
-exec su -s /bin/sh -c "exec /usr/bin/nova-cert --config-file /etc/nova/nova.conf --logfile /var/log/openstack/nova/cert.log" nova
+exec su -s /bin/sh -c "exec /usr/bin/nova-cert --config-file /etc/nova/nova.conf --logfile /var/log/nova/cert.log" nova

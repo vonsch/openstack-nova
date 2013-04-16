@@ -39,7 +39,7 @@ prog=nova-$suffix
 exec="/usr/bin/nova-$suffix"
 config="/etc/nova/nova.conf"
 pidfile="/var/run/nova/nova-$suffix.pid"
-logfile="/var/log/openstack/nova/$suffix.log"
+logfile="/var/log/nova/$suffix.log"
 
 # source PYTHONPATH for required modules (GD-25272)
 [ -e /etc/profile.d/nova-$suffix.sh ] && . /etc/profile.d/nova-$suffix.sh
