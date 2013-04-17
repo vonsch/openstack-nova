@@ -86,8 +86,9 @@ Patch10090: 1009-ZPI-Do-not-run-RPC-call-for-simple-db-look-at-fixed_ip-s_v1.pat
 # AMI based instance cannot be resized
 Patch1012: 1012-Get-size-of-root-block-device-from-mapping-table.patch
 Patch10120: 1012-ZPI-Get-size-of-root-block-device-from-mapping-table.patch
-# Nova network after restart switch the order of associted floating IPs
-Patch1013: 1013-Ensure-that-public-ips-are-at-the-end-of-the-floatin.patch
+
+# Elastic IPs
+Patch1017: 1017-elastic_ip_pool_for_public_ips.patch
 
 # https://bugs.launchpad.net/cinder/+bug/1095633, Netapp Folsom FIX
 Patch1018: 1018-Netapp_1095633-Netapp-driver-repeat-DFM-lun-refresh.patch
@@ -450,7 +451,7 @@ This package contains documentation files for nova.
 ## Patch1012 replaced by Patch10120
 ##%patch1012 -p1
 %patch10120
-%patch1013 -p1
+%patch1017 -p1
 
 
 %patch1018 -p1
