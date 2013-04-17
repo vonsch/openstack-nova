@@ -108,7 +108,7 @@ Patch1025: 1025-1112483-device-size-mismatch-when-LUN-is-reus.patch
 Patch1026: 1026-Netapp_PCI-437-don-t-resize-parent-volume-for-new-LU.patch
 
 # Folsom's issue with naming volumes
-Patch1027: 10270-ZPI-respect-volumenametemplate.patch
+#Patch1027: 10270-ZPI-respect-volumenametemplate.patch
 Patch1028: 10280-ZPI-ec2api-blockdevicemapping.patch
 
 BuildArch:        noarch
@@ -465,7 +465,7 @@ This package contains documentation files for nova.
 %patch1022 -p1
 %patch1024 -p1
 %patch1025 -p1
-%patch1027 -p1
+#%patch1027 -p1
 %patch1028 -p1
 
 find . \( -name .gitignore -o -name .placeholder \) -delete
