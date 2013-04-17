@@ -102,6 +102,8 @@ Patch1021: 1021-Netapp_1098581_create-volume-from-snapshot-of-smaller-size.patch
 Patch1022: 1022-Netapp_PCI-308_copy-LUN-instead-of-clone.patch
 # PCI-308, Netapp Folsom driver backport to (GDC) Essex
 Patch1024: 1024-Netapp_backport-for-GDC-version-of-driver-API.patch
+# https://bugs.launchpad.net/nova/+bug/1112483
+Patch1025: 1025-1112483-device-size-mismatch-when-LUN-is-reus.patch
 # https://jira.gooddata.com/browse/PCI-437
 Patch1026: 1026-Netapp_PCI-437-don-t-resize-parent-volume-for-new-LU.patch
 
@@ -462,6 +464,7 @@ This package contains documentation files for nova.
 %patch1026 -p1
 %patch1022 -p1
 %patch1024 -p1
+%patch1025 -p1
 %patch1027 -p1
 %patch1028 -p1
 
