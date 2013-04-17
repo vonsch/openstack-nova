@@ -21,7 +21,7 @@
 -                            LOG.debug('ips: %r', ips, instance=instance)
 +                    	    try:
 +                        	ips = [ip['address']
-+                            	    for ip in db.fixed_ip_get_by_instance(ctxt, instance['id'])]
++                            	    for ip in db.fixed_ip_get_by_instance(ctxt, instance['uuid'])]
 +                            except:
 +                                ips = []
 +                            
