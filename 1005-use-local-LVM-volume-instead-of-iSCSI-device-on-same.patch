@@ -1,6 +1,27 @@
---- a/nova/virt/libvirt/volume.py.orig	2013-04-12 15:38:38.292116416 +0200
-+++ b/nova/virt/libvirt/volume.py	2013-04-12 15:38:33.109120902 +0200
-@@ -51,6 +51,23 @@
+From a0cfc2cf2661df8d4ecfa5e865025a35da2af41e Mon Sep 17 00:00:00 2001
+From: Brano Zarnovican <branislav.zarnovican@gooddata.com>
+Date: Fri, 19 Apr 2013 11:03:48 +0200
+Subject: [PATCH] FIX: fixed
+ 1005-use-local-LVM-volume-instead-of-iSCSI-device-on-same.patch
+
+added missing imports
+---
+ nova/virt/libvirt/volume.py | 18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
+
+diff --git a/nova/virt/libvirt/volume.py b/nova/virt/libvirt/volume.py
+index cf08ea8..3c27f29 100644
+--- a/nova/virt/libvirt/volume.py
++++ b/nova/virt/libvirt/volume.py
+@@ -26,6 +26,7 @@ from nova.openstack.common import log as logging
+ from nova import utils
+ from nova.virt.libvirt import config
+ from nova.virt.libvirt import utils as virtutils
++from nova.api.ec2 import ec2utils
+ 
+ LOG = logging.getLogger(__name__)
+ FLAGS = flags.FLAGS
+@@ -48,6 +49,23 @@ class LibvirtVolumeDriver(object):
          conf.target_dev = mount_device
          conf.target_bus = "virtio"
          conf.serial = connection_info.get('serial')
@@ -12,8 +33,8 @@
 +
 +        local_volume_uuid = "/dev/%s/%s" % (FLAGS.volume_group, FLAGS.volume_name_template)
 +        local_volume_uuid = local_volume_uuid % volume_id
-+        is_local_volume_ec2id = islink(local_volume_ec2id)
-+        is_local_volume_uuid = islink(local_volume_uuid)
++        is_local_volume_ec2id = os.path.islink(local_volume_ec2id)
++        is_local_volume_uuid = os.path.islink(local_volume_uuid)
 +
 +        if is_local_volume_uuid:
 +             conf.source_path = local_volume_uuid
@@ -24,3 +45,6 @@
          return conf
  
      def disconnect_volume(self, connection_info, mount_device):
+-- 
+1.8.1.4
+
