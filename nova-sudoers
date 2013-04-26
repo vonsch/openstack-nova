@@ -1,4 +1,4 @@
 Defaults:nova !requiretty
 Defaults env_keep="PATH PYTHONPATH"
 Defaults env_reset
-nova ALL = (root) NOPASSWD: SETENV: ~bindir~/nova-rootwrap
+nova ALL = (root) NOPASSWD: SETENV: /usr/bin/nova-rootwrap
