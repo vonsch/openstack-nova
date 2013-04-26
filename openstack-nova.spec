@@ -7,7 +7,7 @@
 
 Name:             openstack-nova
 Version:          2012.2.4
-Release:          4%{?dist}.gdc3
+Release:          5%{?dist}.gdc1
 Summary:          OpenStack Compute (nova)
 
 Group:            Applications/System
@@ -110,6 +110,8 @@ Patch1026: 1026-Netapp_PCI-437-don-t-resize-parent-volume-for-new-LU.patch
 # Folsom's issue with naming volumes
 #Patch1027: 10270-ZPI-respect-volumenametemplate.patch
 Patch1028: 10280-ZPI-ec2api-blockdevicemapping.patch
+
+Patch1029: 1029-graceful-shutdown-for-poweroff-and-reboot.patch
 
 BuildArch:        noarch
 BuildRequires:    intltool
@@ -467,6 +469,7 @@ This package contains documentation files for nova.
 %patch1025 -p1
 #%patch1027 -p1
 %patch1028 -p1
+%patch1029 -p1
 
 find . \( -name .gitignore -o -name .placeholder \) -delete
 
