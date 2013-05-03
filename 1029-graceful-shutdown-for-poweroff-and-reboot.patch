@@ -21,7 +21,7 @@ index 9ef21b8..a96b8ce 100644
 +                    (state, _max_mem, _mem, _cpus, _t) = virt_dom.info()
 +                    state = LIBVIRT_POWER_STATE[state]
 +                    LOG.debug(_("Instance shutdown status: %s"), state)
-+                    if state in [power_state.SHUTDOWN,power_state.CRASHED,power_state.SHUTOFF]:
++                    if state in [power_state.SHUTDOWN,power_state.CRASHED]:
 +                        LOG.info(_("Instance shutdown successfully."),
 +                                 instance=instance)
 +                        break
