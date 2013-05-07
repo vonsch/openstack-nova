@@ -1,0 +1,31 @@
+From f74fbe63ad333bc0efa3a749840ef242515ca927 Mon Sep 17 00:00:00 2001
+From: Brano Zarnovican <branislav.zarnovican@gooddata.com>
+Date: Tue, 7 May 2013 14:19:52 +0200
+Subject: [PATCH] FIX: attach Essex volume in Folsom via iSCSI
+
+Former Essex volume have two tgt snippets in Folsom. Both backing
+stores reference the same device. "allow-in-use yes" will tell
+tgtd that it is ok that two targets (by UUID, by EC2) may reference
+the same device.
+
+This patch should be removed when there are no more iSCSI sessions
+referencing EC2 id and corresponding tgt snippets removed.
+---
+ nova/volume/iscsi.py | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/nova/volume/iscsi.py b/nova/volume/iscsi.py
+index c1bbf96..a777b71 100644
+--- a/nova/volume/iscsi.py
++++ b/nova/volume/iscsi.py
+@@ -115,6 +115,7 @@ class TgtAdm(TargetAdmin):
+         volume_conf = """
+             <target %s>
+                 backing-store %s
++                allow-in-use yes
+             </target>
+         """ % (name, path)
+ 
+-- 
+1.8.1.4
+

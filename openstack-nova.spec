@@ -7,7 +7,7 @@
 
 Name:             openstack-nova
 Version:          2012.2.4
-Release:          5%{?dist}.gdc3
+Release:          5%{?dist}.gdc4
 Summary:          OpenStack Compute (nova)
 
 Group:            Applications/System
@@ -112,6 +112,11 @@ Patch1026: 1026-Netapp_PCI-437-don-t-resize-parent-volume-for-new-LU.patch
 Patch1028: 10280-ZPI-ec2api-blockdevicemapping.patch
 
 Patch1029: 1029-graceful-shutdown-for-poweroff-and-reboot.patch
+
+# E->F migration: fix two tgt entries for same volume
+Patch1030: 1030-FIX-attach-Essex-volume-in-Folsom-via-iSCSI.patch
+# E->F migration: make existing Essex Netapp volume/snapshots available in Folsom
+Patch1031: 1031-Netapp_existing-Essex-volume-snapshots-availab.patch
 
 BuildArch:        noarch
 BuildRequires:    intltool
@@ -470,6 +475,8 @@ This package contains documentation files for nova.
 #%patch1027 -p1
 %patch1028 -p1
 %patch1029 -p1
+%patch1030 -p1
+%patch1031 -p1
 
 find . \( -name .gitignore -o -name .placeholder \) -delete
 
@@ -867,6 +874,10 @@ fi
 %endif
 
 %changelog
+* Tue May 07 2013 Branislav Zarnovican <branislav.zarnovican@gooddata.com> - 2012.2.4-5.gdc4
+- added migration patch for LV volumes
+- added migration patch for Netapp volumes
+
 * Tue Mar 26 2013 Zdenek Pizl <zdenek.pizl@gooddata.com> 2012.2.4-1.gdc1
  - Upgrade to Folsom release 2012.2.4 tarball
  - build for default  EL6 directory layout
