@@ -7,7 +7,7 @@
 
 Name:             openstack-nova
 Version:          2012.2.4
-Release:          5%{?dist}.gdc4
+Release:          5%{?dist}.gdc5
 Summary:          OpenStack Compute (nova)
 
 Group:            Applications/System
@@ -114,7 +114,7 @@ Patch1028: 10280-ZPI-ec2api-blockdevicemapping.patch
 Patch1029: 1029-graceful-shutdown-for-poweroff-and-reboot.patch
 
 # E->F migration: fix two tgt entries for same volume
-Patch1030: 1030-FIX-attach-Essex-volume-in-Folsom-via-iSCSI.patch
+Patch1030: 1030-FIX-attach-premigration-ISCSI.patch
 # E->F migration: make existing Essex Netapp volume/snapshots available in Folsom
 Patch1031: 1031-Netapp_existing-Essex-volume-snapshots-availab.patch
 
@@ -874,6 +874,9 @@ fi
 %endif
 
 %changelog
+* Thu May 09 2013 Zdenek Pizl <zdenek.pizl@gooddata.com> - 2012.2.4-5.gdc5
+- removed BZA's patch1030 and use another dirty patch instead of it
+
 * Tue May 07 2013 Branislav Zarnovican <branislav.zarnovican@gooddata.com> - 2012.2.4-5.gdc4
 - added migration patch for LV volumes
 - added migration patch for Netapp volumes
