@@ -1,8 +1,8 @@
-From c97c71c27054ebe9f6a24b78bc427c3229623039 Mon Sep 17 00:00:00 2001
+From b88fd5f90b8d9c976a4be71a1ec3a2323efafc5f Mon Sep 17 00:00:00 2001
 From: Brano Zarnovican <branislav.zarnovican@gooddata.com>
 Date: Thu, 25 Apr 2013 16:09:52 +0200
-Subject: [PATCH] FEATURE: make existing Essex volume/snapshots available in
- Folsom
+Subject: [PATCH 3/3] FEATURE: make existing Essex volume/snapshots available
+ in Folsom
 
 * major change is in _lookup_lun_for_volume method. If the volume
   of snapshot was not found by its UUID name then he will try the
@@ -22,7 +22,7 @@ Subject: [PATCH] FEATURE: make existing Essex volume/snapshots available in
  1 file changed, 31 insertions(+), 5 deletions(-)
 
 diff --git a/nova/volume/netapp.py b/nova/volume/netapp.py
-index 1ac069c..858af82 100644
+index 9e33aa0..d6819cc 100644
 --- a/nova/volume/netapp.py
 +++ b/nova/volume/netapp.py
 @@ -36,6 +36,7 @@ from nova.openstack.common import cfg
@@ -67,7 +67,7 @@ index 1ac069c..858af82 100644
          msg = _("No entry in LUN table for volume %s") % (name)
          raise exception.VolumeBackendAPIException(data=msg)
  
-@@ -1058,6 +1077,7 @@ class NetAppISCSIDriver(driver.ISCSIDriver):
+@@ -981,6 +1000,7 @@ class NetAppISCSIDriver(driver.ISCSIDriver):
          project = snapshot['project_id']
          lun = self._lookup_lun_for_volume(vol_name, project)
          lun_id = lun.id
@@ -75,10 +75,10 @@ index 1ac069c..858af82 100644
          lun = self._get_lun_details(lun_id)
          extra_gb = snapshot['volume_size']
          new_size = '+%dg' % extra_gb
-@@ -1069,18 +1089,22 @@ class NetAppISCSIDriver(driver.ISCSIDriver):
+@@ -992,18 +1012,22 @@ class NetAppISCSIDriver(driver.ISCSIDriver):
          src_path = '%s/%s' % (qtree_path, lun_name)
          dest_path = '%s/%s' % (qtree_path, snapshot_name)
-         self._copy_or_clone_lun(lun, src_path, dest_path, True)
+         self._clone_lun(lun.HostId, src_path, dest_path, True)
 +        self._refresh_dfm_luns(lun.HostId)
 +        self._discover_dataset_luns(dataset, snapshot_name)
  
@@ -100,7 +100,7 @@ index 1ac069c..858af82 100644
          extra_gb = snapshot['volume_size']
          new_size = '-%dg' % extra_gb
          self._resize_volume(lun.HostId, lun.VolumeName, new_size)
-@@ -1100,7 +1124,7 @@ class NetAppISCSIDriver(driver.ISCSIDriver):
+@@ -1023,7 +1047,7 @@ class NetAppISCSIDriver(driver.ISCSIDriver):
          vol_name = snapshot['volume_name']
          snapshot_name = snapshot['name']
          project = snapshot['project_id']
@@ -109,15 +109,15 @@ index 1ac069c..858af82 100644
          lun_id = lun.id
          dataset = lun.dataset
          old_type = dataset.type
-@@ -1118,8 +1142,10 @@ class NetAppISCSIDriver(driver.ISCSIDriver):
+@@ -1041,8 +1065,10 @@ class NetAppISCSIDriver(driver.ISCSIDriver):
          self._create_qtree(lun.HostId, lun.VolumeName, clone_name)
          src_path = '/vol/%s/%s/%s' % (lun.VolumeName, lun.QtreeName,
                                        snapshot_name)
 +        src_path2 = '/vol/' + str(lun.LunPath)
 +        LOG.debug('create_volume_from_snapshot: src_path=%s src_path2=%s' % (src_path, src_path2))
          dest_path = '/vol/%s/%s/%s' % (lun.VolumeName, clone_name, clone_name)
--        self._copy_or_clone_lun(lun, src_path, dest_path, False)
-+        self._copy_or_clone_lun(lun, src_path2, dest_path, False)
+-        self._clone_lun(lun.HostId, src_path, dest_path, False)
++        self._clone_lun(lun.HostId, src_path2, dest_path, False)
          self._refresh_dfm_luns(lun.HostId)
          self._discover_dataset_luns(dataset, clone_name)
          if vol_size > snap_size:

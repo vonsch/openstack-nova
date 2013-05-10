@@ -7,7 +7,7 @@
 
 Name:             openstack-nova
 Version:          2012.2.4
-Release:          5%{?dist}.gdc5
+Release:          5%{?dist}.gdc6
 Summary:          OpenStack Compute (nova)
 
 Group:            Applications/System
@@ -98,8 +98,6 @@ Patch1019: 1019-Netapp_1091480-synchronize-dataset-edit.patch
 Patch1020: 1020-Netapp_1099414_added-qtree-removal.patch
 # https://bugs.launchpad.net/cinder/+bug/1098581, Netapp Folsom FEATURE
 Patch1021: 1021-Netapp_1098581_create-volume-from-snapshot-of-smaller-size.patch
-# https://jira.gooddata.com/jira/browse/PCI-308, Netapp Folsom FEATURE (GDC only)
-Patch1022: 1022-Netapp_PCI-308_copy-LUN-instead-of-clone.patch
 # PCI-308, Netapp Folsom driver backport to (GDC) Essex
 Patch1024: 1024-Netapp_backport-for-GDC-version-of-driver-API.patch
 # https://bugs.launchpad.net/nova/+bug/1112483
@@ -469,7 +467,6 @@ This package contains documentation files for nova.
 %patch1020 -p1
 %patch1021 -p1
 %patch1026 -p1
-%patch1022 -p1
 %patch1024 -p1
 %patch1025 -p1
 #%patch1027 -p1
@@ -874,6 +871,9 @@ fi
 %endif
 
 %changelog
+* Fri May 10 2013 Branislav Zarnovican <branislav.zarnovican@gooddata.com> - 2012.2.4-5.gdc6
+- removed Netapp's copy-instead-of-clone patch
+
 * Thu May 09 2013 Zdenek Pizl <zdenek.pizl@gooddata.com> - 2012.2.4-5.gdc5
 - removed BZA's patch1030 and use another dirty patch instead of it
 
