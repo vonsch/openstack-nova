@@ -1,0 +1,38 @@
+From 52afe16d333a8d17fae59ab4ee7065226bfc3c49 Mon Sep 17 00:00:00 2001
+From: Jaroslav Pulchart <jaroslav.pulchart@gooddata.com>
+Date: Wed, 27 Feb 2013 15:27:02 +0100
+Subject: [PATCH 31/32] Add value elements into describe-instance-attribute api
+ call
+
+---
+ nova/api/ec2/cloud.py | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/nova/api/ec2/cloud.py b/nova/api/ec2/cloud.py
+index 64fa0a5..b86e196 100644
+--- a/nova/api/ec2/cloud.py
++++ b/nova/api/ec2/cloud.py
+@@ -1017,9 +1017,9 @@ class CloudController(object):
+         def _format_attr_instance_initiated_shutdown_behavior(instance,
+                                                                result):
+             if instance['shutdown_terminate']:
+-                result['instanceInitiatedShutdownBehavior'] = 'terminate'
++                result['instanceInitiatedShutdownBehavior'] = {'value': 'terminate'}
+             else:
+-                result['instanceInitiatedShutdownBehavior'] = 'stop'
++                result['instanceInitiatedShutdownBehavior'] = {'value': 'stop'}
+ 
+         def _format_attr_instance_type(instance, result):
+             self._format_instance_type(instance, result)
+@@ -1037,7 +1037,7 @@ class CloudController(object):
+             _unsupported_attribute(instance, result)
+ 
+         def _format_attr_user_data(instance, result):
+-            result['userData'] = base64.b64decode(instance['user_data'])
++            result['userData'] = {'value': base64.b64decode(instance['user_data'])}
+ 
+         attribute_formatter = {
+             'blockDeviceMapping': _format_attr_block_device_mapping,
+-- 
+1.8.1.2
+

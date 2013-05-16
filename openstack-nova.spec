@@ -7,7 +7,7 @@
 
 Name:             openstack-nova
 Version:          2012.2.4
-Release:          6%{?dist}.gdc1
+Release:          6%{?dist}.gdc2
 Summary:          OpenStack Compute (nova)
 
 Group:            Applications/System
@@ -116,6 +116,8 @@ Patch1029: 1029-graceful-shutdown-for-poweroff-and-reboot.patch
 Patch1030: 1030-FIX-attach-premigration-ISCSI.patch
 # E->F migration: make existing Essex Netapp volume/snapshots available in Folsom
 Patch1031: 1031-Netapp_existing-Essex-volume-snapshots-availab.patch
+
+Patch1032: 1032-fix-describe-instance-attribute-api-call.patch
 
 BuildArch:        noarch
 BuildRequires:    intltool
@@ -475,6 +477,7 @@ This package contains documentation files for nova.
 %patch1029 -p1
 %patch1030 -p1
 %patch1031 -p1
+%patch1032 -p1
 
 find . \( -name .gitignore -o -name .placeholder \) -delete
 
@@ -872,6 +875,9 @@ fi
 %endif
 
 %changelog
+* Thu May 16 2013 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> - 2012.2.4-6.gdc2
+- added missing 1032-fix-describe-instance-attribute-api-call.patch
+
 * Thu May 16 2013 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> - 2012.2.4-6.gdc1
 - added missing 1027-Calculate-with-REAL-free-RAM-in-least_cost.py.patch
 
