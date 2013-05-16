@@ -1,19 +1,8 @@
-From 3dbcff21a7e3b42a62c1e651598b989b88aa5a4d Mon Sep 17 00:00:00 2001
-From: Jaroslav Pulchart <jaroslav.pulchart@gooddata.com>
-Date: Wed, 27 Feb 2013 16:55:38 +0100
-Subject: [PATCH 32/32] Calculate with REAL free RAM in
- least_cost.py/compute_fill_first_cost_fn
-
----
- nova/scheduler/host_manager.py |  4 ++--
- nova/scheduler/least_cost.py   | 16 +++++++++++++++-
- 2 files changed, 17 insertions(+), 3 deletions(-)
-
 diff --git a/nova/scheduler/host_manager.py b/nova/scheduler/host_manager.py
-index 289ac27..7956d72 100644
+index e406731..c110de1 100644
 --- a/nova/scheduler/host_manager.py
 +++ b/nova/scheduler/host_manager.py
-@@ -105,6 +105,7 @@ class HostState(object):
+@@ -116,6 +116,7 @@ class HostState(object):
          if capabilities is None:
              capabilities = {}
          self.capabilities = ReadOnlyDict(capabilities.get(topic, None))
@@ -21,35 +10,26 @@ index 289ac27..7956d72 100644
          if service is None:
              service = {}
          self.service = ReadOnlyDict(service)
-@@ -166,8 +167,7 @@ class HostState(object):
+@@ -180,9 +181,8 @@ class HostState(object):
          return True
  
      def __repr__(self):
 -        return ("host '%s': free_ram_mb:%s free_disk_mb:%s" %
 -                (self.host, self.free_ram_mb, self.free_disk_mb))
-+        return ("host '%s': free_ram_mb:%s free_disk_mb:%s memory_free:%s" % (self.host, self.free_ram_mb, self.free_disk_mb, self.memory_free))
- 
+-
++        return ("host '%s': free_ram_mb:%s free_disk_mb:%s memory_free:%s" %
++                (self.host, self.free_ram_mb, self.free_disk_mb, self.memory_free))
  
  class HostManager(object):
+     """Base HostManager class."""
 diff --git a/nova/scheduler/least_cost.py b/nova/scheduler/least_cost.py
-index 70dc180..0f6cf3b 100644
+index bccdd0a..61cc822 100644
 --- a/nova/scheduler/least_cost.py
 +++ b/nova/scheduler/least_cost.py
-@@ -67,6 +67,10 @@ class WeightedHost(object):
-             x['host'] = self.host_state.host
-         return x
- 
-+    def __repr__(self):
-+        d = self.to_dict()
-+        d['host'] = d.get('host', None)
-+        return '<WeightedHost weight=%(weight)d %(host)s>' % d
- 
- def noop_cost_fn(host_state, weighing_properties):
-     """Return a pre-weight cost of 1 for each host"""
-@@ -76,7 +80,16 @@ def noop_cost_fn(host_state, weighing_properties):
- def compute_fill_first_cost_fn(host_state, weighing_properties):
-     """More free ram = higher weight. So servers will less free
-     ram will be preferred."""
+@@ -86,7 +86,16 @@ def compute_fill_first_cost_fn(host_state, weighing_properties):
+     is -1.0. With a -1.0 this function runs in reverse, so systems
+     with the most free memory will be preferred.
+     """
 -    return host_state.free_ram_mb
 +    try:
 +        if host_state.memory_free is not None:
@@ -64,13 +44,3 @@ index 70dc180..0f6cf3b 100644
  
  
  def weighted_sum(weighted_fns, host_states, weighing_properties):
-@@ -122,5 +135,6 @@ def weighted_sum(weighted_fns, host_states, weighing_properties):
-             for idx, host_state in enumerate(host_states)]
- 
-     final_scores = sorted(final_scores)
-+    LOG.debug('Host weights = '+str(final_scores))
-     weight, host_state = final_scores[0]  # Lowest score is the winner!
-     return WeightedHost(weight, host_state=host_state)
--- 
-1.8.1.2
-
