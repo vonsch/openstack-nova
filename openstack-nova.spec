@@ -7,7 +7,7 @@
 
 Name:             openstack-nova
 Version:          2012.2.4
-Release:          5%{?dist}.gdc6
+Release:          6%{?dist}.gdc1
 Summary:          OpenStack Compute (nova)
 
 Group:            Applications/System
@@ -105,9 +105,10 @@ Patch1025: 1025-1112483-device-size-mismatch-when-LUN-is-reus.patch
 # https://jira.gooddata.com/browse/PCI-437
 Patch1026: 1026-Netapp_PCI-437-don-t-resize-parent-volume-for-new-LU.patch
 
+Patch1027: 1027-Calculate-with-REAL-free-RAM-in-least_cost.py.patch
+
 # Folsom's issue with naming volumes
-#Patch1027: 10270-ZPI-respect-volumenametemplate.patch
-Patch1028: 10280-ZPI-ec2api-blockdevicemapping.patch
+Patch1028: 1028-ec2api-blockdevicemapping.patch
 
 Patch1029: 1029-graceful-shutdown-for-poweroff-and-reboot.patch
 
@@ -469,7 +470,7 @@ This package contains documentation files for nova.
 %patch1026 -p1
 %patch1024 -p1
 %patch1025 -p1
-#%patch1027 -p1
+%patch1027 -p1
 %patch1028 -p1
 %patch1029 -p1
 %patch1030 -p1
@@ -871,6 +872,9 @@ fi
 %endif
 
 %changelog
+* Thu May 16 2013 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> - 2012.2.4-6.gdc1
+- added missing 1027-Calculate-with-REAL-free-RAM-in-least_cost.py.patch
+
 * Fri May 10 2013 Branislav Zarnovican <branislav.zarnovican@gooddata.com> - 2012.2.4-5.gdc6
 - removed Netapp's copy-instead-of-clone patch
 
@@ -886,310 +890,4 @@ fi
  - build for default  EL6 directory layout
  - standard naming for packages
 
-* Mon Feb 04 2013 Pádraig Brady <pbrady@redhat.com> - 2012.2.3-1
-- Update to folsom stable release 3
 
-* Tue Jan 29 2013 Pádraig Brady <pbrady@redhat.com> - 2012.2.2-2
-- disallow boot from volume from specifying arbitrary volumes (CVE-2013-0208)
-- Added python-keystone requirement
-
-* Fri Dec 14 2012 Pádraig Brady <pbrady@redhat.com> - 2012.2.2-1
-- Update to folsom stable release 2 (fixes CVE-2012-5625)
-
-* Thu Dec 06 2012 Nikola Đipanov <ndipanov@redhat.com> - 2012.2.1-3
-- signing_dir renamed from incorrect signing_dirname in default nova.conf
-
-* Tue Dec 04 2012 Nikola Đipanov <ndipanov@redhat.com> - 2012.2.1-2
-- Fix rpc_control_exchange regression
-
-* Fri Nov 30 2012 Nikola Đipanov <ndipanov@redhat.com> - 2012.2.1-1
-- Update to folsom stable release 1
-
-* Tue Oct 30 2012 Pádraig Brady <pbrady@redhat.com> - 2012.2-2
-- Add support for python-migrate-0.6
-
-* Thu Oct 12 2012 Pádraig Brady <pbrady@redhat.com> - 2012.2-1
-- Update to folsom final
-
-* Fri Oct 12 2012 Nikola Dipanov <ndipanov@redhat.com> - 2012.1.3-1
-- Restore libvirt block storage connections on reboot
-- Fix libvirt volume attachment error logging
-- Ensure instances with deleted floating IPs can be deleted
-- Ensure can contact floating IP after instance snapshot
-- Fix tenant usage time accounting
-- Ensure correct disk definitions are used on volume attach/detach
-- Improve concurrency of long running tasks
-- Fix unmounting of LXC containers in the presence of symlinks
-- Fix external lock corruption in the presence of SELinux
-- Allow snapshotting images that are deleted in glance
-- Ensure the correct fixed IP is deallocated when deleting VMs
-
-* Fri Aug 10 2012 Pádraig Brady <P@draigBrady.com> - 2012.1.1-15
-- Fix package versions to ensure update dependencies are correct
-- Fix CA cert permissions issue introduced in 2012.1.1-10
-
-* Wed Aug  8 2012 Pádraig Brady <P@draigBrady.com> - 2012.1.1-13
-- Log live migration errors
-- Prohibit host file corruption through file injection (CVE-2012-3447)
-
-* Mon Aug  6 2012 Pádraig Brady <P@draigBrady.com> - 2012.1.1-12
-- Fix group installation issue introduced in 2012.1.1-10
-
-* Sun Jul 30 2012 Pádraig Brady <P@draigBrady.com> - 2012.1.1-11
-- Update from stable upstream including...
-- Fix metadata file injection with xen
-- Fix affinity filters when hints is None
-- Fix marker behavior for flavors
-- Handle local remote exceptions consistently
-- Fix qcow2 size on libvirt live block migration
-- Fix for API listing of os hosts
-- Avoid lazy loading errors on instance_type
-- Avoid casts in network manager to prevent races
-- Conditionally allow queries for deleted flavours
-- Fix wrong regex in cleanup_file_locks
-- Add net rules to VMs on compute service start
-- Tolerate parsing null connection info in BDM
-- Support EC2 CreateImage API for boot from volume
-- EC2 DescribeImages reports correct rootDeviceType
-- Reject EC2 CreateImage for instance store
-- Fix EC2 CreateImage no_reboot logic
-- Convert remaining network API casts to calls
-- Move where the fixed ip deallocation happens
-- Fix the qpid_heartbeat option so that it's effective
-
-* Fri Jul 27 2012 Pádraig Brady <P@draigBrady.com> - 2012.1.1-10
-- Split out into more sub packages
-
-* Fri Jul 20 2012 Pádraig Brady <P@draigBrady.com> - 2012.1.1-4
-- Enable auto cleanup of old cached instance images
-- Fix ram_allocation_ratio based over subscription
-- Expose over quota exceptions via native API
-- Return 413 status on over quota in the native API
-- Fix call to network_get_all_by_uuids
-- Fix libvirt get_memory_mb_total with xen
-- Use compute_api.get_all in affinity filters (CVE-2012-3371)
-- Use default qemu img cluster size in libvirt connect
-- Ensure libguestfs has completed before proceeding
-
-* Thu Jul  5 2012 Pádraig Brady <P@draigBrady.com> - 2012.1.1-3
-- Distinguish volume overlimit exceptions
-- Prohibit host file corruption through file injection (CVE-2012-3360, CVE-2012-3361)
-
-* Wed Jun 27 2012 Pádraig Brady <P@draigBrady.com> - 2012.1.1-2
-- Update to latest essex stable branch
-- Support injecting new .ssh/authorized_keys files to SELinux enabled guests
-
-* Fri Jun 22 2012 Pádraig Brady <P@draigBrady.com> - 2012.1.1-1
-- Update to essex stable release 2012.1.1
-- Improve performance and stability of file injection
-- add upstart jobs, alternative to sysv initscripts
-
-* Fri Jun 15 2012 Pádraig Brady <P@draigBrady.com> - 2012.1-12
-- update performance and stability fixes from essex stable
-
-* Mon Jun 11 2012 Pádraig Brady <P@draigBrady.com> - 2012.1-11
-- fix an exception caused by the fix for CVE-2012-2654
-- fix the encoding of the dns_domains table (requires a db sync)
-- fix a crash due to a nova services startup race (#825051)
-
-* Wed Jun 08 2012 Pádraig Brady <P@draigBrady.com> - 2012.1-10
-- Enable libguestfs image inspection
-
-* Wed Jun 06 2012 Pádraig Brady <P@draigBrady.com> - 2012.1-9
-- Sync up with Essex stable branch, including...
-- Fix for protocol case handling (#829441, CVE-2012-2654)
-
-* Wed May 16 2012 Alan Pevec <apevec@redhat.com> - 2012.1-8
-- Remove m2crypto and other dependencies no loner needed by Essex
-
-* Wed May 16 2012 Pádraig Brady <P@draigBrady.com> - 2012.1-7
-- Depend on tunctl which can be used when `ip tuntap` is unavailable
-- Sync up with Essex stable branch
-- Handle updated qemu-img info output
-- Replace openstack-nova-db-setup with openstack-db
-
-* Wed May 09 2012 Alan Pevec <apevec@redhat.com> - 2012.1-6
-- Remove the socat dependency no longer needed by Essex
-
-* Tue May 01 2012 Pádraig Brady <P@draigBrady.com> - 2012.1-5
-- Start the services later in the boot sequence
-
-* Wed Apr 27 2012 Pádraig Brady <P@draigBrady.com> - 2012.1-4
-- Fix install issues with new Essex init scripts
-
-* Wed Apr 25 2012 Pádraig Brady <P@draigBrady.com> - 2012.1-3
-- Use parallel installed versions of python-routes and python-paste-deploy
-
-* Thu Apr 19 2012 Pádraig Brady <P@draigBrady.com> - 2012.1-2
-- Sync up with Essex stable branch
-- Support more flexible guest image file injection
-- Enforce quota on security group rules (#814275, CVE-2012-2101)
-- Provide startup scripts for the Essex VNC services
-- Provide a startup script for the separated metadata api service
-
-* Fri Apr 13 2012 Pádraig Brady <P@draigBrady.com> - 2012.1-1
-- Update to Essex release
-
-* Mon Apr 01 2012 Pádraig Brady <P@draigBrady.com> - 2012.1-0.1.rc1
-- Update to Essex release candidate 1
-
-* Thu Mar 29 2012 Pádraig Brady <P@draigBrady.com> - 2011.3.1-8
-- Remove the dependency on the not yet available dnsmasq-utils
-
-* Thu Mar 29 2012 Russell Bryant <rbryant@redhat.com> - 2011.3.1-7
-- CVE-2012-1585 - Long server names grow nova-api log files significantly
-- Resolves: rhbz#808148
-
-* Mon Mar  6 2012 Pádraig Brady <P@draigBrady.com> - 2011.3.1-5
-- Require bridge-utils
-
-* Mon Feb 13 2012 Pádraig Brady <P@draigBrady.com> - 2011.3.1-4
-- Support --force_dhcp_release (#788485)
-
-* Fri Jan 27 2012 Pádraig Brady <P@draigBrady.com> - 2011.3.1-3
-- Suppress erroneous output to stdout on package install (#785115)
-
-* Mon Jan 23 2012 Pádraig Brady <P@draigBrady.com> - 2011.3.1-2
-- Fix a REST API v1.0 bug causing a regression with deltacloud
-
-* Fri Jan 20 2012 Pádraig Brady <P@draigBrady.com> - 2011.3.1-1
-- Update to 2011.3.1 release
-- Allow empty mysql root password in mysql setup script
-- Enable mysqld at boot in mysql setup script
-
-* Wed Jan 18 2012 Mark McLoughlin <markmc@redhat.com> - 2011.3.1-0.4.10818%{?dist}
-- Update to latest 2011.3.1 release candidate
-- Re-add nova-{clear-rabbit-queues,instance-usage-audit}
-
-* Tue Jan 17 2012 Mark McLoughlin <markmc@redhat.com> - 2011.3.1-0.3.10814
-- nova-stack isn't missing after all
-
-* Tue Jan 17 2012 Mark McLoughlin <markmc@redhat.com> - 2011.3.1-0.2.10814
-- nova-{stack,clear-rabbit-queues,instance-usage-audit} temporarily removed because of lp#917676
-
-* Tue Jan 17 2012 Mark McLoughlin <markmc@redhat.com> - 2011.3.1-0.1.10814
-- Update to 2011.3.1 release candidate
-- Only adds 4 patches from upstream which we didn't already have
-
-* Wed Jan 11 2012 Pádraig Brady <P@draigBrady.com> - 2011.3-19
-- Fix libguestfs support for specified partitions
-- Fix tenant bypass by authenticated users using API (#772202, CVE-2012-0030)
-
-* Fri Jan  6 2012 Mark McLoughlin <markmc@redhat.com> - 2011.3-18
-- Fix up recent patches which don't apply
-
-* Fri Jan  6 2012 Mark McLoughlin <markmc@redhat.com> - 2011.3-17
-- Backport tgtadm off-by-one fix from upstream (#752709)
-
-* Fri Jan  6 2012 Mark McLoughlin <markmc@redhat.com> - 2011.3-16
-- Rebase to latest upstream stable/diablo, pulling in ~50 patches
-
-* Fri Jan  6 2012 Mark McLoughlin <markmc@redhat.com> - 2011.3-15
-- Move recent patches into git (no functional changes)
-
-* Fri Dec 30 2011 Pádraig Brady <P@draigBrady.com> - 2011.3-14
-- Don't require the fuse group (#770927)
-- Require the fuse package (to avoid #767852)
-
-* Tue Dec 14 2011 Pádraig Brady <P@draigBrady.com> - 2011.3-13
-- Sanitize EC2 manifests and image tarballs (#767236, CVE 2011-4596)
-- update libguestfs support
-
-* Tue Dec 06 2011 Russell Bryant <rbryant@redhat.com> - 2011.3-11
-- Add --yes, --rootpw, and --novapw options to openstack-nova-db-setup.
-
-* Wed Nov 30 2011 Pádraig Brady <P@draigBrady.com> - 2011.3-10
-- Use updated parallel install versions of epel packages
-- Add libguestfs support
-
-* Tue Nov 29 2011 Pádraig Brady <P@draigBrady.com> - 2011.3-9
-- Update the libvirt dependency from 0.8.2 to 0.8.7
-- Ensure we don't access the net when building docs
-
-* Tue Nov 29 2011 Russell Bryant <rbryant@redhat.com> - 2011.3-8
-- Change default database to mysql. (#735012)
-
-* Mon Nov 14 2011 Mark McLoughlin <markmc@redhat.com> - 2011.3-8
-- Add ~20 significant fixes from upstream stable branch
-
-* Wed Oct 26 2011 Mark McLoughlin <markmc@redhat.com> - 2011.3-7
-- Fix password leak in EC2 API (#749385, CVE 2011-4076)
-
-* Mon Oct 24 2011 Mark McLoughlin <markmc@redhat.com> - 2011.3-5
-- Fix block migration (#741690)
-
-* Fri Oct 21 2011 David Busby <oneiroi@fedoraproject.org> 2011.3-5
-- Changed requirement from python-sphinx, to python-sphinx10
-- Switch back to SysV init for el6
-
-* Mon Oct 17 2011 Bob Kukura <rkukura@redhat.com> - 2011.3-4
-- Add dependency on python-amqplib (#746685)
-
-* Wed Sep 28 2011 Mark McLoughlin <markmc@redhat.com> - 2011.3-3
-- Fix lazy load exception with security groups (#741307)
-- Fix issue with nova-network deleting the default route (#741686)
-- Fix errors caused by MySQL connection pooling (#741312)
-
-* Mon Sep 26 2011 Mark McLoughlin <markmc@redhat.com> - 2011.3-2
-- Manage the package's patches in git; no functional changes.
-
-* Thu Sep 22 2011 Mark McLoughlin <markmc@redhat.com> - 2011.3-1
-- Update to Diablo final.
-- Drop some upstreamed patches.
-- Update the metadata-accept patch to what's proposed for essex.
-- Switch rpc impl from carrot to kombu.
-
-* Mon Sep 19 2011 Mark McLoughlin <markmc@redhat.com> - 2011.3-0.10.d4
-- Use tgtadm instead of ietadm (#737046)
-
-* Wed Sep 14 2011 Mark McLoughlin <markmc@redhat.com> - 2011.3-0.9.d4
-- Remove python-libguestfs dependency (#738187)
-
-* Mon Sep  5 2011 Mark McLoughlin <markmc@redhat.com> - 2011.3-0.8.d4
-- Add iptables rule to allow EC2 metadata requests (#734347)
-
-* Sat Sep  3 2011 Mark McLoughlin <markmc@redhat.com> - 2011.3-0.7.d4
-- Add iptables rules to allow requests to dnsmasq (#734347)
-
-* Wed Aug 31 2011 Angus Salkeld <asalkeld@redhat.com> - 2011.3-0.6.d4
-- Add the one man page provided by nova.
-- Start services with --flagfile rather than --flag-file (#735070)
-
-* Tue Aug 30 2011 Angus Salkeld <asalkeld@redhat.com> - 2011.3-0.5.d4
-- Switch from SysV init scripts to systemd units (#734345)
-
-* Mon Aug 29 2011 Mark McLoughlin <markmc@redhat.com> - 2011.3-0.4.d4
-- Don't generate root CA during %%post (#707199)
-- The nobody group shouldn't own files in /var/lib/nova
-- Add workaround for sphinx-build segfault
-
-* Fri Aug 26 2011 Mark McLoughlin <markmc@redhat.com> - 2011.3-0.3.d4
-- Update to diablo-4 milestone
-- Use statically assigned uid:gid 162:162 (#732442)
-- Collapse all sub-packages into openstack-nova; w/o upgrade path
-- Reduce use of macros
-- Rename stack to nova-stack
-- Fix openssl.cnf.tmpl script-without-shebang rpmlint warning
-- Really remove ajaxterm
-- Mark polkit file as %%config
-
-* Mon Aug 22 2011 Mark McLoughlin <markmc@redhat.com> - 2011.3-0.2.1449bzr
-- Remove dependency on python-novaclient
-
-* Wed Aug 17 2011 Mark McLoughlin <markmc@redhat.com> - 2011.3-0.1.1449bzr
-- Update to latest upstream.
-- nova-import-canonical-imagestore has been removed
-- nova-clear-rabbit-queues was added
-
-* Tue Aug  9 2011 Mark McLoughlin <markmc@redhat.com> - 2011.3-0.2.1409bzr
-- Update to newer upstream
-- nova-instancemonitor has been removed
-- nova-instance-usage-audit added
-
-* Tue Aug  9 2011 Mark McLoughlin <markmc@redhat.com> - 2011.3-0.1.bzr1130
-- More cleanups
-- Change release tag to reflect pre-release status
-
-* Wed Jun 29 2011 Matt Domsch <mdomsch@fedoraproject.org> - 2011.3-1087.1
-- Initial package from Alexander Sakhnov <asakhnov@mirantis.com>
-  with cleanups by Matt Domsch
