@@ -7,7 +7,7 @@
 
 Name:             openstack-nova
 Version:          2012.2.4
-Release:          6%{?dist}.gdc3
+Release:          6%{?dist}.gdc4
 Summary:          OpenStack Compute (nova)
 
 Group:            Applications/System
@@ -116,13 +116,11 @@ Patch1029: 1029-graceful-shutdown-for-poweroff-and-reboot.patch
 Patch1030: 1030-FIX-attach-premigration-ISCSI.patch
 # E->F migration: make existing Essex Netapp volume/snapshots available in Folsom
 Patch1031: 1031-Netapp_existing-Essex-volume-snapshots-availab.patch
-
 Patch1032: 1032-fix-describe-instance-attribute-api-call.patch
-
 Patch1033: 1033-simple-sleep-for-bdm.patch
-
 # not tested for now
 #Patch1034: 1034-pae-for-kvm-and-i686.patch
+Patch1035: 1035-add_default_flagfile_into_utils.patch
 
 BuildArch:        noarch
 BuildRequires:    intltool
@@ -484,9 +482,9 @@ This package contains documentation files for nova.
 %patch1031 -p1
 %patch1032 -p1
 %patch1033 -p1
-
 # not tested for now
 #%patch1034 -p1
+%patch1035 -p1
 
 find . \( -name .gitignore -o -name .placeholder \) -delete
 
@@ -884,6 +882,9 @@ fi
 %endif
 
 %changelog
+* Fri May 17 2013 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> - 2012.2.4-6.gdc4
+- added 1035-add_default_flagfile_into_utils.patch
+
 * Fri May 17 2013 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> - 2012.2.4-6.gdc3
 - added 1033-simple-sleep-for-bdm.patch
 - included 1034-pae-for-kvm-and-i686.patch but not used for now because of missing testing
