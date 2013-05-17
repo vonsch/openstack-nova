@@ -1,0 +1,100 @@
+From c98098cb3abe13543dac09fd76bb0943bc2c3401 Mon Sep 17 00:00:00 2001
+From: Yufang Zhang <yufang521247@gmail.com>
+Date: Thu, 17 Jan 2013 17:35:27 +0800
+Subject: [PATCH] libvirt: enable pae flag for KVM and Xen guest.
+
+Bug 1100697
+
+Currently, nova doesn't enable pae setting for Xen and KVM guest
+in its libvirt driver. Windows( Win7 in my environment ) guests
+would not boot successful in such case. This patch adds pae setting
+in libvirt driver for i686 Xen and KVM guest, which would fix this
+problem.
+
+Change-Id: I12dc2ae7acfe8fdfd25d46976088b25c90c37cf9
+---
+ nova/tests/test_libvirt_config.py | 4 ++++
+ nova/virt/libvirt/config.py       | 5 ++++-
+ nova/virt/libvirt/driver.py       | 2 ++
+ 3 files changed, 10 insertions(+), 1 deletion(-)
+
+diff --git a/nova/tests/test_libvirt_config.py b/nova/tests/test_libvirt_config.py
+index 56719de..4169680 100644
+--- a/nova/tests/test_libvirt_config.py
++++ b/nova/tests/test_libvirt_config.py
+@@ -737,6 +737,7 @@ class LibvirtConfigGuestTest(LibvirtConfigBaseTest):
+         obj.os_cmdline = "console=xvc0"
+         obj.acpi = True
+         obj.apic = True
++        obj.pae = True
+ 
+         disk = config.LibvirtConfigGuestDisk()
+         disk.source_type = "file"
+@@ -762,6 +763,7 @@ class LibvirtConfigGuestTest(LibvirtConfigBaseTest):
+               <features>
+                 <acpi/>
+                 <apic/>
++                <pae/>
+               </features>
+               <devices>
+                 <disk type="file" device="disk">
+@@ -783,6 +785,7 @@ class LibvirtConfigGuestTest(LibvirtConfigBaseTest):
+         obj.os_smbios = config.LibvirtConfigGuestSMBIOS()
+         obj.acpi = True
+         obj.apic = True
++        obj.pae = True
+ 
+         obj.sysinfo = config.LibvirtConfigGuestSysinfo()
+         obj.sysinfo.bios_vendor = "Acme"
+@@ -819,6 +822,7 @@ class LibvirtConfigGuestTest(LibvirtConfigBaseTest):
+               <features>
+                 <acpi/>
+                 <apic/>
++                <pae/>
+               </features>
+               <devices>
+                 <disk type="file" device="disk">
+diff --git a/nova/virt/libvirt/config.py b/nova/virt/libvirt/config.py
+index ed5b21c..27d39e8 100644
+--- a/nova/virt/libvirt/config.py
++++ b/nova/virt/libvirt/config.py
+@@ -730,6 +730,7 @@ class LibvirtConfigGuest(LibvirtConfigObject):
+         self.cpu = None
+         self.acpi = False
+         self.apic = False
++        self.pae = False
+         self.clock = None
+         self.sysinfo = None
+         self.os_type = None
+@@ -771,12 +772,14 @@ class LibvirtConfigGuest(LibvirtConfigObject):
+         root.append(os)
+ 
+     def _format_features(self, root):
+-        if self.acpi or self.apic:
++        if self.acpi or self.apic or self.pae:
+             features = etree.Element("features")
+             if self.acpi:
+                 features.append(etree.Element("acpi"))
+             if self.apic:
+                 features.append(etree.Element("apic"))
++            if self.pae:
++                features.append(etree.Element("pae"))
+             root.append(features)
+ 
+     def _format_devices(self, root):
+diff --git a/nova/virt/libvirt/driver.py b/nova/virt/libvirt/driver.py
+index 557818a..d4a7909 100644
+--- a/nova/virt/libvirt/driver.py
++++ b/nova/virt/libvirt/driver.py
+@@ -1735,6 +1735,8 @@ class LibvirtDriver(driver.ComputeDriver):
+         if CONF.libvirt_type != "lxc" and CONF.libvirt_type != "uml":
+             guest.acpi = True
+             guest.apic = True
++            if instance['architecture'] == "i686":
++                guest.pae = True
+ 
+         clk = vconfig.LibvirtConfigGuestClock()
+         clk.offset = "utc"
+-- 
+1.8.1.4
+

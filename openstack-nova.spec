@@ -7,7 +7,7 @@
 
 Name:             openstack-nova
 Version:          2012.2.4
-Release:          6%{?dist}.gdc2
+Release:          6%{?dist}.gdc3
 Summary:          OpenStack Compute (nova)
 
 Group:            Applications/System
@@ -118,6 +118,11 @@ Patch1030: 1030-FIX-attach-premigration-ISCSI.patch
 Patch1031: 1031-Netapp_existing-Essex-volume-snapshots-availab.patch
 
 Patch1032: 1032-fix-describe-instance-attribute-api-call.patch
+
+Patch1033: 1033-simple-sleep-for-bdm.patch
+
+# not tested for now
+#Patch1034: 1034-pae-for-kvm-and-i686.patch
 
 BuildArch:        noarch
 BuildRequires:    intltool
@@ -478,6 +483,10 @@ This package contains documentation files for nova.
 %patch1030 -p1
 %patch1031 -p1
 %patch1032 -p1
+%patch1033 -p1
+
+# not tested for now
+#%patch1034 -p1
 
 find . \( -name .gitignore -o -name .placeholder \) -delete
 
@@ -875,6 +884,10 @@ fi
 %endif
 
 %changelog
+* Fri May 17 2013 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> - 2012.2.4-6.gdc3
+- added 1033-simple-sleep-for-bdm.patch
+- included 1034-pae-for-kvm-and-i686.patch but not used for now because of missing testing
+
 * Thu May 16 2013 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> - 2012.2.4-6.gdc2
 - added missing 1032-fix-describe-instance-attribute-api-call.patch
 
