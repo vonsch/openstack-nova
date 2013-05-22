@@ -1,0 +1,39 @@
+From 1470d10761799dc7457ca9387d03966b0c3b6584 Mon Sep 17 00:00:00 2001
+From: Brano Zarnovican <branislav.zarnovican@gooddata.com>
+Date: Wed, 22 May 2013 09:02:49 +0200
+Subject: [PATCH] FIX: PCI-640 - trim firewall log for verbose level
+
+---
+ nova/virt/firewall.py | 5 -----
+ 1 file changed, 5 deletions(-)
+
+diff --git a/nova/virt/firewall.py b/nova/virt/firewall.py
+index a093a35..8c0cd9e 100644
+--- a/nova/virt/firewall.py
++++ b/nova/virt/firewall.py
+@@ -370,8 +370,6 @@ class IptablesFirewallDriver(FirewallDriver):
+                                                           security_group['id'])
+ 
+             for rule in rules:
+-                LOG.debug(_('Adding security group rule: %r'), rule,
+-                          instance=instance)
+ 
+                 if not rule.cidr:
+                     version = 4
+@@ -419,13 +417,10 @@ class IptablesFirewallDriver(FirewallDriver):
+                                 for ip in nw_info.fixed_ips()
+                                     if ip['version'] == version]
+ 
+-                            LOG.debug('ips: %r', ips, instance=instance)
+                             for ip in ips:
+                                 subrule = args + ['-s %s' % ip]
+                                 fw_rules += [' '.join(subrule)]
+ 
+-                LOG.debug('Using fw_rules: %r', fw_rules, instance=instance)
+-
+         ipv4_rules += ['-j $sg-fallback']
+         ipv6_rules += ['-j $sg-fallback']
+ 
+-- 
+1.8.1.4
+

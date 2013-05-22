@@ -7,7 +7,7 @@
 
 Name:             openstack-nova
 Version:          2012.2.4
-Release:          6%{?dist}.gdc5
+Release:          6%{?dist}.gdc6
 Summary:          OpenStack Compute (nova)
 
 Group:            Applications/System
@@ -123,6 +123,8 @@ Patch1033: 1033-simple-sleep-for-bdm.patch
 Patch1035: 1035-add_default_flagfile_into_utils.patch
 # workaround for SNAT output interface issue
 Patch1036: 1036-FIX-switch-back-to-SNAT-rule-to-any-target-if.patch
+# PCI-640 - trim firewall log for verbose level
+Patch1037: 1037-FIX-PCI-640-trim-firewall-log-for-verbose-level.patch
 
 BuildArch:        noarch
 BuildRequires:    intltool
@@ -488,6 +490,7 @@ This package contains documentation files for nova.
 #%patch1034 -p1
 %patch1035 -p1
 %patch1036 -p1
+%patch1037 -p1
 
 find . \( -name .gitignore -o -name .placeholder \) -delete
 
@@ -885,6 +888,9 @@ fi
 %endif
 
 %changelog
+* Wed May 22 2013 Branislav Zarnovican <branislav.zarnovican@gooddata.com> - 2012.2.4-6.gdc6
+- added patch to trim firewall log for verbose level
+
 * Sat May 18 2013 Branislav Zarnovican <branislav.zarnovican@gooddata.com> - 2012.2.4-6.gdc5
 - added workaround for SNAT output interface issue (patch 1036)
 
