@@ -7,7 +7,7 @@
 
 Name:             openstack-nova
 Version:          2012.2.4
-Release:          6%{?dist}.gdc6
+Release:          6%{?dist}.gdc7
 Summary:          OpenStack Compute (nova)
 
 Group:            Applications/System
@@ -77,7 +77,6 @@ Patch10080: 10080-ZPI-Workaround-for-bug-1061628.patch
 # https://bugs.launchpad.net/nova/+bug/1016633
 # not final fix, please update it after the tickets is closed
 Patch1009: 1009-Do-not-run-RPC-call-for-simple-db-look-at-fixed_ip-s_v1.patch
-Patch10090: 1009-ZPI-Do-not-run-RPC-call-for-simple-db-look-at-fixed_ip-s_v1.patch
 # https://jira.gooddata.com/jira/browse/PCI-271
 #Patch1010: 1010-fix_netapp_set_default_description.patch
 # https://jira.gooddata.com/jira/browse/PCI-272
@@ -456,11 +455,7 @@ This package contains documentation files for nova.
 ##%patch1007 -p1
 ##%patch10080 
 %patch1008 -p1
-
-
-## Patch 1009 replaced by Patch10090
-##%patch1009 -p1
-%patch10090 
+%patch1009 -p1
 ## 1010 already in mainstream
 ##%patch1010 -p1
 ## Patch1011 replaced by Patch 10110 
@@ -888,8 +883,9 @@ fi
 %endif
 
 %changelog
-* Wed May 22 2013 Branislav Zarnovican <branislav.zarnovican@gooddata.com> - 2012.2.4-6.gdc6
+* Wed May 22 2013 Branislav Zarnovican <branislav.zarnovican@gooddata.com> - 2012.2.4-6.gdc7
 - added patch to trim firewall log for verbose level
+- fixed tabs/spaces in 1009 patch
 
 * Sat May 18 2013 Branislav Zarnovican <branislav.zarnovican@gooddata.com> - 2012.2.4-6.gdc5
 - added workaround for SNAT output interface issue (patch 1036)
