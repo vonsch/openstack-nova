@@ -1,5 +1,5 @@
---- driver.py.orig	2013-05-22 21:56:58.119052635 +0200
-+++ driver.py	2013-05-23 15:27:59.757895690 +0200
+--- a/nova/volume/driver.py.orig	2013-05-22 21:56:58.119052635 +0200
++++ b/nova/volume/driver.py	2013-05-23 15:27:59.757895690 +0200
 @@ -36,6 +36,8 @@
  from nova import db
  from socket import gethostbyname
