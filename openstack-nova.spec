@@ -7,7 +7,7 @@
 
 Name:             openstack-nova
 Version:          2012.2.4
-Release:          6%{?dist}.gdc7
+Release:          6%{?dist}.gdc8
 Summary:          OpenStack Compute (nova)
 
 Group:            Applications/System
@@ -124,6 +124,7 @@ Patch1035: 1035-add_default_flagfile_into_utils.patch
 Patch1036: 1036-FIX-switch-back-to-SNAT-rule-to-any-target-if.patch
 # PCI-640 - trim firewall log for verbose level
 Patch1037: 1037-FIX-PCI-640-trim-firewall-log-for-verbose-level.patch
+Patch1038: 1038-FIX-remove-essex-volume.patch
 
 BuildArch:        noarch
 BuildRequires:    intltool
@@ -486,6 +487,8 @@ This package contains documentation files for nova.
 %patch1035 -p1
 %patch1036 -p1
 %patch1037 -p1
+# quick patch for Essex volumes removal
+%patch1038 -p1
 
 find . \( -name .gitignore -o -name .placeholder \) -delete
 
