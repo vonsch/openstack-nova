@@ -1,5 +1,5 @@
---- a/nova/volume/driver.py.orig	2013-05-22 13:24:35.000000000 +0200
-+++ b/nova/volume/driver.py	2013-05-23 13:58:29.700967608 +0200
+--- driver.py.orig	2013-05-22 21:56:58.119052635 +0200
++++ driver.py	2013-05-23 15:27:59.757895690 +0200
 @@ -36,6 +36,8 @@
  from nova import db
  from socket import gethostbyname
@@ -40,7 +40,7 @@
  
      def _sizestr(self, size_in_g):
          if int(size_in_g) == 0:
-@@ -264,11 +271,37 @@
+@@ -264,11 +271,44 @@
  
      def delete_volume(self, volume):
          """Deletes a logical volume."""
@@ -71,9 +71,16 @@
 +                    #we have to remove iscsi export for EC2 target
 +                    iqn = '%s%s' % (FLAGS.iscsi_target_prefix, ec2id)
 +                    LOG.debug("Removing legacy EC2 IQN: %s\n" % iqn)
-+                    self.tgtadm.delete_target_iqn(iqn)
++                    try:
++                        self.tgtadm.delete_target_iqn(iqn)
++                    except:
++                        pass
++
 +                    volume_path = os.path.join(FLAGS.volumes_dir, ec2id)
-+                    os.unlink(volume_path)
++                    try:
++                         os.unlink(volume_path)
++                    except:
++                         pass
 +                    
 +                    self._delete_volume(volume, volume['size'], ec2id)
 +            except Exception as e:        
@@ -82,7 +89,7 @@
  
      def create_snapshot(self, snapshot):
          """Creates a snapshot."""
-@@ -288,10 +321,13 @@
+@@ -288,10 +328,13 @@
          # it's quite slow.
          self._delete_volume(snapshot, snapshot['volume_size'])
  
