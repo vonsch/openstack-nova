@@ -7,7 +7,7 @@
 
 Name:             openstack-nova
 Version:          2012.2.4
-Release:          6%{?dist}.gdc9
+Release:          6%{?dist}.gdc10
 Summary:          OpenStack Compute (nova)
 
 Group:            Applications/System
@@ -84,7 +84,6 @@ Patch1009: 1009-Do-not-run-RPC-call-for-simple-db-look-at-fixed_ip-s_v1.patch
 #Patch10110: 1011-ZPI-fix_netapp_ensure_export_host_arg.patch
 # AMI based instance cannot be resized
 Patch1012: 1012-Get-size-of-root-block-device-from-mapping-table.patch
-Patch10120: 1012-ZPI-Get-size-of-root-block-device-from-mapping-table.patch
 
 # Elastic IPs
 Patch1017: 1017-elastic_ip_pool_for_public_ips.patch
@@ -462,9 +461,7 @@ This package contains documentation files for nova.
 ## Patch1011 replaced by Patch 10110 
 ##%patch1011
 #%patch10110
-## Patch1012 replaced by Patch10120
-##%patch1012 -p1
-%patch10120
+%patch1012
 %patch1017 -p1
 
 
@@ -886,6 +883,9 @@ fi
 %endif
 
 %changelog
+* Fri May 31 2013 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> - 2012.2.4-6.gdc10
+- fix 1012-Get-size-of-root-block-device-from-mapping-table.patch
+
 * Wed May 22 2013 Branislav Zarnovican <branislav.zarnovican@gooddata.com> - 2012.2.4-6.gdc7
 - added patch to trim firewall log for verbose level
 - fixed tabs/spaces in 1009 patch
