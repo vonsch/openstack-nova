@@ -7,7 +7,7 @@
 
 Name:             openstack-nova
 Version:          2012.2.4
-Release:          6%{?dist}.gdc10
+Release:          7%{?dist}.gdc
 Summary:          OpenStack Compute (nova)
 
 Group:            Applications/System
@@ -124,6 +124,7 @@ Patch1036: 1036-FIX-switch-back-to-SNAT-rule-to-any-target-if.patch
 # PCI-640 - trim firewall log for verbose level
 Patch1037: 1037-FIX-PCI-640-trim-firewall-log-for-verbose-level.patch
 Patch1038: 1038-FIX-remove-essex-volume.patch
+Patch1039: 1039-Enforce-mkfs-at-lvm-ephemerals.patch
 
 BuildArch:        noarch
 BuildRequires:    intltool
@@ -229,8 +230,7 @@ Requires:         vconfig
 Requires:         radvd
 Requires:         bridge-utils
 Requires:         dnsmasq
-#TODO: Enable when available in RHEL 6.3
-#Requires:         dnsmasq-utils
+Requires:         dnsmasq-utils
 # tunctl is needed where `ip tuntap` is not available
 Requires:         tunctl
 
@@ -486,6 +486,7 @@ This package contains documentation files for nova.
 %patch1037 -p1
 # quick patch for Essex volumes removal
 %patch1038 -p1
+%patch1039 -p1
 
 find . \( -name .gitignore -o -name .placeholder \) -delete
 
@@ -883,6 +884,12 @@ fi
 %endif
 
 %changelog
+* Mon Jun 31 2013 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> - 2012.2.4-7.gdc
+- Ephemeral volume at LVM have to be formated like as on qcow2 ephemeral
+- ext4 filesystem is a default
+- make sure that enforced filesystem is used (default_ephemeral_format)
+- add missing dnsmasq-utils package into reuqires
+
 * Fri May 31 2013 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> - 2012.2.4-6.gdc10
 - fix 1012-Get-size-of-root-block-device-from-mapping-table.patch
 
