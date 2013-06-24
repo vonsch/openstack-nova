@@ -884,7 +884,7 @@ fi
 %endif
 
 %changelog
-* Mon Jun 31 2013 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> - 2012.2.4-7.gdc
+* Mon Jun 24 2013 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> - 2012.2.4-7.gdc
 - Ephemeral volume at LVM have to be formated like as on qcow2 ephemeral
 - ext4 filesystem is a default
 - make sure that enforced filesystem is used (default_ephemeral_format)
