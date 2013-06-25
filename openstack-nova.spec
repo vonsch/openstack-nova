@@ -7,7 +7,7 @@
 
 Name:             openstack-nova
 Version:          2012.2.4
-Release:          7%{?dist}.gdc
+Release:          8%{?dist}.gdc
 Summary:          OpenStack Compute (nova)
 
 Group:            Applications/System
@@ -125,6 +125,8 @@ Patch1036: 1036-FIX-switch-back-to-SNAT-rule-to-any-target-if.patch
 Patch1037: 1037-FIX-PCI-640-trim-firewall-log-for-verbose-level.patch
 Patch1038: 1038-FIX-remove-essex-volume.patch
 Patch1039: 1039-Enforce-mkfs-at-lvm-ephemerals.patch
+# PCI-1069 - add EC2 API authorization layer
+Patch1040: 1040-ec2-authorization.patch
 
 BuildArch:        noarch
 BuildRequires:    intltool
@@ -487,6 +489,7 @@ This package contains documentation files for nova.
 # quick patch for Essex volumes removal
 %patch1038 -p1
 %patch1039 -p1
+%patch1040 -p1
 
 find . \( -name .gitignore -o -name .placeholder \) -delete
 
@@ -884,6 +887,9 @@ fi
 %endif
 
 %changelog
+* Tue Jun 25 2013 Tomas Dubec <tomas.dubec@gooddata.com> - 2012.2.4-8.gdc
+- add EC2 API authorization layer
+
 * Mon Jun 24 2013 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> - 2012.2.4-7.gdc
 - Ephemeral volume at LVM have to be formated like as on qcow2 ephemeral
 - ext4 filesystem is a default
