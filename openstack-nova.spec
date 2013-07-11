@@ -7,7 +7,7 @@
 
 Name:             openstack-nova
 Version:          2012.2.4
-Release:          8%{?dist}.gdc
+Release:          9%{?dist}.gdc
 Summary:          OpenStack Compute (nova)
 
 Group:            Applications/System
@@ -127,6 +127,11 @@ Patch1038: 1038-FIX-remove-essex-volume.patch
 Patch1039: 1039-Enforce-mkfs-at-lvm-ephemerals.patch
 # PCI-1069 - add EC2 API authorization layer
 Patch1040: 1040-ec2-authorization.patch
+# PCI-1466
+Patch1041: 1041-hugepages-memory-backend-for-libvirt.patch
+# PCI-1523
+Patch1042: 1042-Report-free-LVM-volume-group-space.patch
+Patch1043: 1043-Report-free-HugeMemory-space-instead-of-free-memory.patch
 
 BuildArch:        noarch
 BuildRequires:    intltool
@@ -490,6 +495,9 @@ This package contains documentation files for nova.
 %patch1038 -p1
 %patch1039 -p1
 %patch1040 -p1
+%patch1041 -p1
+%patch1042 -p1
+%patch1043 -p1
 
 find . \( -name .gitignore -o -name .placeholder \) -delete
 
@@ -887,6 +895,11 @@ fi
 %endif
 
 %changelog
+* Thu Jul 11 2013 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> - 2012.2.4-9.gdc
+- PCI-1466 optional HugePages memory backend
+- PCI-1523 report free HugeMemory space instead of OS free memory when HugePages are enabled
+- PCI-1523 report free LVM volume group space when LVM AMI backend is used (https://bugs.launchpad.net/nova/+bug/1198831)
+
 * Tue Jun 25 2013 Tomas Dubec <tomas.dubec@gooddata.com> - 2012.2.4-8.gdc
 - add EC2 API authorization layer
 
