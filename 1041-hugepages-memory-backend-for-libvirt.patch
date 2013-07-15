@@ -1,26 +1,16 @@
-From 394e43ba6892a4a2922d56e90f33a5f05b0cc1af Mon Sep 17 00:00:00 2001
-From: Jaroslav Pulchart <jaroslav.pulchart@gooddata.com>
-Date: Wed, 26 Jun 2013 22:16:06 +0200
-Subject: [PATCH] FEATURE: Enable hugepages memory backend for libvirt.
-
----
- nova/virt/libvirt/config.py | 8 ++++++++
- nova/virt/libvirt/driver.py | 6 ++++++
- 2 files changed, 14 insertions(+)
-
 diff --git a/nova/virt/libvirt/config.py b/nova/virt/libvirt/config.py
-index 1daf236..f873675 100644
+index 4e5341e..a8518a5 100644
 --- a/nova/virt/libvirt/config.py
 +++ b/nova/virt/libvirt/config.py
-@@ -586,6 +586,7 @@ class LibvirtConfigGuest(LibvirtConfigObject):
+@@ -584,6 +584,7 @@ class LibvirtConfigGuest(LibvirtConfigObject):
+         self.memory = 1024 * 1024 * 500
+         self.vcpus = 1
          self.cpu = None
++        self.hugepages = False
          self.acpi = False
          self.apic = False
-+        self.hugepages = False
-         self.clock = None
-         self.os_type = None
-         self.os_loader = None
-@@ -622,6 +623,12 @@ class LibvirtConfigGuest(LibvirtConfigObject):
+         self.pae = False
+@@ -623,6 +624,12 @@ class LibvirtConfigGuest(LibvirtConfigObject):
              os.append(etree.Element("boot", dev=self.os_boot_dev))
          root.append(os)
  
@@ -31,9 +21,9 @@ index 1daf236..f873675 100644
 +            root.append(memorybacking)
 +
      def _format_features(self, root):
-         if self.acpi or self.apic:
+         if self.acpi or self.apic or self.pae:
              features = etree.Element("features")
-@@ -646,6 +653,7 @@ class LibvirtConfigGuest(LibvirtConfigObject):
+@@ -649,6 +656,7 @@ class LibvirtConfigGuest(LibvirtConfigObject):
  
          self._format_basic_props(root)
          self._format_os(root)
@@ -42,7 +32,7 @@ index 1daf236..f873675 100644
  
          if self.clock is not None:
 diff --git a/nova/virt/libvirt/driver.py b/nova/virt/libvirt/driver.py
-index 9ef21b8..dc65047 100644
+index 954eb18..623a143 100644
 --- a/nova/virt/libvirt/driver.py
 +++ b/nova/virt/libvirt/driver.py
 @@ -100,6 +100,9 @@ libvirt_opts = [
@@ -55,9 +45,9 @@ index 9ef21b8..dc65047 100644
      cfg.StrOpt('libvirt_uri',
                 default='',
                 help='Override the default libvirt URI '
-@@ -1801,6 +1804,9 @@ class LibvirtDriver(driver.ComputeDriver):
-             guest.acpi = True
-             guest.apic = True
+@@ -1830,6 +1833,9 @@ class LibvirtDriver(driver.ComputeDriver):
+             if instance['architecture'] == "i686":
+                 guest.pae = True
  
 +        if FLAGS.libvirt_hugepages == True:
 +            guest.hugepages = True
@@ -65,6 +55,3 @@ index 9ef21b8..dc65047 100644
          clk = config.LibvirtConfigGuestClock()
          clk.offset = "utc"
          guest.set_clock(clk)
--- 
-1.8.3.1
-

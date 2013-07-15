@@ -7,7 +7,7 @@
 
 Name:             openstack-nova
 Version:          2012.2.4
-Release:          9%{?dist}.gdc
+Release:          10%{?dist}.gdc
 Summary:          OpenStack Compute (nova)
 
 Group:            Applications/System
@@ -51,7 +51,7 @@ Source22:         nova-ifc-template
 # patches_base=2012.2
 #
 
-Patch0001: 0001-ZPI-Ensure-we-don-t-access-the-net-when-building-docs.patch
+Patch0001: 0001-Ensure-we-don-t-access-the-net-when-building-docs.patch
 
 # This is EPEL specific and not upstream
 Patch0500: openstack-nova-newdeps.patch
@@ -59,29 +59,17 @@ Patch0500: openstack-nova-newdeps.patch
 # GDC patchset
 # https://jira.gooddata.com/jira/browse/GD-25782
 Patch1002: 1002-Create-a-volume-from-a-snapshot-from-different-avail.patch 
-# https://jira.gooddata.com/jira/browse/GD-27146
-Patch1003: 1003-force-snapshot-create-in-EC2-api.patch
 # https://jira.gooddata.com/jira/browse/GD-23657
 Patch1004: 1004-force-lvm-snapshot-delete-when-volue-delete.patch
 # https://jira.gooddata.com/jira/browse/PCI-141
 Patch1005: 1005-use-local-LVM-volume-instead-of-iSCSI-device-on-same.patch
 # https://jira.gooddata.com/jira/browse/PCI-156 (PCI-110)
 Patch1006: 1006-Setting-promisc-on-VLAN-bridge.patch
-# https://bugs.launchpad.net/nova/+bug/1026029
-# https://bugs.launchpad.net/nova/+bug/1057467
-# not final fix, please update it after the tickets are closed
-Patch1007: 1007-1026029-libvirtError_Domain_not_found-temp_fix.patch
 # https://bugs.launchpad.net/nova/+bug/1061628
 Patch1008: 1008-Workaround-for-bug-1061628.patch
-Patch10080: 10080-ZPI-Workaround-for-bug-1061628.patch
 # https://bugs.launchpad.net/nova/+bug/1016633
 # not final fix, please update it after the tickets is closed
 Patch1009: 1009-Do-not-run-RPC-call-for-simple-db-look-at-fixed_ip-s_v1.patch
-# https://jira.gooddata.com/jira/browse/PCI-271
-#Patch1010: 1010-fix_netapp_set_default_description.patch
-# https://jira.gooddata.com/jira/browse/PCI-272
-#Patch1011: 1011-fix_netapp_ensure_export_host_arg.patch
-#Patch10110: 1011-ZPI-fix_netapp_ensure_export_host_arg.patch
 # AMI based instance cannot be resized
 Patch1012: 1012-Get-size-of-root-block-device-from-mapping-table.patch
 
@@ -116,8 +104,7 @@ Patch1030: 1030-FIX-attach-premigration-ISCSI.patch
 Patch1031: 1031-Netapp_existing-Essex-volume-snapshots-availab.patch
 Patch1032: 1032-fix-describe-instance-attribute-api-call.patch
 Patch1033: 1033-simple-sleep-for-bdm.patch
-# not tested for now
-#Patch1034: 1034-pae-for-kvm-and-i686.patch
+Patch1034: 1034-pae-for-kvm-and-i686.patch
 Patch1035: 1035-add_default_flagfile_into_utils.patch
 # workaround for SNAT output interface issue
 Patch1036: 1036-FIX-switch-back-to-SNAT-rule-to-any-target-if.patch
@@ -452,26 +439,13 @@ This package contains documentation files for nova.
 
 # GDC Patches
 %patch1002 -p1
-## 1003 already in mainstream
-## %patch1003 -p1
 %patch1004 -p1
-## 1005 strange, not applicable patch from 2012.2
 %patch1005 -p1
 %patch1006 -p1
-## 1007 is deprecated apparently, nova/virt/libvirt/connection.py does not exist anymore
-##%patch1007 -p1
-##%patch10080 
 %patch1008 -p1
 %patch1009 -p1
-## 1010 already in mainstream
-##%patch1010 -p1
-## Patch1011 replaced by Patch 10110 
-##%patch1011
-#%patch10110
 %patch1012
 %patch1017 -p1
-
-
 %patch1018 -p1
 %patch1019 -p1
 %patch1020 -p1
@@ -486,8 +460,7 @@ This package contains documentation files for nova.
 %patch1031 -p1
 %patch1032 -p1
 %patch1033 -p1
-# not tested for now
-#%patch1034 -p1
+%patch1034 -p1
 %patch1035 -p1
 %patch1036 -p1
 %patch1037 -p1
@@ -895,6 +868,15 @@ fi
 %endif
 
 %changelog
+* Thu Jul 15 2013 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> - 2012.2.4-10.gdc
+- Remove unused patches from spec file
+- Integrate PAE for i686 patch
+
+* Thu Jul 11 2013 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> - 2012.2.4-9.gdc
+- PCI-1466 optional HugePages memory backend
+- PCI-1523 report free HugeMemory space instead of OS free memory when HugePages are enabled
+- PCI-1523 report free LVM volume group space when LVM AMI backend is used (https://bugs.launchpad.net/nova/+bug/1198831)
+
 * Thu Jul 11 2013 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> - 2012.2.4-9.gdc
 - PCI-1466 optional HugePages memory backend
 - PCI-1523 report free HugeMemory space instead of OS free memory when HugePages are enabled
