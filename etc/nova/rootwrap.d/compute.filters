@@ -193,3 +193,6 @@ vgs: CommandFilter, /sbin/vgs, root
 
 # nova/virt/libvirt/volume.py: 'multipath' '-R'
 multipath: CommandFilter, /sbin/multipath, root
+
+# nova/virt/libvirt/volume.py: 'cp', '/dev/stdin', delete_control..
+cp: CommandFilter, cp, root

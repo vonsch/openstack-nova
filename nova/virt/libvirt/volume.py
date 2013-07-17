@@ -168,10 +168,10 @@ class LibvirtISCSIVolumeDriver(LibvirtVolumeDriver):
         else:
             self._connect_to_iscsi_portal(iscsi_properties)
 
-        host_device = ("/dev/disk/by-path/ip-%s-iscsi-%s-lun-%s" %
-                       (iscsi_properties['target_portal'],
-                        iscsi_properties['target_iqn'],
-                        iscsi_properties.get('target_lun', 0)))
+            # Detect new/resized LUNs for existing sessions
+            self._run_iscsiadm(iscsi_properties, ("--rescan",))
+
+        host_device = self._get_host_device(iscsi_properties)
 
         # The /dev/disk/by-path/... node is not always present immediately
         # TODO(justinsb): This retry-with-delay is a pattern, move to utils?
@@ -212,12 +212,9 @@ class LibvirtISCSIVolumeDriver(LibvirtVolumeDriver):
     def disconnect_volume(self, connection_info, mount_device):
         """Detach the volume from instance_name"""
         iscsi_properties = connection_info['data']
+        host_device = self._get_host_device(iscsi_properties)
         multipath_device = None
         if FLAGS.libvirt_iscsi_use_multipath:
-            host_device = ("/dev/disk/by-path/ip-%s-iscsi-%s-lun-%s" %
-                           (iscsi_properties['target_portal'],
-                            iscsi_properties['target_iqn'],
-                            iscsi_properties.get('target_lun', 0)))
             multipath_device = self._get_multipath_device_name(host_device)
 
         sup = super(LibvirtISCSIVolumeDriver, self)
@@ -236,6 +233,19 @@ class LibvirtISCSIVolumeDriver(LibvirtVolumeDriver):
         devices = [dev for dev in devices if dev.startswith(device_prefix)]
         if not devices:
             self._disconnect_from_iscsi_portal(iscsi_properties)
+        elif host_device not in devices:
+            # Delete device if LUN is not in use by another instance
+            self._delete_device(host_device)
+
+    def _delete_device(self, device_path):
+        device_name = os.path.basename(os.path.realpath(device_path))
+        delete_control = '/sys/block/' + device_name + '/device/delete'
+        if os.path.exists(delete_control):
+            # Copy '1' from stdin to the device delete control file
+            utils.execute('cp', '/dev/stdin', delete_control,
+                          process_input='1', run_as_root=True)
+        else:
+            LOG.warn(_("Unable to delete volume device %s"), device_name)
 
     def _remove_multipath_device_descriptor(self, disk_descriptor):
         disk_descriptor = disk_descriptor.replace('/dev/mapper/', '')
@@ -277,6 +287,9 @@ class LibvirtISCSIVolumeDriver(LibvirtVolumeDriver):
             # disconnect if no other multipath devices with same iqn
             self._disconnect_mpath(iscsi_properties)
             return
+        elif multipath_device not in devices:
+            # delete the devices associated w/ the unused multipath
+            self._delete_mpath(iscsi_properties, multipath_device)
 
         # else do not disconnect iscsi portals,
         # as they are used for other luns,
@@ -369,6 +382,16 @@ class LibvirtISCSIVolumeDriver(LibvirtVolumeDriver):
         return [entry for entry in list(os.walk('/dev/disk/by-path'))[0][-1]
                 if entry.startswith("ip-")]
 
+    def _delete_mpath(self, iscsi_properties, multipath_device):
+        entries = self._get_iscsi_devices()
+        iqn_lun = '%s-lun-%s' % (iscsi_properties['target_iqn'],
+                                 iscsi_properties.get('target_lun', 0))
+        for dev in ['/dev/disk/by-path/%s' % dev for dev in entries
+                    if iqn_lun in dev]:
+            self._delete_device(dev)
+
+        self._rescan_multipath()
+
     def _disconnect_mpath(self, iscsi_properties):
         entries = self._get_iscsi_devices()
         ips = [ip.split("-")[1] for ip in entries
@@ -417,4 +440,11 @@ class LibvirtISCSIVolumeDriver(LibvirtVolumeDriver):
 
     def _rescan_multipath(self):
         self._run_multipath(['-r'], check_exit_code=[0, 1, 21])
+
+
+    def _get_host_device(self, iscsi_properties):
+        return ("/dev/disk/by-path/ip-%s-iscsi-%s-lun-%s" %
+                (iscsi_properties['target_portal'],
+                 iscsi_properties['target_iqn'],
+                 iscsi_properties.get('target_lun', 0)))
 
