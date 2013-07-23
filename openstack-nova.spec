@@ -7,7 +7,7 @@
 
 Name:             openstack-nova
 Version:          2012.2.4
-Release:          10%{?dist}.gdc
+Release:          11%{?dist}.gdc
 Summary:          OpenStack Compute (nova)
 
 Group:            Applications/System
@@ -119,6 +119,7 @@ Patch1041: 1041-hugepages-memory-backend-for-libvirt.patch
 # PCI-1523
 Patch1042: 1042-Report-free-LVM-volume-group-space.patch
 Patch1043: 1043-Report-free-HugeMemory-space-instead-of-free-memory.patch
+Patch1044: 1044-LVM-Thin-volumes-support.patch
 
 BuildArch:        noarch
 BuildRequires:    intltool
@@ -471,6 +472,7 @@ This package contains documentation files for nova.
 %patch1041 -p1
 %patch1042 -p1
 %patch1043 -p1
+%patch1044 -p1
 
 find . \( -name .gitignore -o -name .placeholder \) -delete
 
@@ -868,7 +870,10 @@ fi
 %endif
 
 %changelog
-* Thu Jul 15 2013 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> - 2012.2.4-10.gdc
+* Tue Jul 21 2013 Radek Smidl <radek.smidl@gooddata.com> - 2012.2.4-11.gdc
+- PCI-1526 LVM Thin volumes support
+
+* Mon Jul 15 2013 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> - 2012.2.4-10.gdc
 - Remove unused patches from spec file
 - Integrate PAE for i686 patch
 
