@@ -1,13 +1,12 @@
-From eb1e797dc24a5b616d460f05fe4b12d2f66d5bf4 Mon Sep 17 00:00:00 2001
+From 6ea645445e2c6024b89c485db48e38b509751119 Mon Sep 17 00:00:00 2001
 From: Jaroslav Pulchart <jaroslav.pulchart@gooddata.com>
 Date: Tue, 23 Jul 2013 04:27:57 -0700
-Subject: [PATCH] Merge pull request #13 from smidlr/stable/folsom
+Subject: [PATCH 35/35] FEATURE: PCI-1526 - LVM Thin volumes support added
 
-FEATURE: PCI-1526 - LVM Thin volumes support added
 ---
  nova/virt/libvirt/imagebackend.py | 11 ++++++++--
- nova/virt/libvirt/utils.py        | 42 +++++++++++++++++++++++++++++++++++++--
- 2 files changed, 49 insertions(+), 4 deletions(-)
+ nova/virt/libvirt/utils.py        | 43 +++++++++++++++++++++++++++++++++++++--
+ 2 files changed, 50 insertions(+), 4 deletions(-)
 
 diff --git a/nova/virt/libvirt/imagebackend.py b/nova/virt/libvirt/imagebackend.py
 index cf38234..88e82f5 100644
@@ -53,7 +52,7 @@ index cf38234..88e82f5 100644
                  prepare_template(target=self.path, *args, **kwargs)
  
 diff --git a/nova/virt/libvirt/utils.py b/nova/virt/libvirt/utils.py
-index fe749a8..452118b 100644
+index fe749a8..b73ddca 100644
 --- a/nova/virt/libvirt/utils.py
 +++ b/nova/virt/libvirt/utils.py
 @@ -40,7 +40,10 @@ util_opts = [
@@ -85,7 +84,7 @@ index fe749a8..452118b 100644
      """
      free_space = volume_group_free_space(vg)
  
-@@ -121,12 +125,46 @@ def create_lvm_image(vg, lv, size, sparse=False):
+@@ -121,12 +125,47 @@ def create_lvm_image(vg, lv, size, sparse=False):
  
          cmd = ('lvcreate', '-L', '%db' % preallocated_space,
                  '--virtualsize', '%db' % size, '-n', lv, vg)
@@ -103,6 +102,7 @@ index fe749a8..452118b 100644
 +        pool_allocated_size = thin_pool_allocated_size(pool_name)
 +        overcommit = (float(size) + float(pool_allocated_size)) / float(pool_size)
 +        if overcommit > allowed_overcommit:
++            LOG.error(_('The thin pool overcommit limit exceeded (%f > %f).') % (overcommit, allowed_overcommit))
 +            raise RuntimeError(_('The thin pool overcommit limit exceeded (%f > %f).') % (overcommit, allowed_overcommit))
 +
 +        cmd = ('lvcreate', '--virtualsize', '%db' % size, '-n',

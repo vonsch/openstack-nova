@@ -7,7 +7,7 @@
 
 Name:             openstack-nova
 Version:          2012.2.4
-Release:          11%{?dist}.gdc
+Release:          12%{?dist}.gdc
 Summary:          OpenStack Compute (nova)
 
 Group:            Applications/System
@@ -870,6 +870,9 @@ fi
 %endif
 
 %changelog
+* Wed Jul 22 2013 Radek Smidl <radek.smidl@gooddata.com> - 2012.2.4-12.gdc
+- Update of PCI-1526 LVM Thin volumes support
+
 * Tue Jul 21 2013 Radek Smidl <radek.smidl@gooddata.com> - 2012.2.4-11.gdc
 - PCI-1526 LVM Thin volumes support
 
