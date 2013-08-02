@@ -7,7 +7,7 @@
 
 Name:             openstack-nova
 Version:          2012.2.4
-Release:          12%{?dist}.gdc
+Release:          13%{?dist}.gdc
 Summary:          OpenStack Compute (nova)
 
 Group:            Applications/System
@@ -120,6 +120,8 @@ Patch1041: 1041-hugepages-memory-backend-for-libvirt.patch
 Patch1042: 1042-Report-free-LVM-volume-group-space.patch
 Patch1043: 1043-Report-free-HugeMemory-space-instead-of-free-memory.patch
 Patch1044: 1044-LVM-Thin-volumes-support.patch
+Patch1045: 1045-FIX-solves-error-in-volume-deleting.patch
+Patch1046: 1046-LVM-Thin-nova-volumes-support.patch
 
 BuildArch:        noarch
 BuildRequires:    intltool
@@ -473,6 +475,8 @@ This package contains documentation files for nova.
 %patch1042 -p1
 %patch1043 -p1
 %patch1044 -p1
+%patch1045 -p1
+%patch1046 -p1
 
 find . \( -name .gitignore -o -name .placeholder \) -delete
 
@@ -870,6 +874,10 @@ fi
 %endif
 
 %changelog
+* Fri Aug 02 2013 Radek Smidl <radek.smidl@gooddata.com> - 2012.2.4-13.gdc
+- PCI-1576 solves error in volume deleting when creation was failed
+- PCI-1718 LVM Thin volumes support added to nova-volume
+
 * Wed Jul 22 2013 Radek Smidl <radek.smidl@gooddata.com> - 2012.2.4-12.gdc
 - Update of PCI-1526 LVM Thin volumes support
 
