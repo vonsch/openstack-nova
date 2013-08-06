@@ -7,7 +7,7 @@
 
 Name:             openstack-nova
 Version:          2012.2.4
-Release:          13%{?dist}.gdc
+Release:          14%{?dist}.gdc
 Summary:          OpenStack Compute (nova)
 
 Group:            Applications/System
@@ -874,6 +874,9 @@ fi
 %endif
 
 %changelog
+* Wed Aug 07 2013 Tomas Dubec <tomas.dubec@gooddata.com> - 2012.2.4-14.gdc
+- fix typo in hugepage patch 1041
+
 * Fri Aug 02 2013 Radek Smidl <radek.smidl@gooddata.com> - 2012.2.4-13.gdc
 - PCI-1576 solves error in volume deleting when creation was failed
 - PCI-1718 LVM Thin volumes support added to nova-volume
