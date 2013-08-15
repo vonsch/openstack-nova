@@ -7,7 +7,7 @@
 
 Name:             openstack-nova
 Version:          2012.2.4
-Release:          14%{?dist}.gdc
+Release:          15%{?dist}.gdc
 Summary:          OpenStack Compute (nova)
 
 Group:            Applications/System
@@ -122,6 +122,7 @@ Patch1043: 1043-Report-free-HugeMemory-space-instead-of-free-memory.patch
 Patch1044: 1044-LVM-Thin-volumes-support.patch
 Patch1045: 1045-FIX-solves-error-in-volume-deleting.patch
 Patch1046: 1046-LVM-Thin-nova-volumes-support.patch
+Patch1047: 1047-FIX-deleting-volumes-in-error-state.patch
 
 BuildArch:        noarch
 BuildRequires:    intltool
@@ -477,6 +478,7 @@ This package contains documentation files for nova.
 %patch1044 -p1
 %patch1045 -p1
 %patch1046 -p1
+%patch1047 -p1
 
 find . \( -name .gitignore -o -name .placeholder \) -delete
 
@@ -874,6 +876,9 @@ fi
 %endif
 
 %changelog
+* Thu Aug 15 2013 Radek Smidl <radek.smidl@gooddata.com> - 2012.2.4-15.gdc
+- PCI-1802 - volumes in error_deleting state when created from inaccessible NetApp snapshot
+
 * Wed Aug 07 2013 Tomas Dubec <tomas.dubec@gooddata.com> - 2012.2.4-14.gdc
 - fix typo in hugepage patch 1041
 
