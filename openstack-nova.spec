@@ -7,7 +7,7 @@
 
 Name:             openstack-nova
 Version:          2012.2.4
-Release:          15%{?dist}.gdc
+Release:          16%{?dist}.gdc
 Summary:          OpenStack Compute (nova)
 
 Group:            Applications/System
@@ -123,6 +123,8 @@ Patch1044: 1044-LVM-Thin-volumes-support.patch
 Patch1045: 1045-FIX-solves-error-in-volume-deleting.patch
 Patch1046: 1046-LVM-Thin-nova-volumes-support.patch
 Patch1047: 1047-FIX-deleting-volumes-in-error-state.patch
+# PCI-1958
+Patch1048: 1048-BUGFIX-PCI-1958-zero-out-only-first-1G-during-delete.patch
 
 BuildArch:        noarch
 BuildRequires:    intltool
@@ -479,6 +481,7 @@ This package contains documentation files for nova.
 %patch1045 -p1
 %patch1046 -p1
 %patch1047 -p1
+%patch1048 -p1
 
 find . \( -name .gitignore -o -name .placeholder \) -delete
 
@@ -876,6 +879,9 @@ fi
 %endif
 
 %changelog
+* Mon Aug 19 2013 Branislav Zarnovican <branislav.zarnovican@gooddata.com> - 2012.2.4-16.gdc
+- PCI-1958 - dd with zero only the first 1G of LVM volume
+
 * Thu Aug 15 2013 Radek Smidl <radek.smidl@gooddata.com> - 2012.2.4-15.gdc
 - PCI-1802 - volumes in error_deleting state when created from inaccessible NetApp snapshot
 
