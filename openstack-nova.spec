@@ -7,7 +7,7 @@
 
 Name:             openstack-nova
 Version:          2012.2.4
-Release:          16%{?dist}.gdc
+Release:          17%{?dist}.gdc
 Summary:          OpenStack Compute (nova)
 
 Group:            Applications/System
@@ -126,6 +126,8 @@ Patch1046: 1046-LVM-Thin-nova-volumes-support.patch
 Patch1047: 1047-FIX-deleting-volumes-in-error-state.patch
 # PCI-1958
 Patch1048: 1048-BUGFIX-PCI-1958-zero-out-only-first-1G-during-delete.patch
+# PCI-2083
+Patch1049: 1049-FEATURE-PCI-2083-Allow-same-net-traffic.patch
 
 BuildArch:        noarch
 BuildRequires:    intltool
@@ -484,6 +486,7 @@ This package contains documentation files for nova.
 %patch1046 -p1
 %patch1047 -p1
 %patch1048 -p1
+%patch1049 -p1
 
 find . \( -name .gitignore -o -name .placeholder \) -delete
 
@@ -881,6 +884,9 @@ fi
 %endif
 
 %changelog
+* Tue Sep 03 2013 Martin Surovcak <martin.surovcak@gooddatam.com> - 2012.2.4-17.gdc
+- PCI-2083 Do not generate per-instance rules when allow_same_net_traffic=True
+
 * Thu Aug 29 2013 Branislav Zarnovican <branislav.zarnovican@gooddata.com>
 - backported fix for #1067254, masking real stacktraces in wrap_instance_fault
 
