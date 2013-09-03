@@ -128,6 +128,9 @@ Patch1047: 1047-FIX-deleting-volumes-in-error-state.patch
 Patch1048: 1048-BUGFIX-PCI-1958-zero-out-only-first-1G-during-delete.patch
 # PCI-2083
 Patch1049: 1049-FEATURE-PCI-2083-Allow-same-net-traffic.patch
+Patch1050: 1050-FEATURE-PCI-1711-thin-LVM-support-for-OpenStack-sche.patch
+Patch1051: 1051-FEATURE-PCI-2046-RAM-CPU-overcommit-per-compute-node.patch
+Patch1052: 1052-BUGFIX-PCI-2025-delete-domain-after-unsuccessful-ins.patch
 
 BuildArch:        noarch
 BuildRequires:    intltool
@@ -487,6 +490,9 @@ This package contains documentation files for nova.
 %patch1047 -p1
 %patch1048 -p1
 %patch1049 -p1
+%patch1050 -p1
+%patch1051 -p1
+%patch1052 -p1
 
 find . \( -name .gitignore -o -name .placeholder \) -delete
 
@@ -884,6 +890,11 @@ fi
 %endif
 
 %changelog
+* Tue Sep 03 2013 Tomas Dubec <tomas.dubec@gooddata.com> - 2012.2.4-17.gdc
+- PCI-2046 per compute node RAM/CPU overcommit
+- PCI-1711 thin LVM support for OpenStack scheduler disk filter
+- PCI-2025 delete domain after unsuccessful deployment
+
 * Tue Sep 03 2013 Martin Surovcak <martin.surovcak@gooddatam.com> - 2012.2.4-17.gdc
 - PCI-2083 Do not generate per-instance rules when allow_same_net_traffic=True
 
