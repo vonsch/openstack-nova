@@ -7,7 +7,7 @@
 
 Name:             openstack-nova
 Version:          2012.2.4
-Release:          17%{?dist}.gdc
+Release:          18%{?dist}.gdc
 Summary:          OpenStack Compute (nova)
 
 Group:            Applications/System
@@ -890,6 +890,9 @@ fi
 %endif
 
 %changelog
+* Wed Sep 18 2013 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> - 2012.2.4-18.gdc
+- PCI-2079 snapshot have to use provider_location instead of hostname
+
 * Tue Sep 03 2013 Tomas Dubec <tomas.dubec@gooddata.com> - 2012.2.4-17.gdc
 - PCI-2046 per compute node RAM/CPU overcommit
 - PCI-1711 thin LVM support for OpenStack scheduler disk filter
