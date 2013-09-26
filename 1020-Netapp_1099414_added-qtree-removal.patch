@@ -1,14 +1,14 @@
-From 48884ca387de5b0d616b452b2b9f1ccdac496a69 Mon Sep 17 00:00:00 2001
+From 496f29082c1626c7a4f33eb4adcdb3307289d905 Mon Sep 17 00:00:00 2001
 From: Brano Zarnovican <branislav.zarnovican@gooddata.com>
 Date: Thu, 17 Jan 2013 14:34:57 +0100
-Subject: [PATCH 3/7] BUGFIX: #1099414 - added qtree removal
+Subject: [PATCH] BUGFIX: #1099414 - added qtree removal
 
 ---
- nova/volume/netapp.py | 23 ++++++++++++++++++++---
- 1 file changed, 20 insertions(+), 3 deletions(-)
+ nova/volume/netapp.py | 24 ++++++++++++++++++++----
+ 1 file changed, 20 insertions(+), 4 deletions(-)
 
 diff --git a/nova/volume/netapp.py b/nova/volume/netapp.py
-index d71586f..e30e524 100644
+index d71586f..a6acbc6 100644
 --- a/nova/volume/netapp.py
 +++ b/nova/volume/netapp.py
 @@ -434,10 +434,11 @@ class NetAppISCSIDriver(driver.ISCSIDriver):
@@ -25,7 +25,7 @@ index d71586f..e30e524 100644
          member = self.client.factory.create('DatasetMemberParameter')
          member.ObjectNameOrId = lun.id
          members = self.client.factory.create('ArrayOfDatasetMemberParameter')
-@@ -448,11 +449,27 @@ class NetAppISCSIDriver(driver.ISCSIDriver):
+@@ -448,12 +449,27 @@ class NetAppISCSIDriver(driver.ISCSIDriver):
          try:
              server.DatasetRemoveMember(EditLockId=lock_id, Destroy=True,
                                         DatasetMemberParameters=members)
@@ -50,10 +50,11 @@ index d71586f..e30e524 100644
          except (suds.WebFault, Exception):
              server.DatasetEditRollback(EditLockId=lock_id)
 -            msg = _('Failed to remove and delete dataset member')
-+            msg = _('Failed to remove and delete dataset Qtree member')
-             raise exception.VolumeBackendAPIException(data=msg)
+-            raise exception.VolumeBackendAPIException(data=msg)
++            LOG.warn(_('Volume LUN deleted, Qtree delete failed, ignoring.'))
  
      def create_volume(self, volume):
+         """Driver entry point for creating a new volume."""
 -- 
 1.8.1.4
 

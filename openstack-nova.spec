@@ -7,7 +7,7 @@
 
 Name:             openstack-nova
 Version:          2012.2.4
-Release:          18%{?dist}.gdc
+Release:          19%{?dist}.gdc
 Summary:          OpenStack Compute (nova)
 
 Group:            Applications/System
@@ -890,6 +890,9 @@ fi
 %endif
 
 %changelog
+* Thu Sep 26 2013 Branislav Zarnovican <branislav.zarnovican@gooddata.com> - 2012.2.4-19.gdc
+- updated existing 1020 patch, fix for PCI-2092
+
 * Wed Sep 18 2013 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> - 2012.2.4-18.gdc
 - PCI-2079 snapshot have to use provider_location instead of hostname
 
