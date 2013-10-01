@@ -7,7 +7,7 @@
 
 Name:             openstack-nova
 Version:          2012.2.4
-Release:          19%{?dist}.gdc
+Release:          20%{?dist}.gdc
 Summary:          OpenStack Compute (nova)
 
 Group:            Applications/System
@@ -131,6 +131,7 @@ Patch1049: 1049-FEATURE-PCI-2083-Allow-same-net-traffic.patch
 Patch1050: 1050-FEATURE-PCI-1711-thin-LVM-support-for-OpenStack-sche.patch
 Patch1051: 1051-FEATURE-PCI-2046-RAM-CPU-overcommit-per-compute-node.patch
 Patch1052: 1052-BUGFIX-PCI-2025-delete-domain-after-unsuccessful-ins.patch
+Patch1053: 1053-FEATURE-PCI-2238-return-host-in-descr.-instances-and.patch
 
 BuildArch:        noarch
 BuildRequires:    intltool
@@ -493,6 +494,7 @@ This package contains documentation files for nova.
 %patch1050 -p1
 %patch1051 -p1
 %patch1052 -p1
+%patch1053 -p1
 
 find . \( -name .gitignore -o -name .placeholder \) -delete
 
@@ -890,6 +892,9 @@ fi
 %endif
 
 %changelog
+* Tue Sep 03 2013 Tomas Dubec <tomas.dubec@gooddata.com> - 2012.2.4-20.gdc
+- PCI-2238 - allow error volume deletion, return host for instances (EC2 API)
+
 * Thu Sep 26 2013 Branislav Zarnovican <branislav.zarnovican@gooddata.com> - 2012.2.4-19.gdc
 - updated existing 1020 patch, fix for PCI-2092
 
