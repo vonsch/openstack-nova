@@ -892,7 +892,7 @@ fi
 %endif
 
 %changelog
-* Tue Sep 03 2013 Tomas Dubec <tomas.dubec@gooddata.com> - 2012.2.4-20.gdc
+* Tue Oct 01 2013 Tomas Dubec <tomas.dubec@gooddata.com> - 2012.2.4-20.gdc
 - PCI-2238 - allow error volume deletion, return host for instances (EC2 API)
 
 * Thu Sep 26 2013 Branislav Zarnovican <branislav.zarnovican@gooddata.com> - 2012.2.4-19.gdc
