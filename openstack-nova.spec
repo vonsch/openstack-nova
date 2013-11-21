@@ -7,7 +7,7 @@
 
 Name:             openstack-nova
 Version:          2012.2.4
-Release:          21%{?dist}.gdc
+Release:          22%{?dist}.gdc
 Summary:          OpenStack Compute (nova)
 
 Group:            Applications/System
@@ -894,6 +894,9 @@ fi
 %endif
 
 %changelog
+* Thu Nov 21 2013 Tomas Dubec <tomas.dubec@gooddata.com> - 2012.2.4-22.gdc
+- PCI-2758 - fix init scripts so that openstack services are terminated correctly during shutdown
+
 * Tue Oct 23 2013 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> - 2012.2.4-21.gdc
 - PCI-2479 - Extend EC2 DescribeInstances API to show terminated instances (EC2 API)
 
