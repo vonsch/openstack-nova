@@ -7,7 +7,7 @@
 
 Name:             openstack-nova
 Version:          2012.2.4
-Release:          22%{?dist}.gdc
+Release:          23%{?dist}.gdc
 Summary:          OpenStack Compute (nova)
 
 Group:            Applications/System
@@ -133,6 +133,9 @@ Patch1051: 1051-FEATURE-PCI-2046-RAM-CPU-overcommit-per-compute-node.patch
 Patch1052: 1052-BUGFIX-PCI-2025-delete-domain-after-unsuccessful-ins.patch
 Patch1053: 1053-FEATURE-PCI-2238-return-host-in-descr.-instances-and.patch
 Patch1054: 1054-FEATURE-PCI-2479-EC2-DescribeInstances-API-show-terminated-instances.patch
+
+# PCI-2069, PCI-1286
+Patch1055: 1055-CONFIG-PCI-2069-Remove-dnsmasq-strict-order-option.patch
 
 BuildArch:        noarch
 BuildRequires:    intltool
@@ -497,6 +500,7 @@ This package contains documentation files for nova.
 %patch1052 -p1
 %patch1053 -p1
 %patch1054 -p1
+%patch1055 -p1
 
 find . \( -name .gitignore -o -name .placeholder \) -delete
 
@@ -894,6 +898,9 @@ fi
 %endif
 
 %changelog
+* Mon Nov 25 2013 Martin Surovcak <martin.surovcak@gooddata.com> - 2013.2.4-23.gdc
+- PCI-2069: Remove dnsmasq strict-order option
+
 * Thu Nov 21 2013 Tomas Dubec <tomas.dubec@gooddata.com> - 2012.2.4-22.gdc
 - PCI-2758 - fix init scripts so that openstack services are terminated correctly during shutdown
 
