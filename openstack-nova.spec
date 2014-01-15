@@ -7,7 +7,7 @@
 
 Name:             openstack-nova
 Version:          2012.2.4
-Release:          23%{?dist}.gdc
+Release:          24%{?dist}.gdc
 Summary:          OpenStack Compute (nova)
 
 Group:            Applications/System
@@ -136,6 +136,8 @@ Patch1054: 1054-FEATURE-PCI-2479-EC2-DescribeInstances-API-show-terminated-insta
 
 # PCI-2069, PCI-1286
 Patch1055: 1055-CONFIG-PCI-2069-Remove-dnsmasq-strict-order-option.patch
+# PCI-3147
+Patch1056: 1056-BUGFIX-PCI-3147-create-iptables-for-stopped-instance.patch
 
 BuildArch:        noarch
 BuildRequires:    intltool
@@ -501,6 +503,7 @@ This package contains documentation files for nova.
 %patch1053 -p1
 %patch1054 -p1
 %patch1055 -p1
+%patch1056 -p1
 
 find . \( -name .gitignore -o -name .placeholder \) -delete
 
@@ -898,6 +901,9 @@ fi
 %endif
 
 %changelog
+* Wed Jan 15 2014 Tomas Dubec <tomas.dubec@gooddata.com> - 2013.2.4-24.gdc
+- PCI-3147: create iptables for stopped instances after host boot
+
 * Mon Nov 25 2013 Martin Surovcak <martin.surovcak@gooddata.com> - 2013.2.4-23.gdc
 - PCI-2069: Remove dnsmasq strict-order option
 
