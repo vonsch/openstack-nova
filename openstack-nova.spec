@@ -138,6 +138,8 @@ Patch1054: 1054-FEATURE-PCI-2479-EC2-DescribeInstances-API-show-terminated-insta
 Patch1055: 1055-CONFIG-PCI-2069-Remove-dnsmasq-strict-order-option.patch
 # PCI-3147
 Patch1056: 1056-BUGFIX-PCI-3147-create-iptables-for-stopped-instance.patch
+# PCI-3186
+Patch1057: 1057-FEATURE-PCI-3186-Show-auto-assigned-IP-s-in-floating.patch
 
 BuildArch:        noarch
 BuildRequires:    intltool
@@ -504,6 +506,7 @@ This package contains documentation files for nova.
 %patch1054 -p1
 %patch1055 -p1
 %patch1056 -p1
+%patch1057 -p1
 
 find . \( -name .gitignore -o -name .placeholder \) -delete
 
@@ -901,6 +904,9 @@ fi
 %endif
 
 %changelog
+* Tue Jan 21 2014 Martin Surovcak <martin.surovcak@gooddata.com> - 2013.2.4-25.gdc
+- FEATURE: PCI-3186 Show auto-assigned IP's in floating-ip-list
+
 * Wed Jan 15 2014 Tomas Dubec <tomas.dubec@gooddata.com> - 2013.2.4-24.gdc
 - PCI-3147: create iptables for stopped instances after host boot
 
