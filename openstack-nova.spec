@@ -7,7 +7,7 @@
 
 Name:             openstack-nova
 Version:          2012.2.4
-Release:          24%{?dist}.gdc
+Release:          25%{?dist}.gdc
 Summary:          OpenStack Compute (nova)
 
 Group:            Applications/System
