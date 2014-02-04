@@ -7,7 +7,7 @@
 
 Name:             openstack-nova
 Version:          2012.2.4
-Release:          25%{?dist}.gdc
+Release:          26%{?dist}.gdc
 Summary:          OpenStack Compute (nova)
 
 Group:            Applications/System
@@ -140,6 +140,8 @@ Patch1055: 1055-CONFIG-PCI-2069-Remove-dnsmasq-strict-order-option.patch
 Patch1056: 1056-BUGFIX-PCI-3147-create-iptables-for-stopped-instance.patch
 # PCI-3186
 Patch1057: 1057-FEATURE-PCI-3186-Show-auto-assigned-IP-s-in-floating.patch
+# PCI-3231
+Patch1058: 1058-BUGFIX-PCI-3231-speed-up-get_floating_ips-nova-API-c.patch
 
 BuildArch:        noarch
 BuildRequires:    intltool
@@ -507,6 +509,7 @@ This package contains documentation files for nova.
 %patch1055 -p1
 %patch1056 -p1
 %patch1057 -p1
+%patch1058 -p1
 
 find . \( -name .gitignore -o -name .placeholder \) -delete
 
@@ -904,6 +907,9 @@ fi
 %endif
 
 %changelog
+* Tue Feb 4 2014 Tomas Dubec <tomas.dubec@gooddata.com> - 2013.2.4-26.gdc
+- BUGFIX: PCI-3231 speed up get_floating_ips nova API call via updating SQL and thus making hundreds of RPCs and SQLs unnecessary
+
 * Tue Jan 21 2014 Martin Surovcak <martin.surovcak@gooddata.com> - 2013.2.4-25.gdc
 - FEATURE: PCI-3186 Show auto-assigned IP's in floating-ip-list
 
