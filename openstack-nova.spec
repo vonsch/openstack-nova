@@ -7,7 +7,7 @@
 
 Name:             openstack-nova
 Version:          2012.2.4
-Release:          26%{?dist}.gdc
+Release:          27%{?dist}.gdc
 Summary:          OpenStack Compute (nova)
 
 Group:            Applications/System
@@ -53,6 +53,10 @@ Source22:         nova-ifc-template
 
 Patch0001: 0001-Ensure-we-don-t-access-the-net-when-building-docs.patch
 Patch0002: 0002-update-kwargs-with-args-in-wrap_instance_fault.patch
+
+# backported patches for PCI-3066
+Patch0003: 0003-Fixes-a-race-condition-on-updating-security-group-ru.patch
+Patch0004: 0004-Update-nova-compute-api-to-handle-instance-as-dict.patch
 
 # This is EPEL specific and not upstream
 Patch0500: openstack-nova-newdeps.patch
@@ -457,6 +461,8 @@ This package contains documentation files for nova.
 
 %patch0001 -p1
 %patch0002 -p1
+%patch0003 -p1
+%patch0004 -p1
 
 # Apply EPEL patch
 %patch0500 -p1
@@ -907,6 +913,9 @@ fi
 %endif
 
 %changelog
+* Tue Feb 11 2014 Branislav Zarnovican <branislav.zarnovican@gooddata.com> -  2013.2.4-27.gdc
+- BUGFIX: PCI-3066 - backported two patches for secgroup issues
+
 * Tue Feb 4 2014 Tomas Dubec <tomas.dubec@gooddata.com> - 2013.2.4-26.gdc
 - BUGFIX: PCI-3231 speed up get_floating_ips nova API call via updating SQL and thus making hundreds of RPCs and SQLs unnecessary
 
