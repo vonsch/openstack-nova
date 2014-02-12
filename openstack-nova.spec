@@ -7,7 +7,7 @@
 
 Name:             openstack-nova
 Version:          2012.2.4
-Release:          27%{?dist}.gdc
+Release:          28%{?dist}.gdc
 Summary:          OpenStack Compute (nova)
 
 Group:            Applications/System
@@ -146,6 +146,9 @@ Patch1056: 1056-BUGFIX-PCI-3147-create-iptables-for-stopped-instance.patch
 Patch1057: 1057-FEATURE-PCI-3186-Show-auto-assigned-IP-s-in-floating.patch
 # PCI-3231
 Patch1058: 1058-BUGFIX-PCI-3231-speed-up-get_floating_ips-nova-API-c.patch
+
+# PCI-3066 backporting fix for 1003 patch
+Patch1059: 1059-PCI-3066-backporting-secgroup-patch-to-Folsom.patch
 
 BuildArch:        noarch
 BuildRequires:    intltool
@@ -516,6 +519,7 @@ This package contains documentation files for nova.
 %patch1056 -p1
 %patch1057 -p1
 %patch1058 -p1
+%patch1059 -p1
 
 find . \( -name .gitignore -o -name .placeholder \) -delete
 
@@ -913,6 +917,9 @@ fi
 %endif
 
 %changelog
+* Wed Feb 12 2014 Branislav Zarnovican <branislav.zarnovican@gooddata.com> -  2013.2.4-28.gdc
+- BUGFIX: PCI-3066 - backported two patches for secgroup issues + fix
+
 * Tue Feb 11 2014 Branislav Zarnovican <branislav.zarnovican@gooddata.com> -  2013.2.4-27.gdc
 - BUGFIX: PCI-3066 - backported two patches for secgroup issues
 
