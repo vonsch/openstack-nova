@@ -7,7 +7,7 @@
 
 Name:             openstack-nova
 Version:          2012.2.4
-Release:          29%{?dist}.gdc
+Release:          30%{?dist}.gdc
 Summary:          OpenStack Compute (nova)
 
 Group:            Applications/System
@@ -921,8 +921,14 @@ fi
 %endif
 
 %changelog
+* Fri Mar 7 2014 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> -  2013.2.4-30.gdc
+- BUGFIX: PCI-3536 EC2 user_data api now returs empty string when None userdata
+
+* Tue Feb 18 2014 Tomas Dubec <tomas.dubec@gooddata.com> - 2013.2.4-29.gdc
+- BUGFIX: PCI-3411 fix floating IPs API call to get unassigned addresses
+
 * Wed Feb 12 2014 Branislav Zarnovican <branislav.zarnovican@gooddata.com> -  2013.2.4-28.gdc
-- BUGFIX: PCI-3066 - backported two patches for secgroup issues + fix
+- Fix of BUGFIX: PCI-3066 - backported two patches for secgroup issues
 
 * Tue Feb 11 2014 Branislav Zarnovican <branislav.zarnovican@gooddata.com> -  2013.2.4-27.gdc
 - BUGFIX: PCI-3066 - backported two patches for secgroup issues
