@@ -7,7 +7,7 @@
 
 Name:             openstack-nova
 Version:          2012.2.4
-Release:          30%{?dist}.gdc
+Release:          31%{?dist}.gdc
 Summary:          OpenStack Compute (nova)
 
 Group:            Applications/System
@@ -152,6 +152,7 @@ Patch1059: 1059-PCI-3066-backporting-secgroup-patch-to-Folsom.patch
 
 # PCI-3411 fix floating IPs API call
 Patch1060: 1060-BUGFIX-PCI-3411-fix-floating-IPs-API-call-to-get-una.patch
+Patch1061: 1061-FEATURE-PCI-3639-Allow-change-root-volume-size-via-n.patch
 
 BuildArch:        noarch
 BuildRequires:    intltool
@@ -524,6 +525,7 @@ This package contains documentation files for nova.
 %patch1058 -p1
 %patch1059 -p1
 %patch1060 -p1
+%patch1061 -p1
 
 find . \( -name .gitignore -o -name .placeholder \) -delete
 
