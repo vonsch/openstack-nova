@@ -923,6 +923,9 @@ fi
 %endif
 
 %changelog
+* Wed Mar 26 2014 Martin Surovcak <martin.surovcak@gooddata.com> -  2013.2.4-31.gdc
+- FEATURE PCI-3639 Allow change root volume size via nova api
+
 * Fri Mar 7 2014 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> -  2013.2.4-30.gdc
 - BUGFIX: PCI-3536 EC2 user_data api now returs empty string when None userdata
 
