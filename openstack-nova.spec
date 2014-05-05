@@ -7,7 +7,7 @@
 
 Name:             openstack-nova
 Version:          2012.2.4
-Release:          31%{?dist}.gdc
+Release:          32%{?dist}.gdc
 Summary:          OpenStack Compute (nova)
 
 Group:            Applications/System
@@ -153,6 +153,9 @@ Patch1059: 1059-PCI-3066-backporting-secgroup-patch-to-Folsom.patch
 # PCI-3411 fix floating IPs API call
 Patch1060: 1060-BUGFIX-PCI-3411-fix-floating-IPs-API-call-to-get-una.patch
 Patch1061: 1061-FEATURE-PCI-3639-Allow-change-root-volume-size-via-n.patch
+
+# PCI-3773
+Patch1062: 1062-FEATURE-PCI-3773-aio-native-and-virtio-blk-dataplane.patch
 
 BuildArch:        noarch
 BuildRequires:    intltool
@@ -526,6 +529,7 @@ This package contains documentation files for nova.
 %patch1059 -p1
 %patch1060 -p1
 %patch1061 -p1
+%patch1062 -p1
 
 find . \( -name .gitignore -o -name .placeholder \) -delete
 
@@ -923,8 +927,11 @@ fi
 %endif
 
 %changelog
+* Mon May 5 2014 Yury Tsarev <yury.tsarev@gooddata.com> -  2013.2.4-32.gdc
+- FEATURE: PCI-3773 aio=native and virtio-blk-dataplane enablement
+
 * Wed Mar 26 2014 Martin Surovcak <martin.surovcak@gooddata.com> -  2013.2.4-31.gdc
-- FEATURE PCI-3639 Allow change root volume size via nova api
+- FEATURE: PCI-3639 Allow change root volume size via nova api
 
 * Fri Mar 7 2014 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> -  2013.2.4-30.gdc
 - BUGFIX: PCI-3536 EC2 user_data api now returs empty string when None userdata
