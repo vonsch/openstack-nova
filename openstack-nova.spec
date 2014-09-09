@@ -7,7 +7,7 @@
 
 Name:             openstack-nova
 Version:          2012.2.4
-Release:          32%{?dist}.gdc
+Release:          33%{?dist}.gdc
 Summary:          OpenStack Compute (nova)
 
 Group:            Applications/System
@@ -156,6 +156,9 @@ Patch1061: 1061-FEATURE-PCI-3639-Allow-change-root-volume-size-via-n.patch
 
 # PCI-3773
 Patch1062: 1062-FEATURE-PCI-3773-aio-native-and-virtio-blk-dataplane.patch
+
+# PCI-3781
+Patch1063: 1063-BUGFIX-PCI-3781-nova-compute-service-is-running-vgs.patch
 
 BuildArch:        noarch
 BuildRequires:    intltool
@@ -530,6 +533,7 @@ This package contains documentation files for nova.
 %patch1060 -p1
 %patch1061 -p1
 %patch1062 -p1
+%patch1063 -p1
 
 find . \( -name .gitignore -o -name .placeholder \) -delete
 
@@ -927,6 +931,9 @@ fi
 %endif
 
 %changelog
+* Tue Sep 9 2014 Zdenek Pizl <zdenek.pizl@gooddata.com> -  2013.2.4-33.gdc
+- BUGFIX: remove multiple call to external command 'vgs'
+
 * Mon May 5 2014 Yury Tsarev <yury.tsarev@gooddata.com> -  2013.2.4-32.gdc
 - FEATURE: PCI-3773 aio=native and virtio-blk-dataplane enablement
 
