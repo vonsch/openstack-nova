@@ -1,0 +1,25 @@
+From 6612edb29a2e636e5d04ce734cf1adbdf3733c8e Mon Sep 17 00:00:00 2001
+From: Zdenek Pizl <zdenek.pizl@gooddata.com>
+Date: Thu, 11 Sep 2014 15:30:12 +0200
+Subject: [PATCH 3/3] BUGFIX: PCI-3781 Missing pool_path variable
+
+- adding back accidentally removed line
+---
+ nova/virt/libvirt/driver.py | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/nova/virt/libvirt/driver.py b/nova/virt/libvirt/driver.py
+index e769d76..c911e84 100644
+--- a/nova/virt/libvirt/driver.py
++++ b/nova/virt/libvirt/driver.py
+@@ -2232,6 +2232,7 @@ class LibvirtDriver(driver.ComputeDriver):
+         else:
+             if FLAGS.libvirt_thin_logical_volumes == True:
+                 pool_name = "%s-pool" % FLAGS.libvirt_images_volume_group
++                pool_path = '%s/%s' % (FLAGS.libvirt_images_volume_group, pool_name)
+                 total = int(libvirt_utils.logical_volume_size(pool_path) / 1024 ** 3)
+                 used = int(utils.thin_pool_allocated_size(pool_name) / 1024 ** 3)
+                 avail = total - used
+-- 
+1.9.1
+

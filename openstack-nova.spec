@@ -7,7 +7,7 @@
 
 Name:             openstack-nova
 Version:          2012.2.4
-Release:          33%{?dist}.gdc
+Release:          35%{?dist}.gdc
 Summary:          OpenStack Compute (nova)
 
 Group:            Applications/System
@@ -159,6 +159,8 @@ Patch1062: 1062-FEATURE-PCI-3773-aio-native-and-virtio-blk-dataplane.patch
 
 # PCI-3781
 Patch1063: 1063-BUGFIX-PCI-3781-nova-compute-service-is-running-vgs.patch
+Patch1064: 1064-TEST-PCI-3781-update-HostStateTestCase-for-new-condi.patch
+Patch1065: 1065-BUGFIX-PCI-3781-Missing-pool_path-variable.patch
 
 BuildArch:        noarch
 BuildRequires:    intltool
@@ -534,6 +536,8 @@ This package contains documentation files for nova.
 %patch1061 -p1
 %patch1062 -p1
 %patch1063 -p1
+%patch1064 -p1
+%patch1065 -p1
 
 find . \( -name .gitignore -o -name .placeholder \) -delete
 
@@ -931,8 +935,16 @@ fi
 %endif
 
 %changelog
+* Thu Sep 12 2014 Zdenek Pizl <zdenek.pizl@gooddata.com> -  2013.2.4-35.gdc
+- BUGFIX: PCI-3781 correct application of patches related to PCI-3781
+
+* Wed Sep 11 2014 Zdenek Pizl <zdenek.pizl@gooddata.com> -  2013.2.4-34.gdc
+- Added test cases for new functionality
+- BUGFIX: PCI-3781 missing pool_path variable regression corrected
+- Added test cases for new functionality
+
 * Tue Sep 9 2014 Zdenek Pizl <zdenek.pizl@gooddata.com> -  2013.2.4-33.gdc
-- BUGFIX: remove multiple call to external command 'vgs'
+- BUGFIX: PCI-3781 remove multiple call to external command 'vgs'
 
 * Mon May 5 2014 Yury Tsarev <yury.tsarev@gooddata.com> -  2013.2.4-32.gdc
 - FEATURE: PCI-3773 aio=native and virtio-blk-dataplane enablement
