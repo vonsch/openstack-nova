@@ -4,16 +4,17 @@
 %global with_doc %{!?_without_doc:1}%{?_without_doc:0}
 
 %global pkgname %{_openstack_name}-%{product_name}
+%global release_number 36
 
 Name:             openstack-nova
 Version:          2012.2.4
-Release:          35%{?dist}.gdc
+Release:          %{release_number}%{?dist}.gdc
 Summary:          OpenStack Compute (nova)
 
 Group:            Applications/System
 License:          ASL 2.0
 URL:              http://openstack.org/projects/compute/
-Source0:          http://launchpad.net/nova/folsom/%{version}/+download/%{_openstack_name}-%{product_name}-%{version}.tar.gz
+Source0:          openstack-nova.tar.gz
 
 Source1:          nova.conf
 Source6:          nova.logrotate
@@ -47,120 +48,6 @@ Source20:         nova-sudoers
 Source21:         nova-polkit.pkla
 Source22:         nova-ifc-template
 
-#
-# patches_base=2012.2
-#
-
-Patch0001: 0001-Ensure-we-don-t-access-the-net-when-building-docs.patch
-Patch0002: 0002-update-kwargs-with-args-in-wrap_instance_fault.patch
-
-# backported patches for PCI-3066
-Patch0003: 0003-Fixes-a-race-condition-on-updating-security-group-ru.patch
-Patch0004: 0004-Update-nova-compute-api-to-handle-instance-as-dict.patch
-
-# This is EPEL specific and not upstream
-Patch0500: openstack-nova-newdeps.patch
-
-# GDC patchset
-# https://jira.gooddata.com/jira/browse/GD-25782
-Patch1002: 1002-Create-a-volume-from-a-snapshot-from-different-avail.patch 
-# https://jira.gooddata.com/jira/browse/GD-23657
-Patch1004: 1004-force-lvm-snapshot-delete-when-volue-delete.patch
-# https://jira.gooddata.com/jira/browse/PCI-141
-Patch1005: 1005-use-local-LVM-volume-instead-of-iSCSI-device-on-same.patch
-# https://jira.gooddata.com/jira/browse/PCI-156 (PCI-110)
-Patch1006: 1006-Setting-promisc-on-VLAN-bridge.patch
-# https://bugs.launchpad.net/nova/+bug/1061628
-Patch1008: 1008-Workaround-for-bug-1061628.patch
-# https://bugs.launchpad.net/nova/+bug/1016633
-# not final fix, please update it after the tickets is closed
-Patch1009: 1009-Do-not-run-RPC-call-for-simple-db-look-at-fixed_ip-s_v1.patch
-# AMI based instance cannot be resized
-Patch1012: 1012-Get-size-of-root-block-device-from-mapping-table.patch
-
-# Elastic IPs
-Patch1017: 1017-elastic_ip_pool_for_public_ips.patch
-
-# https://bugs.launchpad.net/cinder/+bug/1095633, Netapp Folsom FIX
-Patch1018: 1018-Netapp_1095633-Netapp-driver-repeat-DFM-lun-refresh.patch
-# https://bugs.launchpad.net/cinder/+bug/1091480, Netapp Folsom FIX
-Patch1019: 1019-Netapp_1091480-synchronize-dataset-edit.patch
-# https://bugs.launchpad.net/cinder/+bug/1099414, Netapp Folsom FIX
-Patch1020: 1020-Netapp_1099414_added-qtree-removal.patch
-# https://bugs.launchpad.net/cinder/+bug/1098581, Netapp Folsom FEATURE
-Patch1021: 1021-Netapp_1098581_create-volume-from-snapshot-of-smaller-size.patch
-# PCI-308, Netapp Folsom driver backport to (GDC) Essex
-Patch1024: 1024-Netapp_backport-for-GDC-version-of-driver-API.patch
-# https://bugs.launchpad.net/nova/+bug/1112483
-Patch1025: 1025-1112483-device-size-mismatch-when-LUN-is-reus.patch
-# https://jira.gooddata.com/browse/PCI-437
-Patch1026: 1026-Netapp_PCI-437-don-t-resize-parent-volume-for-new-LU.patch
-
-Patch1027: 1027-Calculate-with-REAL-free-RAM-in-least_cost.py.patch
-
-# Folsom's issue with naming volumes
-Patch1028: 1028-ec2api-blockdevicemapping.patch
-
-Patch1029: 1029-graceful-shutdown-for-poweroff-and-reboot.patch
-
-# E->F migration: fix two tgt entries for same volume
-Patch1030: 1030-FIX-attach-premigration-ISCSI.patch
-# E->F migration: make existing Essex Netapp volume/snapshots available in Folsom
-Patch1031: 1031-Netapp_existing-Essex-volume-snapshots-availab.patch
-Patch1032: 1032-fix-describe-instance-attribute-api-call.patch
-Patch1033: 1033-simple-sleep-for-bdm.patch
-Patch1034: 1034-pae-for-kvm-and-i686.patch
-Patch1035: 1035-add_default_flagfile_into_utils.patch
-# workaround for SNAT output interface issue
-Patch1036: 1036-FIX-switch-back-to-SNAT-rule-to-any-target-if.patch
-# PCI-640 - trim firewall log for verbose level
-Patch1037: 1037-FIX-PCI-640-trim-firewall-log-for-verbose-level.patch
-Patch1038: 1038-FIX-remove-essex-volume.patch
-Patch1039: 1039-Enforce-mkfs-at-lvm-ephemerals.patch
-# PCI-1069 - add EC2 API authorization layer
-Patch1040: 1040-ec2-authorization.patch
-# PCI-1466
-Patch1041: 1041-hugepages-memory-backend-for-libvirt.patch
-# PCI-1523
-Patch1042: 1042-Report-free-LVM-volume-group-space.patch
-Patch1043: 1043-Report-free-HugeMemory-space-instead-of-free-memory.patch
-Patch1044: 1044-LVM-Thin-volumes-support.patch
-Patch1045: 1045-FIX-solves-error-in-volume-deleting.patch
-Patch1046: 1046-LVM-Thin-nova-volumes-support.patch
-Patch1047: 1047-FIX-deleting-volumes-in-error-state.patch
-# PCI-1958
-Patch1048: 1048-BUGFIX-PCI-1958-zero-out-only-first-1G-during-delete.patch
-# PCI-2083
-Patch1049: 1049-FEATURE-PCI-2083-Allow-same-net-traffic.patch
-Patch1050: 1050-FEATURE-PCI-1711-thin-LVM-support-for-OpenStack-sche.patch
-Patch1051: 1051-FEATURE-PCI-2046-RAM-CPU-overcommit-per-compute-node.patch
-Patch1052: 1052-BUGFIX-PCI-2025-delete-domain-after-unsuccessful-ins.patch
-Patch1053: 1053-FEATURE-PCI-2238-return-host-in-descr.-instances-and.patch
-Patch1054: 1054-FEATURE-PCI-2479-EC2-DescribeInstances-API-show-terminated-instances.patch
-
-# PCI-2069, PCI-1286
-Patch1055: 1055-CONFIG-PCI-2069-Remove-dnsmasq-strict-order-option.patch
-# PCI-3147
-Patch1056: 1056-BUGFIX-PCI-3147-create-iptables-for-stopped-instance.patch
-# PCI-3186
-Patch1057: 1057-FEATURE-PCI-3186-Show-auto-assigned-IP-s-in-floating.patch
-# PCI-3231
-Patch1058: 1058-BUGFIX-PCI-3231-speed-up-get_floating_ips-nova-API-c.patch
-
-# PCI-3066 backporting fix for 1003 patch
-Patch1059: 1059-PCI-3066-backporting-secgroup-patch-to-Folsom.patch
-
-# PCI-3411 fix floating IPs API call
-Patch1060: 1060-BUGFIX-PCI-3411-fix-floating-IPs-API-call-to-get-una.patch
-Patch1061: 1061-FEATURE-PCI-3639-Allow-change-root-volume-size-via-n.patch
-
-# PCI-3773
-Patch1062: 1062-FEATURE-PCI-3773-aio-native-and-virtio-blk-dataplane.patch
-
-# PCI-3781
-Patch1063: 1063-BUGFIX-PCI-3781-nova-compute-service-is-running-vgs.patch
-Patch1064: 1064-TEST-PCI-3781-update-HostStateTestCase-for-new-condi.patch
-Patch1065: 1065-BUGFIX-PCI-3781-Missing-pool_path-variable.patch
 
 BuildArch:        noarch
 BuildRequires:    intltool
@@ -472,72 +359,8 @@ This package contains documentation files for nova.
 %endif
 
 %prep
-%setup -q -n nova-%{version}
+%setup -q -n %{_openstack_name}-%{product_name}-%{release_number}
 
-%patch0001 -p1
-%patch0002 -p1
-%patch0003 -p1
-%patch0004 -p1
-
-# Apply EPEL patch
-%patch0500 -p1
-
-# GDC Patches
-%patch1002 -p1
-%patch1004 -p1
-%patch1005 -p1
-%patch1006 -p1
-%patch1008 -p1
-%patch1009 -p1
-%patch1012
-%patch1017 -p1
-%patch1018 -p1
-%patch1019 -p1
-%patch1020 -p1
-%patch1021 -p1
-%patch1026 -p1
-%patch1024 -p1
-%patch1025 -p1
-%patch1027 -p1
-%patch1028 -p1
-%patch1029 -p1
-%patch1030 -p1
-%patch1031 -p1
-%patch1032 -p1
-%patch1033 -p1
-%patch1034 -p1
-%patch1035 -p1
-%patch1036 -p1
-%patch1037 -p1
-# quick patch for Essex volumes removal
-%patch1038 -p1
-%patch1039 -p1
-%patch1040 -p1
-%patch1041 -p1
-%patch1042 -p1
-%patch1043 -p1
-%patch1044 -p1
-%patch1045 -p1
-%patch1046 -p1
-%patch1047 -p1
-%patch1048 -p1
-%patch1049 -p1
-%patch1050 -p1
-%patch1051 -p1
-%patch1052 -p1
-%patch1053 -p1
-%patch1054 -p1
-%patch1055 -p1
-%patch1056 -p1
-%patch1057 -p1
-%patch1058 -p1
-%patch1059 -p1
-%patch1060 -p1
-%patch1061 -p1
-%patch1062 -p1
-%patch1063 -p1
-%patch1064 -p1
-%patch1065 -p1
 
 find . \( -name .gitignore -o -name .placeholder \) -delete
 
@@ -935,6 +758,9 @@ fi
 %endif
 
 %changelog
+* Fri Oct 10 2014 Yury Tsarev <yury.tsarev@gooddata.com> -  2013.2.4-36.gdc
+- CONFIG: PCI-4155 Switch to github based builds
+
 * Thu Sep 12 2014 Zdenek Pizl <zdenek.pizl@gooddata.com> -  2013.2.4-35.gdc
 - BUGFIX: PCI-3781 correct application of patches related to PCI-3781
 
