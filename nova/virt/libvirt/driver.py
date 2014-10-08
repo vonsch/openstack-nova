@@ -1826,6 +1826,8 @@ class LibvirtDriver(driver.ComputeDriver):
         if FLAGS.libvirt_type != "lxc" and FLAGS.libvirt_type != "uml":
             guest.acpi = True
             guest.apic = True
+            if instance['architecture'] == "i686":
+                guest.pae = True
 
         clk = config.LibvirtConfigGuestClock()
         clk.offset = "utc"
