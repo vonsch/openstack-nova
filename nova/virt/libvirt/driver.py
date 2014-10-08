@@ -100,6 +100,9 @@ libvirt_opts = [
                default='kvm',
                help='Libvirt domain type (valid options are: '
                     'kvm, lxc, qemu, uml, xen)'),
+    cfg.BoolOpt('libvirt_hugepages',
+               default=False,
+               help='Libvirt hugepages memory backed'),
     cfg.StrOpt('libvirt_uri',
                default='',
                help='Override the default libvirt URI '
@@ -1828,6 +1831,9 @@ class LibvirtDriver(driver.ComputeDriver):
             guest.apic = True
             if instance['architecture'] == "i686":
                 guest.pae = True
+
+        if FLAGS.libvirt_hugepages == True:
+            guest.hugepages = True
 
         clk = config.LibvirtConfigGuestClock()
         clk.offset = "utc"
