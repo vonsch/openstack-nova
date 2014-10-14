@@ -4,7 +4,7 @@
 %global with_doc %{!?_without_doc:1}%{?_without_doc:0}
 
 %global pkgname %{_openstack_name}-%{product_name}
-%global release_number 36
+%global release_number 37
 
 Name:             openstack-nova
 Version:          2012.2.4
@@ -758,6 +758,9 @@ fi
 %endif
 
 %changelog
+* Tue Oct 14 2014 Tomas Dubec <tomas.dubec@gooddata.com> -  2013.2.4-37.gdc
+- FEATURE: PCI-4219 change the way, how public IP routes script is called from nova-network init script
+
 * Fri Oct 10 2014 Yury Tsarev <yury.tsarev@gooddata.com> -  2013.2.4-36.gdc
 - CONFIG: PCI-4155 Switch to github based builds
 

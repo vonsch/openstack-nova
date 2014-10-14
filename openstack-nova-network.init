@@ -46,6 +46,10 @@ logfile="/var/log/nova/$suffix.log"
 
 [ -e /etc/sysconfig/$prog ] && . /etc/sysconfig/$prog
 
+# regenerate Public IPs
+export config
+[ -x /opt/cloud/libexec/prod-elastic-vlan-routes.sh ] && /opt/cloud/libexec/prod-elastic-vlan-routes.sh $1
+
 lockfile=/var/lock/subsys/openstack-$prog
 
 start() {
