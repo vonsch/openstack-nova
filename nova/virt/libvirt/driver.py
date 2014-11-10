@@ -887,6 +887,21 @@ class LibvirtDriver(driver.ComputeDriver):
         if virt_dom is not None:
             try:
                 old_domid = virt_dom.ID()
+                virt_dom.shutdown()
+
+                for x in xrange(CONF.libvirt.wait_soft_reboot_seconds):
+                    virt_dom = self._lookup_by_name(instance["name"])
+                    (state, _max_mem, _mem, _cpus, _t) = virt_dom.info()
+                    state = LIBVIRT_POWER_STATE[state]
+
+                    if state in [power_state.SHUTDOWN,
+                                 power_state.CRASHED]:
+                        LOG.info(_("Instance shutdown successfully."),
+                                 instance=instance)
+                        return
+
+                    greenthread.sleep(1)
+
                 virt_dom.destroy()
 
                 # NOTE(GuanQiang): teardown container to avoid resource leak

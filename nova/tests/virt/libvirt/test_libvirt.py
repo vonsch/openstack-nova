@@ -5644,12 +5644,19 @@ class LibvirtConnTestCase(test.TestCase):
                                                  'fake_pci_devs')])
 
     def test_destroy_undefines(self):
+        info_tuple = ('fake', 'fake', 'fake', 'also_fake')
+
         mock = self.mox.CreateMock(libvirt.virDomain)
         mock.ID()
+        mock.shutdown()
+        mock.info().AndReturn(
+            (libvirt_driver.VIR_DOMAIN_RUNNING,) + info_tuple)
         mock.destroy()
         mock.undefineFlags(1).AndReturn(1)
 
         self.mox.ReplayAll()
+
+        self.flags(wait_soft_reboot_seconds=1, group='libvirt')
 
         def fake_lookup_by_name(instance_name):
             return mock
@@ -5704,13 +5711,20 @@ class LibvirtConnTestCase(test.TestCase):
         self.mox.VerifyAll()
 
     def test_destroy_undefines_no_undefine_flags(self):
+        info_tuple = ('fake', 'fake', 'fake', 'also_fake')
+
         mock = self.mox.CreateMock(libvirt.virDomain)
         mock.ID()
+        mock.shutdown()
+        mock.info().AndReturn(
+            (libvirt_driver.VIR_DOMAIN_RUNNING,) + info_tuple)
         mock.destroy()
         mock.undefineFlags(1).AndRaise(libvirt.libvirtError('Err'))
         mock.undefine()
 
         self.mox.ReplayAll()
+
+        self.flags(wait_soft_reboot_seconds=1, group='libvirt')
 
         def fake_lookup_by_name(instance_name):
             return mock
@@ -5731,8 +5745,13 @@ class LibvirtConnTestCase(test.TestCase):
         conn.destroy(self.context, instance, [])
 
     def test_destroy_undefines_no_attribute_with_managed_save(self):
+        info_tuple = ('fake', 'fake', 'fake', 'also_fake')
+
         mock = self.mox.CreateMock(libvirt.virDomain)
         mock.ID()
+        mock.shutdown()
+        mock.info().AndReturn(
+            (libvirt_driver.VIR_DOMAIN_RUNNING,) + info_tuple)
         mock.destroy()
         mock.undefineFlags(1).AndRaise(AttributeError())
         mock.hasManagedSaveImage(0).AndReturn(True)
@@ -5740,6 +5759,8 @@ class LibvirtConnTestCase(test.TestCase):
         mock.undefine()
 
         self.mox.ReplayAll()
+
+        self.flags(wait_soft_reboot_seconds=1, group='libvirt')
 
         def fake_lookup_by_name(instance_name):
             return mock
@@ -5760,14 +5781,21 @@ class LibvirtConnTestCase(test.TestCase):
         conn.destroy(self.context, instance, [])
 
     def test_destroy_undefines_no_attribute_no_managed_save(self):
+        info_tuple = ('fake', 'fake', 'fake', 'also_fake')
+
         mock = self.mox.CreateMock(libvirt.virDomain)
         mock.ID()
+        mock.shutdown()
+        mock.info().AndReturn(
+            (libvirt_driver.VIR_DOMAIN_RUNNING,) + info_tuple)
         mock.destroy()
         mock.undefineFlags(1).AndRaise(AttributeError())
         mock.hasManagedSaveImage(0).AndRaise(AttributeError())
         mock.undefine()
 
         self.mox.ReplayAll()
+
+        self.flags(wait_soft_reboot_seconds=1, group='libvirt')
 
         def fake_lookup_by_name(instance_name):
             return mock
@@ -5788,10 +5816,17 @@ class LibvirtConnTestCase(test.TestCase):
         conn.destroy(self.context, instance, [])
 
     def test_destroy_timed_out(self):
+        info_tuple = ('fake', 'fake', 'fake', 'also_fake')
+
         mock = self.mox.CreateMock(libvirt.virDomain)
         mock.ID()
+        mock.shutdown()
+        mock.info().AndReturn(
+            (libvirt_driver.VIR_DOMAIN_RUNNING,) + info_tuple)
         mock.destroy().AndRaise(libvirt.libvirtError("timed out"))
         self.mox.ReplayAll()
+
+        self.flags(wait_soft_reboot_seconds=1, group='libvirt')
 
         def fake_lookup_by_name(instance_name):
             return mock
@@ -5808,11 +5843,46 @@ class LibvirtConnTestCase(test.TestCase):
         self.assertRaises(exception.InstancePowerOffFailure,
                 conn.destroy, self.context, instance, [])
 
-    def test_private_destroy_not_found(self):
+    def test_destroy_use_shutdown(self):
+        info_tuple = ('fake', 'fake', 'fake', 'also_fake')
+
         mock = self.mox.CreateMock(libvirt.virDomain)
         mock.ID()
+        mock.shutdown()
+        mock.info().AndReturn(
+            (libvirt_driver.VIR_DOMAIN_SHUTOFF,) + info_tuple)
+        self.mox.ReplayAll()
+
+        def fake_lookup_by_name(instance_name):
+            return mock
+
+        def fake_get_error_code(self):
+            return libvirt.VIR_ERR_OPERATION_INVALID
+
+        def fake_get_info(instance_name):
+            return {'state': power_state.SHUTDOWN, 'id': 'instanceid'}
+
+        conn = libvirt_driver.LibvirtDriver(fake.FakeVirtAPI(), False)
+        self.stubs.Set(conn, 'get_info', fake_get_info)
+        self.stubs.Set(conn, '_lookup_by_name', fake_lookup_by_name)
+        self.stubs.Set(libvirt.libvirtError, 'get_error_code',
+                fake_get_error_code)
+        instance = {"name": "instancename", "id": "instanceid",
+                    "uuid": "875a8070-d0b9-4949-8b31-104d125c9a64"}
+        conn._destroy(instance)
+
+    def test_private_destroy_not_found(self):
+        info_tuple = ('fake', 'fake', 'fake', 'also_fake')
+
+        mock = self.mox.CreateMock(libvirt.virDomain)
+        mock.ID()
+        mock.shutdown()
+        mock.info().AndReturn(
+            (libvirt_driver.VIR_DOMAIN_RUNNING,) + info_tuple)
         mock.destroy()
         self.mox.ReplayAll()
+
+        self.flags(wait_soft_reboot_seconds=1, group='libvirt')
 
         def fake_lookup_by_name(instance_name):
             return mock
