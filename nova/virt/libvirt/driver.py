@@ -265,6 +265,10 @@ libvirt_opts = [
     cfg.BoolOpt('native_io',
                 default=False,
                 help='Enable native IO',
+                deprecated_group='DEFAULT'),
+    cfg.BoolOpt('use_hugepages',
+                default=False,
+                help='Use hugepages as memory backend for KVM',
                 deprecated_group='DEFAULT')
     ]
 
@@ -3273,6 +3277,9 @@ class LibvirtDriver(driver.ComputeDriver):
             guest.acpi = True
             guest.apic = True
 
+        if CONF.libvirt.use_hugepages:
+            guest.use_hugepages = True
+
         # NOTE(mikal): Microsoft Windows expects the clock to be in
         # "localtime". If the clock is set to UTC, then you can use a
         # registry key to let windows know, but Microsoft says this is
@@ -3857,7 +3864,18 @@ class LibvirtDriver(driver.ComputeDriver):
 
         """
 
-        return self._conn.getInfo()[1]
+        if CONF.libvirt.virt_type == 'kvm' and CONF.libvirt.use_hugepages:
+            if sys.platform.upper() not in ['LINUX2', 'LINUX3']:
+                return 0
+
+            mem_inf = open('/proc/meminfo').read().split()
+            tot = mem_inf.index('HugePages_Total:')
+            size = mem_inf.index('Hugepagesize:')
+            total = int(mem_inf[tot + 1]) * int(mem_inf[size + 1]) / 1024
+
+            return total
+        else:
+            return self._conn.getInfo()[1]
 
     @staticmethod
     def get_local_gb_info():
@@ -3926,6 +3944,11 @@ class LibvirtDriver(driver.ComputeDriver):
         idx1 = m.index('MemFree:')
         idx2 = m.index('Buffers:')
         idx3 = m.index('Cached:')
+        if CONF.libvirt.virt_type == 'kvm' and CONF.libvirt.use_hugepages:
+            free = m.index('HugePages_Free:')
+            rsvd = m.index('HugePages_Rsvd:')
+            size = m.index('Hugepagesize:')
+
         if CONF.libvirt.virt_type == 'xen':
             used = 0
             for domain_id in self.list_instance_ids():
@@ -3948,9 +3971,15 @@ class LibvirtDriver(driver.ComputeDriver):
             # Convert it to MB
             return used / units.Ki
         else:
-            avail = (int(m[idx1 + 1]) + int(m[idx2 + 1]) + int(m[idx3 + 1]))
-            # Convert it to MB
-            return self.get_memory_mb_total() - avail / units.Ki
+            if CONF.libvirt.virt_type == 'kvm' and CONF.libvirt.use_hugepages:
+                avail_hp_mem = (int(m[free + 1]) -
+                               int(m[rsvd + 1])) * int(m[size + 1])
+                return self.get_memory_mb_total() - (avail_hp_mem / 1024)
+            else:
+                avail = (int(m[idx1 + 1]) + int(m[idx2 + 1]) +
+                        int(m[idx3 + 1]))
+                # Convert it to MB
+                return self.get_memory_mb_total() - avail / units.Ki
 
     def get_hypervisor_type(self):
         """Get hypervisor type.

@@ -1138,6 +1138,7 @@ class LibvirtConfigGuestTest(LibvirtConfigBaseTest):
         obj.os_smbios = config.LibvirtConfigGuestSMBIOS()
         obj.acpi = True
         obj.apic = True
+        obj.use_hugepages = True
 
         obj.sysinfo = config.LibvirtConfigGuestSysinfo()
         obj.sysinfo.bios_vendor = "Acme"
@@ -1173,6 +1174,9 @@ class LibvirtConfigGuestTest(LibvirtConfigBaseTest):
                 <boot dev="fd"/>
                 <smbios mode="sysinfo"/>
               </os>
+              <memoryBacking>
+                <hugepages/>
+              </memoryBacking>
               <features>
                 <acpi/>
                 <apic/>
