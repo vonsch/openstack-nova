@@ -582,7 +582,6 @@ class LinuxNetworkTestCase(test.NoDBTestCase):
             'CONFIG_FILE=%s' % jsonutils.dumps(CONF.dhcpbridge_flagfile),
             'NETWORK_ID=fake',
             'dnsmasq',
-            '--strict-order',
             '--bind-interfaces',
             '--conf-file=%s' % CONF.dnsmasq_config_file,
             '--pid-file=%s' % linux_net._dhcp_file(dev, 'pid'),

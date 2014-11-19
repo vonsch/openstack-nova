@@ -1081,7 +1081,6 @@ def restart_dhcp(context, dev, network_ref):
            'CONFIG_FILE=%s' % jsonutils.dumps(CONF.dhcpbridge_flagfile),
            'NETWORK_ID=%s' % str(network_ref['id']),
            'dnsmasq',
-           '--strict-order',
            '--bind-interfaces',
            '--conf-file=%s' % CONF.dnsmasq_config_file,
            '--pid-file=%s' % _dhcp_file(dev, 'pid'),
