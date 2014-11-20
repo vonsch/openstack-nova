@@ -3999,6 +3999,28 @@ class FloatingIpTestCase(test.TestCase, ModelsObjectComparatorMixin):
             self._assertEqualListsOfObjects(float_ips, real_float_ips,
                                             ignored_keys='fixed_ip')
 
+    def test_floating_ip_get_all_by_project_auto_assigned_visible(self):
+        projects = {
+            'pr1': ['1.1.1.1', '1.1.1.2'],
+            'pr2': ['2.1.1.1', '2.1.1.2'],
+            'pr3': ['3.1.1.1', '3.1.1.2', '3.1.1.3']
+        }
+
+        projects_with_float_ips = {}
+        for project_id, addresses in projects.iteritems():
+            projects_with_float_ips[project_id] = []
+            for address in addresses:
+                float_ip = self._create_floating_ip({'project_id': project_id,
+                                                     'address': address,
+                                                     'auto_assigned': True})
+                projects_with_float_ips[project_id].append(float_ip)
+
+        for project_id, float_ips in projects_with_float_ips.iteritems():
+            real_float_ips = db.floating_ip_get_all_by_project(self.ctxt,
+                                                               project_id)
+            self._assertEqualListsOfObjects(float_ips, real_float_ips,
+                                            ignored_keys='fixed_ip')
+
     def test_floating_ip_get_all_by_project_not_authorized(self):
         ctxt = context.RequestContext(user_id='a', project_id='abc',
                                       is_admin=False)
