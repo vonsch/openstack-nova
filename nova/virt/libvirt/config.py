@@ -496,6 +496,7 @@ class LibvirtConfigGuestDisk(LibvirtConfigGuestDevice):
         self.physical_block_size = None
         self.readonly = False
         self.snapshot = None
+        self.native_io = False
 
     def format_dom(self):
         dev = super(LibvirtConfigGuestDisk, self).format_dom()
@@ -512,6 +513,8 @@ class LibvirtConfigGuestDisk(LibvirtConfigGuestDevice):
                 drv.set("type", self.driver_format)
             if self.driver_cache is not None:
                 drv.set("cache", self.driver_cache)
+            if self.native_io:
+                drv.set("io", "native")
             dev.append(drv)
 
         if self.source_type == "file":
@@ -1161,6 +1164,7 @@ class LibvirtConfigGuest(LibvirtConfigObject):
         self.os_smbios = None
         self.os_mach_type = None
         self.devices = []
+        self.dataplane = False
 
     def _format_basic_props(self, root):
         root.append(self._text_node("uuid", self.uuid))
@@ -1227,6 +1231,19 @@ class LibvirtConfigGuest(LibvirtConfigObject):
             devices.append(dev.format_dom())
         root.append(devices)
 
+    def _format_dataplane(self, root):
+        if self.dataplane:
+            XML_NAMESPACE = "http://libvirt.org/schemas/domain/qemu/1.0"
+            XML = "{%s}" % XML_NAMESPACE
+            NSMAP = {"qemu": XML_NAMESPACE}
+            qemu_cl = etree.Element(XML + "commandline", nsmap=NSMAP)
+            qemu_opts = ["-global", "virtio-blk-pci.scsi=off",
+                         "-global", "virtio-blk-pci.x-data-plane=on"]
+            for option in qemu_opts:
+                qemu_arg = etree.SubElement(qemu_cl, XML + "arg")
+                qemu_arg.set("value", option)
+            root.append(qemu_cl)
+
     def format_dom(self):
         root = super(LibvirtConfigGuest, self).format_dom()
 
@@ -1248,6 +1265,8 @@ class LibvirtConfigGuest(LibvirtConfigObject):
             root.append(self.cpu.format_dom())
 
         self._format_devices(root)
+
+        self._format_dataplane(root)
 
         return root
 

@@ -648,6 +648,26 @@ class LibvirtConfigGuestDiskTest(LibvirtConfigBaseTest):
               <blockio logical_block_size="4096" physical_block_size="4096"/>
             </disk>""", xml)
 
+    def test_native_io(self):
+        obj = config.LibvirtConfigGuestDisk()
+        obj.source_type = "block"
+        obj.source_device = "disk"
+        obj.source_path = "/dev/nova-volumes/test-native-io"
+        obj.target_dev = "/dev/vda"
+        obj.target_bus = "virtio"
+        obj.driver_name = "qemu"
+        obj.driver_format = "raw"
+        obj.driver_cache = "none"
+        obj.native_io = True
+
+        xml = obj.to_xml()
+        self.assertXmlEqual(xml, """
+            <disk type="block" device="disk">
+              <driver name='qemu' type='raw' cache='none' io='native'/>
+              <source dev="/dev/nova-volumes/test-native-io"/>
+               <target bus="virtio" dev="/dev/vda"/>
+            </disk>""")
+
 
 class LibvirtConfigGuestSnapshotDiskTest(LibvirtConfigBaseTest):
 
@@ -1168,6 +1188,82 @@ class LibvirtConfigGuestTest(LibvirtConfigBaseTest):
                   <target bus="virtio" dev="/dev/vda"/>
                 </disk>
               </devices>
+            </domain>""")
+
+    def test_config_kvm_dataplane(self):
+        obj = config.LibvirtConfigGuest()
+        obj.virt_type = "kvm"
+        obj.memory = 100 * units.Mi
+        obj.vcpus = 2
+        obj.cpuset = "0-3,^2,4-5"
+        obj.cpu_shares = 100
+        obj.cpu_quota = 50000
+        obj.cpu_period = 25000
+        obj.name = "demo"
+        obj.uuid = "b38a3f43-4be2-4046-897f-b67c2f5e0147"
+        obj.os_type = "linux"
+        obj.os_boot_dev = ["hd", "cdrom", "fd"]
+        obj.os_smbios = config.LibvirtConfigGuestSMBIOS()
+        obj.acpi = True
+        obj.apic = True
+        obj.dataplane = True
+
+        obj.sysinfo = config.LibvirtConfigGuestSysinfo()
+        obj.sysinfo.bios_vendor = "Acme"
+        obj.sysinfo.system_version = "1.0.0"
+
+        disk = config.LibvirtConfigGuestDisk()
+        disk.source_type = "file"
+        disk.source_path = "/tmp/img"
+        disk.target_dev = "/dev/vda"
+        disk.target_bus = "virtio"
+
+        obj.add_device(disk)
+
+        xml = obj.to_xml()
+        self.assertXmlEqual(xml, """
+            <domain type="kvm">
+              <uuid>b38a3f43-4be2-4046-897f-b67c2f5e0147</uuid>
+              <name>demo</name>
+              <memory>104857600</memory>
+              <vcpu cpuset="0-3,^2,4-5">2</vcpu>
+              <sysinfo type='smbios'>
+                 <bios>
+                   <entry name="vendor">Acme</entry>
+                 </bios>
+                 <system>
+                   <entry name="version">1.0.0</entry>
+                 </system>
+              </sysinfo>
+              <os>
+                <type>linux</type>
+                <boot dev="hd"/>
+                <boot dev="cdrom"/>
+                <boot dev="fd"/>
+                <smbios mode="sysinfo"/>
+              </os>
+              <features>
+                <acpi/>
+                <apic/>
+              </features>
+              <cputune>
+                <shares>100</shares>
+                <quota>50000</quota>
+                <period>25000</period>
+              </cputune>
+              <devices>
+                <disk type="file" device="disk">
+                  <source file="/tmp/img"/>
+                  <target bus="virtio" dev="/dev/vda"/>
+                </disk>
+              </devices>
+                <qemu:commandline xmlns:qemu=\
+"http://libvirt.org/schemas/domain/qemu/1.0">
+                  <qemu:arg value="-global"/>
+                  <qemu:arg value="virtio-blk-pci.scsi=off"/>
+                  <qemu:arg value="-global"/>
+                  <qemu:arg value="virtio-blk-pci.x-data-plane=on"/>
+                </qemu:commandline>
             </domain>""")
 
     def test_config_machine_type(self):

@@ -258,6 +258,14 @@ libvirt_opts = [
                 help='A path to a device that will be used as source of '
                      'entropy on the host. Permitted options are: '
                      '/dev/random or /dev/hwrng'),
+    cfg.BoolOpt('dataplane',
+                default=False,
+                help='Enable x-data-plane for virtio devices',
+                deprecated_group='DEFAULT'),
+    cfg.BoolOpt('native_io',
+                default=False,
+                help='Enable native IO',
+                deprecated_group='DEFAULT')
     ]
 
 CONF = cfg.CONF
@@ -3160,6 +3168,7 @@ class LibvirtDriver(driver.ComputeDriver):
         guest.memory = flavor.memory_mb * units.Ki
         guest.vcpus = flavor.vcpus
         guest.cpuset = CONF.vcpu_pin_set
+        guest.dataplane = CONF.libvirt.dataplane
 
         quota_items = ['cpu_shares', 'cpu_period', 'cpu_quota']
         for key, value in flavor.extra_specs.iteritems():
@@ -3306,6 +3315,11 @@ class LibvirtDriver(driver.ComputeDriver):
                                                  rescue,
                                                  block_device_info,
                                                  flavor):
+            if guest.dataplane or CONF.libvirt.native_io:
+                cfg.native_io = True
+                if guest.dataplane and not CONF.libvirt.native_io:
+                    LOG.info("Forcing native IO because of dataplane enabled")
+
             guest.add_device(cfg)
 
         for vif in network_info:

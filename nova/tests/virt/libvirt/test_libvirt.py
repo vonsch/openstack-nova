@@ -7414,6 +7414,36 @@ class LibvirtConnTestCase(test.TestCase):
             unplug.assert_called_once_with(fake_inst, 'netinfo',
                                            ignore_errors=True)
 
+    def test_native_io_through_dataplane(self):
+        self.flags(dataplane=True, group='libvirt')
+        self.flags(native_io=False, group='libvirt')
+        conn = libvirt_driver.LibvirtDriver(fake.FakeVirtAPI(), True)
+        instance_ref = db.instance_create(self.context, self.test_instance)
+
+        disk_info = blockinfo.get_disk_info(CONF.libvirt.virt_type,
+                                            instance_ref)
+        cfg = conn.get_guest_config(instance_ref,
+                                    _fake_network_info(self.stubs, 1),
+                                    None, disk_info)
+        self.assertEqual(cfg.dataplane, True)
+        self.assertEqual(cfg.devices[0].native_io, True)
+        self.assertEqual(cfg.devices[1].native_io, True)
+
+    def test_native_io_no_dataplane(self):
+        self.flags(dataplane=False, group='libvirt')
+        self.flags(native_io=True, group='libvirt')
+        conn = libvirt_driver.LibvirtDriver(fake.FakeVirtAPI(), True)
+        instance_ref = db.instance_create(self.context, self.test_instance)
+
+        disk_info = blockinfo.get_disk_info(CONF.libvirt.virt_type,
+                                            instance_ref)
+        cfg = conn.get_guest_config(instance_ref,
+                                    _fake_network_info(self.stubs, 1),
+                                    None, disk_info)
+        self.assertEqual(cfg.dataplane, False)
+        self.assertEqual(cfg.devices[0].native_io, True)
+        self.assertEqual(cfg.devices[1].native_io, True)
+
 
 class HostStateTestCase(test.TestCase):
 
