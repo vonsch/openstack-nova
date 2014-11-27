@@ -77,10 +77,23 @@ class FloatingIP(object):
 
         admin_context = context.get_admin_context()
         try:
-            floating_ips = floating_ip_obj.FloatingIPList.get_by_host(
+            tmp_floating_ips = floating_ip_obj.FloatingIPList.get_by_host(
                 admin_context, self.host)
         except exception.NotFound:
             return
+
+        public_ips = []
+        elastic_ips = []
+        floating_ips = []
+        for floating_ip in tmp_floating_ips:
+            if floating_ip.pool == "public":
+                public_ips.append(floating_ip)
+            elif floating_ip.pool == "elastic":
+                elastic_ips.append(floating_ip)
+            else:
+                floating_ips.append(floating_ip)
+
+        floating_ips = elastic_ips + floating_ips + public_ips
 
         for floating_ip in floating_ips:
             if floating_ip.fixed_ip_id:
@@ -367,10 +380,19 @@ class FloatingIP(object):
             if not fixed:
                 # NOTE(vish): ip was already associated
                 return
+
+            try:
+                float_ip = floating_ip_obj.FloatingIP.get_by_address(
+                    context, floating_address)
+            except exception.FloatingIpNotFoundForAddress as e:
+                float_ip = {}
+                float_ip['pool'] = "none"
+
             try:
                 # gogo driver time
                 self.l3driver.add_floating_ip(floating_address, fixed_address,
-                        interface, fixed['network'])
+                        interface, fixed['network'],
+                        insert=(float_ip['pool'] == "elastic"))
             except processutils.ProcessExecutionError as e:
                 with excutils.save_and_reraise_exception() as exc_ctxt:
                     try:

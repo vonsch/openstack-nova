@@ -921,6 +921,21 @@ class LinuxNetworkTestCase(test.NoDBTestCase):
         dup_forward_rules = len(linux_net.iptables_manager.ipv4['nat'].rules)
         self.assertEqual(two_forward_rules, dup_forward_rules)
 
+    def test_ensure_floating_forward_inserts(self):
+        ln = linux_net
+        self.stubs.Set(ln.iptables_manager, 'apply', lambda: None)
+        self.stubs.Set(ln, 'ensure_ebtables_rules', lambda *a, **kw: None)
+        net = {'bridge': 'br100', 'cidr': '10.0.0.0/24'}
+        ln.ensure_floating_forward('10.10.10.10', '10.0.0.1', 'eth0', net)
+        ln.ensure_floating_forward('10.10.10.14', '10.0.0.3', 'eth0', net)
+        ln.ensure_floating_forward('10.10.10.11', '10.0.0.10', 'eth0', net,
+                                   insert=True)
+        ln.ensure_floating_forward('10.10.10.12', '10.0.0.3', 'eth0', net)
+        ln.ensure_floating_forward('10.10.10.13', '10.0.0.3', 'eth0', net)
+        self.assertEqual('-s 10.0.0.10 -m conntrack --ctstate DNAT \
+-j SNAT --to-source 10.10.10.11',
+                         linux_net.iptables_manager.ipv4['nat'].rules[0].rule)
+
     def test_apply_ran(self):
         manager = linux_net.IptablesManager()
         manager.iptables_apply_deferred = False

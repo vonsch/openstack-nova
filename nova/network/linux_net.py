@@ -255,7 +255,7 @@ class IptablesTable(object):
                                         self.rules)
         self.rules = filter(lambda r: jump_snippet not in r.rule, self.rules)
 
-    def add_rule(self, chain, rule, wrap=True, top=False):
+    def add_rule(self, chain, rule, wrap=True, top=False, insert=False):
         """Add a rule to the table.
 
         This is just like what you'd feed to iptables, just without
@@ -276,7 +276,10 @@ class IptablesTable(object):
         if rule_obj in self.rules:
             LOG.debug(_("Skipping duplicate iptables rule addition"))
         else:
-            self.rules.append(IptablesRule(chain, rule, wrap, top))
+            if insert:
+                self.rules.insert(0, IptablesRule(chain, rule, wrap, top))
+            else:
+                self.rules.append(IptablesRule(chain, rule, wrap, top))
             self.dirty = True
 
     def _wrap_target_chain(self, s):
@@ -760,7 +763,8 @@ def ensure_vpn_forward(public_ip, port, private_ip):
     iptables_manager.apply()
 
 
-def ensure_floating_forward(floating_ip, fixed_ip, device, network):
+def ensure_floating_forward(floating_ip, fixed_ip, device,
+                            network, insert=False):
     """Ensure floating ip forwarding rule."""
     # NOTE(vish): Make sure we never have duplicate rules for the same ip
     regex = '.*\s+%s(/32|\s+|$)' % floating_ip
@@ -769,7 +773,7 @@ def ensure_floating_forward(floating_ip, fixed_ip, device, network):
         msg = _('Removed %(num)d duplicate rules for floating ip %(float)s')
         LOG.warn(msg % {'num': num_rules, 'float': floating_ip})
     for chain, rule in floating_forward_rules(floating_ip, fixed_ip, device):
-        iptables_manager.ipv4['nat'].add_rule(chain, rule)
+        iptables_manager.ipv4['nat'].add_rule(chain, rule, insert=insert)
     iptables_manager.apply()
     if device != network['bridge']:
         ensure_ebtables_rules(*floating_ebtables_rules(fixed_ip, network))
