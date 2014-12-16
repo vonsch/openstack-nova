@@ -4,7 +4,7 @@
 %global with_doc %{!?_without_doc:1}%{?_without_doc:0}
 
 %global pkgname %{_openstack_name}-%{product_name}
-%global release_number 39
+%global release_number 40
 
 Name:             openstack-nova
 Version:          2012.2.4
@@ -758,6 +758,11 @@ fi
 %endif
 
 %changelog
+* Thu Feb 05 2015 Branislav Zarnovican <branislav.zarnovican@gooddata.com> - 2012.2.4-40.gdc
+- PCI-4320: backport of Juno Netapp driver to Folsom (for mgmt-netapp nodes)
+- PCI-4320: added support of iSCSI multipath to compute
+- PCI-4320: added multitenancy isolation to scheduler
+
 * Fri Jan 30 2015 Tomas Dubec <tomas.dubec@gooddata.com> -  2012.2.4-39.gd
 - fix folsom unit tests
 
