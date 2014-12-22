@@ -22,7 +22,7 @@ Supports call to multiple storage systems of different families and protocols.
 from nova import exception
 from nova.openstack.common import importutils
 from nova.openstack.common import log as logging
-from cinder.volume import driver
+from nova.volume import driver
 from cinder.volume.drivers.netapp.options import netapp_proxy_opts
 
 _ = str
