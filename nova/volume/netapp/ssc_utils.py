@@ -22,7 +22,7 @@ from threading import Timer
 
 import six
 
-from cinder import exception
+from nova import exception
 from nova.openstack.common import log as logging
 from cinder.openstack.common import timeutils
 from cinder import utils

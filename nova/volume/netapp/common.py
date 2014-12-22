@@ -19,7 +19,7 @@ Unified driver for NetApp storage systems.
 Supports call to multiple storage systems of different families and protocols.
 """
 
-from cinder import exception
+from nova import exception
 from cinder.openstack.common import importutils
 from nova.openstack.common import log as logging
 from cinder.volume import driver
