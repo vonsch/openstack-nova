@@ -23,8 +23,9 @@ import urllib2
 
 from lxml import etree
 
-from cinder.i18n import _
-from cinder.openstack.common import log as logging
+from nova.openstack.common import log as logging
+
+_ = str
 
 LOG = logging.getLogger(__name__)
 
