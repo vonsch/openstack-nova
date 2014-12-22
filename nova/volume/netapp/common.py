@@ -23,7 +23,7 @@ from nova import exception
 from nova.openstack.common import importutils
 from nova.openstack.common import log as logging
 from nova.volume import driver
-from cinder.volume.drivers.netapp.options import netapp_proxy_opts
+from nova.volume.netapp.options import netapp_proxy_opts
 
 _ = str
 
@@ -37,20 +37,20 @@ netapp_unified_plugin_registry =\
     {'ontap_cluster':
      {
          'iscsi':
-         'cinder.volume.drivers.netapp.iscsi.NetAppDirectCmodeISCSIDriver',
-         'nfs': 'cinder.volume.drivers.netapp.nfs.NetAppDirectCmodeNfsDriver'
+         'nova.volume.netapp.iscsi.NetAppDirectCmodeISCSIDriver',
+         'nfs': 'nova.volume.netapp.nfs.NetAppDirectCmodeNfsDriver'
      },
      'ontap_7mode':
      {
          'iscsi':
-         'cinder.volume.drivers.netapp.iscsi.NetAppDirect7modeISCSIDriver',
+         'nova.volume.netapp.iscsi.NetAppDirect7modeISCSIDriver',
          'nfs':
-         'cinder.volume.drivers.netapp.nfs.NetAppDirect7modeNfsDriver'
+         'nova.volume.netapp.nfs.NetAppDirect7modeNfsDriver'
      },
      'eseries':
      {
          'iscsi':
-         'cinder.volume.drivers.netapp.eseries.iscsi.Driver'
+         'nova.volume.netapp.eseries.iscsi.Driver'
      },
      }
 

@@ -34,10 +34,10 @@ from nova import exception
 from nova.openstack.common import log as logging
 from nova.openstack.common import timeutils
 from nova import utils
-from cinder.volume.drivers.netapp.api import NaApiError
-from cinder.volume.drivers.netapp.api import NaElement
-from cinder.volume.drivers.netapp.api import NaErrors
-from cinder.volume.drivers.netapp.api import NaServer
+from nova.volume.netapp.api import NaApiError
+from nova.volume.netapp.api import NaElement
+from nova.volume.netapp.api import NaErrors
+from nova.volume.netapp.api import NaServer
 from cinder.volume import volume_types
 
 _ = str
