@@ -31,7 +31,7 @@ from cinder.image import image_utils
 from nova.openstack.common import excutils
 from nova.openstack.common import log as logging
 from cinder.openstack.common import processutils
-from cinder.openstack.common import units
+from nova.openstack.common import units
 from cinder import utils
 from cinder.volume.drivers.netapp.api import NaApiError
 from cinder.volume.drivers.netapp.api import NaElement
