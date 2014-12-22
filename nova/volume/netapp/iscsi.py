@@ -28,7 +28,7 @@ import uuid
 
 import six
 
-from cinder import exception
+from nova import exception
 from cinder.openstack.common import excutils
 from nova.openstack.common import log as logging
 from cinder.openstack.common import timeutils
@@ -576,7 +576,7 @@ class NetAppDirectISCSIDriver(driver.ISCSIDriver):
             attr = getattr(self._get_lun_from_table(name), attr)
             return attr
         except exception.VolumeNotFound as e:
-            LOG.error(_("Message: %s"), e.msg)
+            LOG.error(_("Message: %s"), e.message)
         except Exception as e:
             LOG.error(_("Error getting lun attribute. Exception: %s"),
                       e.__str__())

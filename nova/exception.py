@@ -283,6 +283,10 @@ class InvalidMetadataSize(Invalid):
     message = _("Invalid metadata size") + ": %(reason)s"
 
 
+class InvalidHost(Invalid):
+    message = _("Invalid host: %(reason)s")
+
+
 class InvalidPortRange(Invalid):
     message = _("Invalid port range %(from_port)s:%(to_port)s. %(msg)s")
 
@@ -1083,6 +1087,10 @@ class NfsNoSharesMounted(NotFound):
 
 class NfsNoSuitableShareFound(NotFound):
     message = _("There is no share which can host %(volume_size)sG")
+
+
+class VolumeDriverException(NovaException):
+    message = _("Volume driver reported an error: %(message)s")
 
 
 class InstanceTypeCreateFailed(NovaException):

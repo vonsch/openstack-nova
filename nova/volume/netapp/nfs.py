@@ -26,7 +26,7 @@ import uuid
 import six
 import six.moves.urllib.parse as urlparse
 
-from cinder import exception
+from nova import exception
 from cinder.image import image_utils
 from cinder.openstack.common import excutils
 from nova.openstack.common import log as logging
