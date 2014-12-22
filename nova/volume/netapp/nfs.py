@@ -32,7 +32,7 @@ from nova.openstack.common import excutils
 from nova.openstack.common import log as logging
 from cinder.openstack.common import processutils
 from nova.openstack.common import units
-from cinder import utils
+from nova import utils
 from cinder.volume.drivers.netapp.api import NaApiError
 from cinder.volume.drivers.netapp.api import NaElement
 from cinder.volume.drivers.netapp.api import NaServer
