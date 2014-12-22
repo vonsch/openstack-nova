@@ -32,7 +32,7 @@ from nova import exception
 from nova.openstack.common import excutils
 from nova.openstack.common import log as logging
 from nova.openstack.common import timeutils
-from cinder.openstack.common import units
+from nova.openstack.common import units
 from cinder import utils
 from cinder.volume import driver
 from cinder.volume.drivers.netapp.api import NaApiError
