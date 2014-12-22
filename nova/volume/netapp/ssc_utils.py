@@ -23,14 +23,14 @@ from threading import Timer
 import six
 
 from cinder import exception
-from cinder.i18n import _
-from cinder.openstack.common import log as logging
+from nova.openstack.common import log as logging
 from cinder.openstack.common import timeutils
 from cinder import utils
 from cinder.volume import driver
 from cinder.volume.drivers.netapp import api
 from cinder.volume.drivers.netapp import utils as na_utils
 
+_ = str
 
 LOG = logging.getLogger(__name__)
 

@@ -27,10 +27,9 @@ import six
 import six.moves.urllib.parse as urlparse
 
 from cinder import exception
-from cinder.i18n import _
 from cinder.image import image_utils
 from cinder.openstack.common import excutils
-from cinder.openstack.common import log as logging
+from nova.openstack.common import log as logging
 from cinder.openstack.common import processutils
 from cinder.openstack.common import units
 from cinder import utils
@@ -50,6 +49,7 @@ from cinder.volume.drivers.netapp.utils import validate_instantiation
 from cinder.volume.drivers import nfs
 from cinder.volume import utils as volume_utils
 
+_ = str
 
 LOG = logging.getLogger(__name__)
 

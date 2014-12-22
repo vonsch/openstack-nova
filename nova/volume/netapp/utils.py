@@ -31,8 +31,7 @@ import six
 
 from cinder import context
 from cinder import exception
-from cinder.i18n import _
-from cinder.openstack.common import log as logging
+from nova.openstack.common import log as logging
 from cinder.openstack.common import timeutils
 from cinder import utils
 from cinder.volume.drivers.netapp.api import NaApiError
@@ -41,6 +40,7 @@ from cinder.volume.drivers.netapp.api import NaErrors
 from cinder.volume.drivers.netapp.api import NaServer
 from cinder.volume import volume_types
 
+_ = str
 
 LOG = logging.getLogger(__name__)
 
