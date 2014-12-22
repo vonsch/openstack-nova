@@ -35,21 +35,21 @@ from nova.openstack.common import timeutils
 from nova.openstack.common import units
 from nova import utils
 from nova.volume import driver
-from cinder.volume.drivers.netapp.api import NaApiError
-from cinder.volume.drivers.netapp.api import NaElement
-from cinder.volume.drivers.netapp.api import NaServer
-from cinder.volume.drivers.netapp.options import netapp_7mode_opts
-from cinder.volume.drivers.netapp.options import netapp_basicauth_opts
-from cinder.volume.drivers.netapp.options import netapp_cluster_opts
-from cinder.volume.drivers.netapp.options import netapp_connection_opts
-from cinder.volume.drivers.netapp.options import netapp_provisioning_opts
-from cinder.volume.drivers.netapp.options import netapp_transport_opts
-from cinder.volume.drivers.netapp import ssc_utils
-from cinder.volume.drivers.netapp import utils as na_utils
-from cinder.volume.drivers.netapp.utils import get_volume_extra_specs
-from cinder.volume.drivers.netapp.utils import round_down
-from cinder.volume.drivers.netapp.utils import set_safe_attr
-from cinder.volume.drivers.netapp.utils import validate_instantiation
+from nova.volume.netapp.api import NaApiError
+from nova.volume.netapp.api import NaElement
+from nova.volume.netapp.api import NaServer
+from nova.volume.netapp.options import netapp_7mode_opts
+from nova.volume.netapp.options import netapp_basicauth_opts
+from nova.volume.netapp.options import netapp_cluster_opts
+from nova.volume.netapp.options import netapp_connection_opts
+from nova.volume.netapp.options import netapp_provisioning_opts
+from nova.volume.netapp.options import netapp_transport_opts
+from nova.volume.netapp import ssc_utils
+from nova.volume.netapp import utils as na_utils
+from nova.volume.netapp.utils import get_volume_extra_specs
+from nova.volume.netapp.utils import round_down
+from nova.volume.netapp.utils import set_safe_attr
+from nova.volume.netapp.utils import validate_instantiation
 from cinder.volume import utils as volume_utils
 
 _ = str
