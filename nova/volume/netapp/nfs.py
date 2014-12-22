@@ -28,7 +28,7 @@ import six.moves.urllib.parse as urlparse
 
 from nova import exception
 from cinder.image import image_utils
-from cinder.openstack.common import excutils
+from nova.openstack.common import excutils
 from nova.openstack.common import log as logging
 from cinder.openstack.common import processutils
 from cinder.openstack.common import units
