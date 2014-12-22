@@ -38,7 +38,7 @@ from nova.volume.netapp.api import NaApiError
 from nova.volume.netapp.api import NaElement
 from nova.volume.netapp.api import NaErrors
 from nova.volume.netapp.api import NaServer
-from cinder.volume import volume_types
+from nova.volume import volume_types
 
 _ = str
 

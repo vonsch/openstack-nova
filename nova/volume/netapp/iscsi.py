@@ -50,7 +50,7 @@ from nova.volume.netapp.utils import get_volume_extra_specs
 from nova.volume.netapp.utils import round_down
 from nova.volume.netapp.utils import set_safe_attr
 from nova.volume.netapp.utils import validate_instantiation
-from cinder.volume import utils as volume_utils
+from nova.volume import utils as volume_utils
 
 _ = str
 
