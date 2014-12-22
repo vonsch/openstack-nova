@@ -24,7 +24,7 @@ import six
 
 from nova import exception
 from nova.openstack.common import log as logging
-from cinder.openstack.common import timeutils
+from nova.openstack.common import timeutils
 from cinder import utils
 from cinder.volume import driver
 from cinder.volume.drivers.netapp import api

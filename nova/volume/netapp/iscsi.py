@@ -29,9 +29,9 @@ import uuid
 import six
 
 from nova import exception
-from cinder.openstack.common import excutils
+from nova.openstack.common import excutils
 from nova.openstack.common import log as logging
-from cinder.openstack.common import timeutils
+from nova.openstack.common import timeutils
 from cinder.openstack.common import units
 from cinder import utils
 from cinder.volume import driver
