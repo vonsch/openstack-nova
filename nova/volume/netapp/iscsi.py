@@ -170,9 +170,10 @@ class NetAppDirectISCSIDriver(driver.ISCSIDriver):
 
         LOG.debug('create_volume on %s' % volume['host'])
 
-        # get ONTAP volume name as pool name
-        ontap_volume_name = volume_utils.extract_host(volume['host'],
-                                                      level='pool')
+        # HACK: this is where they used to extract pool name (aka netapp volume)
+        #   from "hostA@backendB#poolC" convention. That string is not populated
+        #   in Folsom. So the pool name is taken from config instead.
+        ontap_volume_name = self.volume_list[0]
 
         if ontap_volume_name is None:
             msg = _("Pool is not available in the volume host field.")
@@ -797,6 +798,16 @@ class NetAppDirectCmodeISCSIDriver(NetAppDirectISCSIDriver):
 
     def _do_custom_setup(self):
         """Does custom setup for ontap cluster."""
+
+        self.volume_list = CONF.netapp_volume_list
+        if self.volume_list:
+            self.volume_list = self.volume_list.split(',')
+            self.volume_list = [el.strip() for el in self.volume_list]
+
+        if self.volume_list is None or len(self.volume_list) != 1:
+            msg = '"netapp_volume_list" is mandatory and restricted to one volume'
+            raise exception.InvalidInput(reason=msg)
+
         self.vserver = CONF.netapp_vserver
         self.vserver = self.vserver if self.vserver else self.DEFAULT_VS
         # We set vserver in client permanently.
@@ -1177,6 +1188,11 @@ class NetAppDirect7modeISCSIDriver(NetAppDirectISCSIDriver):
         if self.volume_list:
             self.volume_list = self.volume_list.split(',')
             self.volume_list = [el.strip() for el in self.volume_list]
+
+        if self.volume_list is None or len(self.volume_list) != 1:
+            msg = '"netapp_volume_list" is mandatory and restricted to one volume'
+            raise exception.InvalidInput(reason=msg)
+
         (major, minor) = self._get_ontapi_version()
         self.client.set_api_version(major, minor)
         if self.vfiler:
