@@ -44,6 +44,7 @@ from nova.volume.netapp.options import netapp_cluster_opts
 from nova.volume.netapp.options import netapp_connection_opts
 from nova.volume.netapp.options import netapp_provisioning_opts
 from nova.volume.netapp.options import netapp_transport_opts
+from nova.volume.netapp.options import CONF
 from nova.volume.netapp import ssc_utils
 from nova.volume.netapp import utils as na_utils
 from nova.volume.netapp.utils import get_volume_extra_specs
@@ -94,10 +95,10 @@ class NetAppDirectISCSIDriver(driver.ISCSIDriver):
     def __init__(self, *args, **kwargs):
         super(NetAppDirectISCSIDriver, self).__init__(*args, **kwargs)
         validate_instantiation(**kwargs)
-        self.configuration.append_config_values(netapp_connection_opts)
-        self.configuration.append_config_values(netapp_basicauth_opts)
-        self.configuration.append_config_values(netapp_transport_opts)
-        self.configuration.append_config_values(netapp_provisioning_opts)
+        CONF.register_opts(netapp_connection_opts)
+        CONF.register_opts(netapp_basicauth_opts)
+        CONF.register_opts(netapp_transport_opts)
+        CONF.register_opts(netapp_provisioning_opts)
         self.lun_table = {}
 
     def _create_client(self, **kwargs):
@@ -123,7 +124,7 @@ class NetAppDirectISCSIDriver(driver.ISCSIDriver):
         """Ensure that the flags we care about are set."""
         required_flags = self.required_flags
         for flag in required_flags:
-            if not getattr(self.configuration, flag, None):
+            if not getattr(CONF, flag, None):
                 msg = _('%s is not set') % flag
                 raise exception.InvalidInput(reason=msg)
 
@@ -137,11 +138,11 @@ class NetAppDirectISCSIDriver(driver.ISCSIDriver):
 
         self._check_flags()
         self._create_client(
-            transport_type=self.configuration.netapp_transport_type,
-            login=self.configuration.netapp_login,
-            password=self.configuration.netapp_password,
-            hostname=self.configuration.netapp_server_hostname,
-            port=self.configuration.netapp_server_port)
+            transport_type=CONF.netapp_transport_type,
+            login=CONF.netapp_login,
+            password=CONF.netapp_password,
+            hostname=CONF.netapp_server_hostname,
+            port=CONF.netapp_server_port)
         self._do_custom_setup()
 
     def check_for_setup_error(self):
@@ -792,11 +793,11 @@ class NetAppDirectCmodeISCSIDriver(NetAppDirectISCSIDriver):
 
     def __init__(self, *args, **kwargs):
         super(NetAppDirectCmodeISCSIDriver, self).__init__(*args, **kwargs)
-        self.configuration.append_config_values(netapp_cluster_opts)
+        CONF.register_opts(netapp_cluster_opts)
 
     def _do_custom_setup(self):
         """Does custom setup for ontap cluster."""
-        self.vserver = self.configuration.netapp_vserver
+        self.vserver = CONF.netapp_vserver
         self.vserver = self.vserver if self.vserver else self.DEFAULT_VS
         # We set vserver in client permanently.
         # To use tunneling enable_tunneling while invoking api
@@ -1074,7 +1075,7 @@ class NetAppDirectCmodeISCSIDriver(NetAppDirectISCSIDriver):
         LOG.debug('Updating volume stats')
         data = {}
         netapp_backend = 'NetApp_iSCSI_Cluster_direct'
-        backend_name = self.configuration.safe_get('volume_backend_name')
+        backend_name = None
         data['volume_backend_name'] = backend_name or netapp_backend
         data['vendor_name'] = 'NetApp'
         data['driver_version'] = self.VERSION
@@ -1099,12 +1100,12 @@ class NetAppDirectCmodeISCSIDriver(NetAppDirectISCSIDriver):
 
             # convert sizes to GB and de-rate by NetApp multiplier
             total = float(vol.space['size_total_bytes'])
-            total /= self.configuration.netapp_size_multiplier
+            total /= CONF.netapp_size_multiplier
             total /= units.Gi
             pool['total_capacity_gb'] = round_down(total, '0.01')
 
             free = float(vol.space['size_avl_bytes'])
-            free /= self.configuration.netapp_size_multiplier
+            free /= CONF.netapp_size_multiplier
             free /= units.Gi
             pool['free_capacity_gb'] = round_down(free, '0.01')
 
@@ -1167,12 +1168,12 @@ class NetAppDirect7modeISCSIDriver(NetAppDirectISCSIDriver):
 
     def __init__(self, *args, **kwargs):
         super(NetAppDirect7modeISCSIDriver, self).__init__(*args, **kwargs)
-        self.configuration.append_config_values(netapp_7mode_opts)
+        CONF.register_opts(netapp_7mode_opts)
 
     def _do_custom_setup(self):
         """Does custom setup depending on the type of filer."""
-        self.vfiler = self.configuration.netapp_vfiler
-        self.volume_list = self.configuration.netapp_volume_list
+        self.vfiler = CONF.netapp_vfiler
+        self.volume_list = CONF.netapp_volume_list
         if self.volume_list:
             self.volume_list = self.volume_list.split(',')
             self.volume_list = [el.strip() for el in self.volume_list]
@@ -1285,10 +1286,10 @@ class NetAppDirect7modeISCSIDriver(NetAppDirectISCSIDriver):
 
     def _get_owner(self):
         if self.vfiler:
-            owner = '%s:%s' % (self.configuration.netapp_server_hostname,
+            owner = '%s:%s' % (CONF.netapp_server_hostname,
                                self.vfiler)
         else:
-            owner = self.configuration.netapp_server_hostname
+            owner = CONF.netapp_server_hostname
         return owner
 
     def _create_lun_handle(self, metadata):
@@ -1487,7 +1488,7 @@ class NetAppDirect7modeISCSIDriver(NetAppDirectISCSIDriver):
         LOG.debug('Updating volume stats')
         data = {}
         netapp_backend = 'NetApp_iSCSI_7mode_direct'
-        backend_name = self.configuration.safe_get('volume_backend_name')
+        backend_name = None
         data['volume_backend_name'] = backend_name or netapp_backend
         data['vendor_name'] = 'NetApp'
         data['driver_version'] = self.VERSION
@@ -1532,12 +1533,12 @@ class NetAppDirect7modeISCSIDriver(NetAppDirectISCSIDriver):
 
             # convert sizes to GB and de-rate by NetApp multiplier
             total = float(vol.get_child_content('size-total') or 0)
-            total /= self.configuration.netapp_size_multiplier
+            total /= CONF.netapp_size_multiplier
             total /= units.Gi
             pool['total_capacity_gb'] = round_down(total, '0.01')
 
             free = float(vol.get_child_content('size-available') or 0)
-            free /= self.configuration.netapp_size_multiplier
+            free /= CONF.netapp_size_multiplier
             free /= units.Gi
             pool['free_capacity_gb'] = round_down(free, '0.01')
 

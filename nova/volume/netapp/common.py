@@ -24,6 +24,7 @@ from nova.openstack.common import importutils
 from nova.openstack.common import log as logging
 from nova.volume import driver
 from nova.volume.netapp.options import netapp_proxy_opts
+from nova.volume.netapp.options import CONF
 
 _ = str
 
@@ -75,15 +76,10 @@ class NetAppDriver(object):
 
     def __init__(self, *args, **kwargs):
         super(NetAppDriver, self).__init__()
-        self.configuration = kwargs.get('configuration', None)
-        if self.configuration:
-            self.configuration.append_config_values(netapp_proxy_opts)
-        else:
-            raise exception.InvalidInput(
-                reason=_("Required configuration not found"))
+        CONF.register_opts(netapp_proxy_opts)
         self.driver = NetAppDriverFactory.create_driver(
-            self.configuration.netapp_storage_family,
-            self.configuration.netapp_storage_protocol,
+            CONF.netapp_storage_family,
+            CONF.netapp_storage_protocol,
             *args, **kwargs)
 
     def __setattr__(self, name, value):
