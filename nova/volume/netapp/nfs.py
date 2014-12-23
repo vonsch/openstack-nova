@@ -42,6 +42,7 @@ from nova.volume.netapp.options import netapp_connection_opts
 from nova.volume.netapp.options import netapp_img_cache_opts
 from nova.volume.netapp.options import netapp_nfs_extra_opts
 from nova.volume.netapp.options import netapp_transport_opts
+from nova.volume.netapp.options import CONF
 from nova.volume.netapp import ssc_utils
 from nova.volume.netapp import utils as na_utils
 from nova.volume.netapp.utils import get_volume_extra_specs
@@ -67,10 +68,10 @@ class NetAppNFSDriver(nfs.NfsDriver):
         self._execute = None
         self._context = None
         super(NetAppNFSDriver, self).__init__(*args, **kwargs)
-        self.configuration.append_config_values(netapp_connection_opts)
-        self.configuration.append_config_values(netapp_basicauth_opts)
-        self.configuration.append_config_values(netapp_transport_opts)
-        self.configuration.append_config_values(netapp_img_cache_opts)
+        CONF.register_opts(netapp_connection_opts)
+        CONF.register_opts(netapp_basicauth_opts)
+        CONF.register_opts(netapp_transport_opts)
+        CONF.register_opts(netapp_img_cache_opts)
 
     def set_execute(self, execute):
         self._execute = execute
@@ -181,7 +182,7 @@ class NetAppNFSDriver(nfs.NfsDriver):
                 return True
             except processutils.ProcessExecutionError:
                 tries = tries + 1
-                if tries >= self.configuration.num_shell_tries:
+                if tries >= CONF.num_shell_tries:
                     raise
                 LOG.exception(_("Recovering from a failed execute.  "
                                 "Try number %s"), tries)
@@ -293,9 +294,9 @@ class NetAppNFSDriver(nfs.NfsDriver):
         try:
             LOG.debug('Image cache cleaning in progress.')
             thres_size_perc_start =\
-                self.configuration.thres_avl_size_perc_start
+                CONF.thres_avl_size_perc_start
             thres_size_perc_stop =\
-                self.configuration.thres_avl_size_perc_stop
+                CONF.thres_avl_size_perc_stop
             for share in getattr(self, '_mounted_shares', []):
                 try:
                     total_size, total_avl, total_alc =\
@@ -330,7 +331,7 @@ class NetAppNFSDriver(nfs.NfsDriver):
     def _find_old_cache_files(self, share):
         """Finds the old files in cache."""
         mount_fs = self._get_mount_point_for_share(share)
-        threshold_minutes = self.configuration.expiry_thres_minutes
+        threshold_minutes = CONF.expiry_thres_minutes
         cmd = ['find', mount_fs, '-maxdepth', '1', '-name',
                'img-cache*', '-amin', '+%s' % (threshold_minutes)]
         res, __ = self._execute(*cmd, run_as_root=True)
@@ -674,18 +675,18 @@ class NetAppDirectNfsDriver (NetAppNFSDriver):
                           'netapp_server_port',
                           'netapp_transport_type']
         for flag in required_flags:
-            if not getattr(self.configuration, flag, None):
+            if not getattr(CONF, flag, None):
                 raise exception.CinderException(_('%s is not set') % flag)
 
     def _get_client(self):
         """Creates NetApp api client."""
         client = NaServer(
-            host=self.configuration.netapp_server_hostname,
+            host=CONF.netapp_server_hostname,
             server_type=NaServer.SERVER_TYPE_FILER,
-            transport_type=self.configuration.netapp_transport_type,
+            transport_type=CONF.netapp_transport_type,
             style=NaServer.STYLE_LOGIN_PASSWORD,
-            username=self.configuration.netapp_login,
-            password=self.configuration.netapp_password)
+            username=CONF.netapp_login,
+            password=CONF.netapp_password)
         return client
 
     def _do_custom_setup(self, client):
@@ -735,7 +736,7 @@ class NetAppDirectNfsDriver (NetAppNFSDriver):
 
         used_ratio = (total_size - total_available) / total_size
         subscribed_ratio = total_allocated / total_size
-        apparent_size = max(0, total_size * self.configuration.nfs_used_ratio)
+        apparent_size = max(0, total_size * CONF.nfs_used_ratio)
         apparent_available = max(0, apparent_size - total_allocated)
 
         return {'total_size': total_size, 'total_available': total_available,
@@ -750,8 +751,8 @@ class NetAppDirectCmodeNfsDriver (NetAppDirectNfsDriver):
 
     def __init__(self, *args, **kwargs):
         super(NetAppDirectCmodeNfsDriver, self).__init__(*args, **kwargs)
-        self.configuration.append_config_values(netapp_cluster_opts)
-        self.configuration.append_config_values(netapp_nfs_extra_opts)
+        CONF.register_opts(netapp_cluster_opts)
+        CONF.register_opts(netapp_nfs_extra_opts)
 
     def _do_custom_setup(self, client):
         """Do the customized set up on client for cluster mode."""
@@ -759,7 +760,7 @@ class NetAppDirectCmodeNfsDriver (NetAppDirectNfsDriver):
         client.set_api_version(1, 15)
         (major, minor) = self._get_ontapi_version()
         client.set_api_version(major, minor)
-        self.vserver = self.configuration.netapp_vserver
+        self.vserver = CONF.netapp_vserver
         self.ssc_vols = None
         self.stale_vols = set()
         if self.vserver:
@@ -953,7 +954,7 @@ class NetAppDirectCmodeNfsDriver (NetAppDirectNfsDriver):
         LOG.debug('Updating volume stats')
         data = {}
         netapp_backend = 'NetApp_NFS_Cluster_direct'
-        backend_name = self.configuration.safe_get('volume_backend_name')
+        backend_name = None
         data['volume_backend_name'] = backend_name or netapp_backend
         data['vendor_name'] = 'NetApp'
         data['driver_version'] = self.VERSION
@@ -979,12 +980,12 @@ class NetAppDirectCmodeNfsDriver (NetAppDirectNfsDriver):
             pool['reserved_percentage'] = 0
 
             # Report pool as reserved when over the configured used_ratio
-            if capacity['used_ratio'] > self.configuration.nfs_used_ratio:
+            if capacity['used_ratio'] > CONF.nfs_used_ratio:
                 pool['reserved_percentage'] = 100
 
             # Report pool as reserved when over the subscribed ratio
             if capacity['subscribed_ratio'] >=\
-                    self.configuration.nfs_oversub_ratio:
+                    CONF.nfs_oversub_ratio:
                 pool['reserved_percentage'] = 100
 
             # convert sizes to GB
@@ -1162,7 +1163,7 @@ class NetAppDirectCmodeNfsDriver (NetAppDirectNfsDriver):
         copy_success = False
         try:
             major, minor = self._client.get_api_version()
-            col_path = self.configuration.netapp_copyoffload_tool_path
+            col_path = CONF.netapp_copyoffload_tool_path
             if (major == 1 and minor >= 20 and col_path):
                 self._try_copyoffload(context, volume, image_service, image_id)
                 copy_success = True
@@ -1209,7 +1210,7 @@ class NetAppDirectCmodeNfsDriver (NetAppDirectNfsDriver):
                 (share, file_name) = res
                 LOG.debug("Found cache file_name on share %s.", share)
                 if share != self._get_provider_location(volume['id']):
-                    col_path = self.configuration.netapp_copyoffload_tool_path
+                    col_path = CONF.netapp_copyoffload_tool_path
                     src_ip = self._get_ip_verify_on_cluster(
                         share.split(':')[0])
                     src_path = os.path.join(share.split(':')[1], file_name)
@@ -1260,7 +1261,7 @@ class NetAppDirectCmodeNfsDriver (NetAppDirectNfsDriver):
             volume['id']))
         # tmp file is required to deal with img formats
         tmp_img_file = str(uuid.uuid4())
-        col_path = self.configuration.netapp_copyoffload_tool_path
+        col_path = CONF.netapp_copyoffload_tool_path
         img_info = image_service.show(context, image_id)
         dst_share = self._get_provider_location(volume['id'])
         self._check_share_can_hold_size(dst_share, img_info['size'])
@@ -1502,7 +1503,7 @@ class NetAppDirect7modeNfsDriver (NetAppDirectNfsDriver):
         LOG.debug('Updating volume stats')
         data = {}
         netapp_backend = 'NetApp_NFS_7mode_direct'
-        backend_name = self.configuration.safe_get('volume_backend_name')
+        backend_name = None
         data['volume_backend_name'] = backend_name or netapp_backend
         data['vendor_name'] = 'NetApp'
         data['driver_version'] = self.VERSION
@@ -1529,12 +1530,12 @@ class NetAppDirect7modeNfsDriver (NetAppDirectNfsDriver):
             pool['reserved_percentage'] = 0
 
             # Report pool as reserved when over the configured used_ratio
-            if capacity['used_ratio'] > self.configuration.nfs_used_ratio:
+            if capacity['used_ratio'] > CONF.nfs_used_ratio:
                 pool['reserved_percentage'] = 100
 
             # Report pool as reserved when over the subscribed ratio
             if capacity['subscribed_ratio'] >=\
-                    self.configuration.nfs_oversub_ratio:
+                    CONF.nfs_oversub_ratio:
                 pool['reserved_percentage'] = 100
 
             # convert sizes to GB
