@@ -229,17 +229,17 @@ class NetAppDirectISCSIDriver(driver.ISCSIDriver):
         seg = path.split("/")
         LOG.debug("Destroyed LUN %s" % seg[-1])
 
-    def ensure_export(self, context, volume):
+    def ensure_export(self, context, volume, host=None):
         """Driver entry point to get the export info for an existing volume."""
         handle = self._get_lun_attr(volume['name'], 'handle')
         return {'provider_location': handle}
 
-    def create_export(self, context, volume):
+    def create_export(self, context, volume, host=None):
         """Driver entry point to get the export info for a new volume."""
         handle = self._get_lun_attr(volume['name'], 'handle')
         return {'provider_location': handle}
 
-    def remove_export(self, context, volume):
+    def remove_export(self, context, volume, host=None):
         """Driver entry point to remove an export for a volume.
 
         Since exporting is idempotent in this driver, we have nothing
