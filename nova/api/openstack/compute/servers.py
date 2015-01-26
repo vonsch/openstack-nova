@@ -799,7 +799,7 @@ class Controller(wsgi.Controller):
         if self.ext_mgr.is_loaded('os-volumes'):
             block_device_mapping = server_dict.get('block_device_mapping', [])
             for bdm in block_device_mapping:
-                if bdm['volume_id'] == '':
+                if 'volume_id' in bdm and bdm['volume_id'] == '':
                     LOG.debug('Setting block device mapping volume to None')
                     bdm['volume_id'] = None
                 if 'delete_on_termination' in bdm:
