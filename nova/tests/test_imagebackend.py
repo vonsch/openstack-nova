@@ -36,7 +36,8 @@ class _ImageTestCase(test.TestCase):
     def setUp(self):
         super(_ImageTestCase, self).setUp()
         self.flags(disable_process_locking=True,
-                   instances_path=self.INSTANCES_PATH)
+                   instances_path=self.INSTANCES_PATH,
+                   default_ephemeral_format='ext4')
         self.INSTANCE = 'instance'
         self.NAME = 'fake.vm'
         self.TEMPLATE = 'template'
@@ -226,7 +227,8 @@ class LvmTestCase(_ImageTestCase):
     def setUp(self):
         self.image_class = imagebackend.Lvm
         super(LvmTestCase, self).setUp()
-        self.flags(libvirt_images_volume_group=self.VG)
+        self.flags(libvirt_images_volume_group=self.VG,
+                   libvirt_thin_logical_volumes=False)
         self.LV = '%s_%s' % (self.INSTANCE, self.NAME)
         self.PATH = os.path.join('/dev', self.VG, self.LV)
 
@@ -248,7 +250,8 @@ class LvmTestCase(_ImageTestCase):
         self.libvirt_utils.create_lvm_image(self.VG,
                                             self.LV,
                                             self.TEMPLATE_SIZE,
-                                            sparse=sparse)
+                                            sparse=sparse,
+                                            thin=False)
         self.disk.get_disk_size(self.TEMPLATE_PATH
                                          ).AndReturn(self.TEMPLATE_SIZE)
         cmd = ('dd', 'if=%s' % self.TEMPLATE_PATH,
@@ -264,8 +267,10 @@ class LvmTestCase(_ImageTestCase):
     def _create_image_generated(self, sparse):
         fn = self.prepare_mocks()
         self.libvirt_utils.create_lvm_image(self.VG, self.LV,
-                                            self.SIZE, sparse=sparse)
+                                            self.SIZE, sparse=sparse, thin=False)
         fn(target=self.PATH, ephemeral_size=None)
+        cmd = ('mkfs', '-t', 'ext4', '-F', '-L', 'ephemeral0', '/dev/%s/%s' % (self.VG, self.LV))
+        self.utils.execute(*cmd, run_as_root=True, check_exit_code=0).AndReturn(('stdout', 'stderr'))
         self.mox.ReplayAll()
 
         image = self.image_class(self.INSTANCE, self.NAME)
@@ -278,7 +283,8 @@ class LvmTestCase(_ImageTestCase):
         fn = self.prepare_mocks()
         fn(target=self.TEMPLATE_PATH)
         self.libvirt_utils.create_lvm_image(self.VG, self.LV,
-                                            self.SIZE, sparse=sparse)
+                                            self.SIZE, sparse=sparse,
+                                            thin=False)
         self.disk.get_disk_size(self.TEMPLATE_PATH
                                          ).AndReturn(self.TEMPLATE_SIZE)
         cmd = ('dd', 'if=%s' % self.TEMPLATE_PATH,
@@ -319,8 +325,8 @@ class LvmTestCase(_ImageTestCase):
         self.libvirt_utils.create_lvm_image(self.VG,
                                             self.LV,
                                             self.SIZE,
-                                            sparse=False
-                                            ).AndRaise(RuntimeError())
+                                            sparse=False,
+                                            thin=False).AndRaise(RuntimeError())
         self.disk.get_disk_size(self.TEMPLATE_PATH
                                          ).AndReturn(self.TEMPLATE_SIZE)
         self.mox.StubOutWithMock(self.libvirt_utils, 'remove_logical_volumes')
@@ -340,7 +346,8 @@ class LvmTestCase(_ImageTestCase):
         self.libvirt_utils.create_lvm_image(self.VG,
                                             self.LV,
                                             self.SIZE,
-                                            sparse=False)
+                                            sparse=False,
+                                            thin=False)
         self.mox.StubOutWithMock(self.libvirt_utils, 'remove_logical_volumes')
         self.libvirt_utils.remove_logical_volumes(self.PATH)
         self.mox.ReplayAll()

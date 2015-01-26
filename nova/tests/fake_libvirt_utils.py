@@ -51,7 +51,7 @@ def resize2fs(path):
     pass
 
 
-def create_lvm_image(vg, lv, size, sparse=False):
+def create_lvm_image(vg, lv, size, sparse=False, thin=False):
     pass
 
 
