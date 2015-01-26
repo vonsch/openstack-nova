@@ -50,22 +50,26 @@ class LibvirtVolumeDriver(object):
         conf.target_bus = "virtio"
         conf.serial = connection_info.get('serial')
 
-        volume_id = connection_info['data']['volume_id']
+	try:
+            volume_id = connection_info['data']['volume_id']
+ 
+            # TODO: ec2_volume_id have to be computed from FLAGS.volume_name_template
+            local_volume_ec2id = "/dev/%s/%s" % (FLAGS.volume_group, ec2utils.id_to_ec2_vol_id(volume_id))
+ 
+            local_volume_uuid = "/dev/%s/%s" % (FLAGS.volume_group, FLAGS.volume_name_template)
+            local_volume_uuid = local_volume_uuid % volume_id
+            is_local_volume_ec2id = os.path.islink(local_volume_ec2id)
+            is_local_volume_uuid = os.path.islink(local_volume_uuid)
+ 
+            if is_local_volume_uuid:
+                 conf.source_path = local_volume_uuid
+            elif is_local_volume_ec2id:
+                 conf.source_path = local_volume_ec2id
+            else:
+                 LOG.debug("Attaching device %s as %s" % (conf.source_path, mount_device))
+        except KeyError as e:
+            pass
 
-        # TODO: ec2_volume_id have to be computed from FLAGS.volume_name_template
-        local_volume_ec2id = "/dev/%s/%s" % (FLAGS.volume_group, ec2utils.id_to_ec2_vol_id(volume_id))
-
-        local_volume_uuid = "/dev/%s/%s" % (FLAGS.volume_group, FLAGS.volume_name_template)
-        local_volume_uuid = local_volume_uuid % volume_id
-        is_local_volume_ec2id = os.path.islink(local_volume_ec2id)
-        is_local_volume_uuid = os.path.islink(local_volume_uuid)
-
-        if is_local_volume_uuid:
-             conf.source_path = local_volume_uuid
-        elif is_local_volume_ec2id:
-             conf.source_path = local_volume_ec2id
-        else:
-             LOG.debug("Attaching device %s as %s" % (conf.source_path, mount_device))
         return conf
 
     def disconnect_volume(self, connection_info, mount_device):
@@ -175,14 +179,14 @@ class LibvirtISCSIVolumeDriver(LibvirtVolumeDriver):
                          iscsi_properties.get('target_lun', 0)))
 
 	volume_id = connection_info['data']['volume_id']
+        ec2id = ec2utils.id_to_ec2_vol_id(volume_id)
 	device_ec2id = "/dev/%s/%s" % (FLAGS.volume_group, ec2utils.id_to_ec2_vol_id(volume_id))
 	
         # we've just found that old EC2 id based device of volume exist, that's very likely a 
         # migrated volume and it is worth to use it instead of new uuid based device which 
         # could not exist at all
         if os.path.exists(device_ec2id):
-	    target_iqn = 'iqn.2010-10.org.openstack:%s' % FLAGS.volume_name_template
-	    target_iqn = target_iqn % device_ec2id
+	    target_iqn = 'iqn.2010-10.org.openstack:%s' % ec2id
 	    host_device = device_ec2id
 	    iscsi_properties['target_iqn']=target_iqn
 	    

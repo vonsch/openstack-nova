@@ -176,7 +176,7 @@ class LibvirtVolumeTestCase(test.TestCase):
         vol_driver = volume_driver.ISCSIDriver()
         libvirt_driver = volume.LibvirtISCSIVolumeDriver(self.fake_conn)
         location = '10.0.2.15:3260'
-        name = 'volume-00000001'
+        name = 'vol-00000001'
         iqn = 'iqn.2010-10.org.openstack:%s' % name
         vol = {'id': 1,
                'name': name,
@@ -186,7 +186,7 @@ class LibvirtVolumeTestCase(test.TestCase):
         mount_device = "vde"
         conf = libvirt_driver.connect_volume(connection_info, mount_device)
         tree = conf.format_dom()
-        dev_str = '/dev/disk/by-path/ip-%s-iscsi-%s-lun-1' % (location, iqn)
+        dev_str = '/dev/nova-volumes/vol-00000001'
         self.assertEqual(tree.get('type'), 'block')
         self.assertEqual(tree.find('./source').get('dev'), dev_str)
         libvirt_driver.disconnect_volume(connection_info, mount_device)
@@ -213,7 +213,7 @@ class LibvirtVolumeTestCase(test.TestCase):
         vol_driver = volume_driver.ISCSIDriver()
         libvirt_driver = volume.LibvirtISCSIVolumeDriver(self.fake_conn)
         location = '10.0.2.15:3260'
-        name = 'volume-00000001'
+        name = 'vol-00000001'
         iqn = 'iqn.2010-10.org.openstack:%s' % name
         devs = ['/dev/disk/by-path/ip-%s-iscsi-%s-lun-1' % (location, iqn)]
         self.stubs.Set(self.fake_conn, 'get_all_block_devices', lambda: devs)
@@ -225,7 +225,7 @@ class LibvirtVolumeTestCase(test.TestCase):
         mount_device = "vde"
         conf = libvirt_driver.connect_volume(connection_info, mount_device)
         tree = conf.format_dom()
-        dev_str = '/dev/disk/by-path/ip-%s-iscsi-%s-lun-1' % (location, iqn)
+        dev_str = '/dev/nova-volumes/vol-00000001'
         self.assertEqual(tree.get('type'), 'block')
         self.assertEqual(tree.find('./source').get('dev'), dev_str)
         libvirt_driver.disconnect_volume(connection_info, mount_device)
@@ -236,7 +236,10 @@ class LibvirtVolumeTestCase(test.TestCase):
                               '-p', location, '--login'),
                              ('iscsiadm', '-m', 'node', '-T', iqn,
                               '-p', location, '--op', 'update',
-                              '-n', 'node.startup', '-v', 'automatic')]
+                              '-n', 'node.startup', '-v', 'automatic'),
+                             ('cp', '/dev/stdin', 
+                              '/sys/block/ip-%s-iscsi-%s-lun-1/device/delete' %
+                               (location, iqn))]
         self.assertEqual(self.executes, expected_commands)
 
     def test_libvirt_sheepdog_driver(self):
@@ -338,7 +341,7 @@ class LibvirtVolumeTestCase(test.TestCase):
         mount_device = "vde"
         conf = libvirt_driver.connect_volume(connection_info, mount_device)
         tree = conf.format_dom()
-        dev_str = '/dev/disk/by-path/ip-%s-iscsi-%s-lun-1' % (location, iqn)
+        dev_str = '/dev/nova-volumes/vol-00000001'
         self.assertEqual(tree.get('type'), 'block')
         self.assertEqual(tree.find('./source').get('dev'), dev_str)
         libvirt_driver.disconnect_volume(connection_info, mount_device)
@@ -3299,7 +3302,7 @@ class IptablesFirewallTestCase(test.TestCase):
             regex = re.compile('\[0\:0\] -A .* -j ACCEPT -p tcp -m multiport '
                                '--dports 80:81 -s %s' % ip['address'])
             self.assertTrue(len(filter(regex.match, self.out_rules)) > 0,
-                            "TCP port 80/81 acceptance rule wasn't added")
+                            "TCP port 80/81 acceptance rule wasn't added 1 (%s)" % self.out_rules)
             regex = re.compile('\[0\:0\] -A .* -j ACCEPT -s '
                                '%s' % ip['address'])
             self.assertTrue(len(filter(regex.match, self.out_rules)) > 0,
@@ -3308,7 +3311,7 @@ class IptablesFirewallTestCase(test.TestCase):
         regex = re.compile('\[0\:0\] -A .* -j ACCEPT -p tcp '
                            '-m multiport --dports 80:81 -s 192.168.10.0/24')
         self.assertTrue(len(filter(regex.match, self.out_rules)) > 0,
-                        "TCP port 80/81 acceptance rule wasn't added")
+                        "TCP port 80/81 acceptance rule wasn't added 2")
         db.instance_destroy(admin_ctxt, instance_ref['uuid'])
 
     def test_filters_for_instance_with_ip_v6(self):
