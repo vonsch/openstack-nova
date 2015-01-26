@@ -2393,10 +2393,13 @@ class LibvirtConnTestCase(test.TestCase):
 
     def test_destroy_undefines(self):
         mock = self.mox.CreateMock(libvirt.virDomain)
+        mock.shutdown()
         mock.destroy()
         mock.undefineFlags(1).AndReturn(1)
 
         self.mox.ReplayAll()
+
+        self.flags(libvirt_wait_soft_reboot_seconds=0)
 
         def fake_lookup_by_name(instance_name):
             return mock
@@ -2413,11 +2416,14 @@ class LibvirtConnTestCase(test.TestCase):
 
     def test_destroy_undefines_no_undefine_flags(self):
         mock = self.mox.CreateMock(libvirt.virDomain)
+        mock.shutdown()
         mock.destroy()
         mock.undefineFlags(1).AndRaise(libvirt.libvirtError('Err'))
         mock.undefine()
 
         self.mox.ReplayAll()
+
+        self.flags(libvirt_wait_soft_reboot_seconds=0)
 
         def fake_lookup_by_name(instance_name):
             return mock
@@ -2434,6 +2440,7 @@ class LibvirtConnTestCase(test.TestCase):
 
     def test_destroy_undefines_no_attribute_with_managed_save(self):
         mock = self.mox.CreateMock(libvirt.virDomain)
+        mock.shutdown()
         mock.destroy()
         mock.undefineFlags(1).AndRaise(AttributeError())
         mock.hasManagedSaveImage(0).AndReturn(True)
@@ -2441,6 +2448,8 @@ class LibvirtConnTestCase(test.TestCase):
         mock.undefine()
 
         self.mox.ReplayAll()
+
+        self.flags(libvirt_wait_soft_reboot_seconds=0)
 
         def fake_lookup_by_name(instance_name):
             return mock
@@ -2457,12 +2466,15 @@ class LibvirtConnTestCase(test.TestCase):
 
     def test_destroy_undefines_no_attribute_no_managed_save(self):
         mock = self.mox.CreateMock(libvirt.virDomain)
+        mock.shutdown()
         mock.destroy()
         mock.undefineFlags(1).AndRaise(AttributeError())
         mock.hasManagedSaveImage(0).AndRaise(AttributeError())
         mock.undefine()
 
         self.mox.ReplayAll()
+
+        self.flags(libvirt_wait_soft_reboot_seconds=0)
 
         def fake_lookup_by_name(instance_name):
             return mock
@@ -2479,8 +2491,11 @@ class LibvirtConnTestCase(test.TestCase):
 
     def test_private_destroy_not_found(self):
         mock = self.mox.CreateMock(libvirt.virDomain)
+        mock.shutdown()
         mock.destroy()
         self.mox.ReplayAll()
+
+        self.flags(libvirt_wait_soft_reboot_seconds=0)
 
         def fake_lookup_by_name(instance_name):
             return mock

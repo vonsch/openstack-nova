@@ -2558,7 +2558,7 @@ class CloudTestCase(test.TestCase):
         self.assertEqual(groupSet, expected_groupSet)
         self.assertEqual(get_attribute('instanceInitiatedShutdownBehavior'),
                          {'instance_id': 'i-12345678',
-                          'instanceInitiatedShutdownBehavior': 'stop'})
+                          'instanceInitiatedShutdownBehavior': {"value": 'stop'}})
         self.assertEqual(get_attribute('disableApiTermination'),
                          {'instance_id': 'i-12345678',
                           'disableApiTermination': False})
@@ -2578,7 +2578,7 @@ class CloudTestCase(test.TestCase):
         # get_attribute('sourceDestCheck')
         self.assertEqual(get_attribute('userData'),
                          {'instance_id': 'i-12345678',
-                          'userData': '}\xa9\x1e\xba\xc7\xabu\xabZ'})
+                          'userData': {"value": '}\xa9\x1e\xba\xc7\xabu\xabZ'}})
 
     def test_instance_initiated_shutdown_behavior(self):
         def test_dia_iisb(expected_result, **kwargs):
@@ -2604,11 +2604,11 @@ class CloudTestCase(test.TestCase):
             self.assertEqual(result, expected)
             self._restart_compute_service()
 
-        test_dia_iisb('stop', image_id='ami-1')
+        test_dia_iisb({"value": 'stop'}, image_id='ami-1')
 
         block_device_mapping = [{'device_name': '/dev/vdb',
                                  'virtual_name': 'ephemeral0'}]
-        test_dia_iisb('stop', image_id='ami-2',
+        test_dia_iisb({"value": 'stop'}, image_id='ami-2',
                      block_device_mapping=block_device_mapping)
 
         def fake_show(self, context, id_):
@@ -2650,7 +2650,7 @@ class CloudTestCase(test.TestCase):
 
         self.stubs.Set(fake._FakeImageService, 'show', fake_show)
 
-        test_dia_iisb('stop', image_id='ami-3')
-        test_dia_iisb('stop', image_id='ami-4')
-        test_dia_iisb('stop', image_id='ami-5')
-        test_dia_iisb('stop', image_id='ami-6')
+        test_dia_iisb({"value": 'stop'}, image_id='ami-3')
+        test_dia_iisb({"value": 'stop'}, image_id='ami-4')
+        test_dia_iisb({"value": 'stop'}, image_id='ami-5')
+        test_dia_iisb({"value": 'stop'}, image_id='ami-6')
