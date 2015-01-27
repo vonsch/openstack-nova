@@ -47,7 +47,12 @@ class BlockDeviceMappingEc2CloudTestCase(test.TestCase):
         self.stubs.Set(ec2utils,
                 'ec2_vol_id_to_uuid',
                 self.fake_ec2_vol_id_to_uuid)
+        self.stubs.Set(ec2utils,
+                'ec2_snap_id_to_uuid',
+                self.fake_ec2_vol_id_to_uuid)
 
+        self.flags(snapshot_name_template='snap-%s')
+        self.flags(volume_name_template='vol-%s')
         bdm_list = [
             ({'device_name': '/dev/fake0',
               'ebs': {'snapshot_id': 'snap-12345678',
