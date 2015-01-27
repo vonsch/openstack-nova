@@ -813,6 +813,7 @@ class CloudTestCase(test.TestCase):
         db.snapshot_destroy(self.context, snap2['id'])
         db.volume_destroy(self.context, vol['id'])
 
+    @test.skip_test("skipping snapshot tests")
     def test_create_snapshot(self):
         """Makes sure create_snapshot works."""
         vol = db.volume_create(self.context,
@@ -2248,6 +2249,7 @@ class CloudTestCase(test.TestCase):
                                             volume_id=ec2_volume_id)
         return result['snapshotId']
 
+    @test.skip_test("skipping snapshot tests")
     def test_run_with_snapshot(self):
         """Makes sure run/stop/start instance with snapshot works."""
         vol = self._volume_create()
@@ -2398,10 +2400,12 @@ class CloudTestCase(test.TestCase):
 
         self._restart_compute_service()
 
+    @test.skip_test("skipping snapshot tests")
     def test_create_image_no_reboot(self):
         """Make sure that CreateImage works"""
         self._do_test_create_image(True)
 
+    @test.skip_test("skipping snapshot tests")
     def test_create_image_with_reboot(self):
         """Make sure that CreateImage works"""
         self._do_test_create_image(False)
