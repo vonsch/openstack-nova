@@ -506,6 +506,7 @@ class _VirtDriverTestCase(_FakeDriverBackendTestCase):
 
     @catch_notimplementederror
     def test_update_host_status(self):
+        self.flags(libvirt_images_volume_group='nova-volumes')
         host_status = self.connection.update_host_status()
         self._check_host_status_fields(host_status)
 

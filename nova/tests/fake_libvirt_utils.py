@@ -62,6 +62,8 @@ def volume_group_free_space(vg):
 def remove_logical_volumes(*paths):
     pass
 
+def volume_group_info_space(vg):
+    return (0, 0, 0)
 
 def write_to_file(path, contents, umask=None):
     pass
