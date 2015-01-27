@@ -30,7 +30,7 @@ from nova import db
 from nova import exception
 from nova.openstack.common import log as logging
 from nova.virt import driver
-
+from nova.virt.libvirt import utils as libvirt_utils
 
 LOG = logging.getLogger(__name__)
 

@@ -50,17 +50,17 @@ class LibvirtVolumeDriver(object):
         conf.target_bus = "virtio"
         conf.serial = connection_info.get('serial')
 
-	try:
+        try:
             volume_id = connection_info['data']['volume_id']
- 
+
             # TODO: ec2_volume_id have to be computed from FLAGS.volume_name_template
             local_volume_ec2id = "/dev/%s/%s" % (FLAGS.volume_group, ec2utils.id_to_ec2_vol_id(volume_id))
- 
+
             local_volume_uuid = "/dev/%s/%s" % (FLAGS.volume_group, FLAGS.volume_name_template)
             local_volume_uuid = local_volume_uuid % volume_id
             is_local_volume_ec2id = os.path.islink(local_volume_ec2id)
             is_local_volume_uuid = os.path.islink(local_volume_uuid)
- 
+
             if is_local_volume_uuid:
                  conf.source_path = local_volume_uuid
             elif is_local_volume_ec2id:
@@ -68,7 +68,7 @@ class LibvirtVolumeDriver(object):
             else:
                  LOG.debug("Attaching device %s as %s" % (conf.source_path, mount_device))
         except KeyError as e:
-            pass
+             LOG.debug("Attaching device failed, because volume_id is not present. Shitty coding, that needs to be worked-around, in order for unit tests to pass")
 
         return conf
 
