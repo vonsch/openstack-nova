@@ -703,11 +703,15 @@ class VlanNetworkTestCase(test.TestCase):
         def fake9(*args, **kwargs):
             raise test.TestingException()
 
+        def fake10(*args, **kwargs):
+            return {"pool": "dummy"}
+
         # raises because interface doesn't exist
         self.stubs.Set(self.network.db,
                        'floating_ip_fixed_ip_associate',
                        fake1)
         self.stubs.Set(self.network.db, 'floating_ip_disassociate', fake1)
+        self.stubs.Set(self.network.db, 'floating_ip_get_by_address', fake10)
         self.stubs.Set(self.network.driver, 'bind_floating_ip', fake8)
         self.assertRaises(exception.NoFloatingIpInterface,
                           self.network._associate_floating_ip,

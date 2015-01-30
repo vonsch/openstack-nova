@@ -51,7 +51,7 @@ def resize2fs(path):
     pass
 
 
-def create_lvm_image(vg, lv, size, sparse=False):
+def create_lvm_image(vg, lv, size, sparse=False, thin=False):
     pass
 
 
@@ -62,6 +62,8 @@ def volume_group_free_space(vg):
 def remove_logical_volumes(*paths):
     pass
 
+def volume_group_info_space(vg):
+    return (0, 0, 0)
 
 def write_to_file(path, contents, umask=None):
     pass

@@ -500,6 +500,7 @@ WSDL_TYPES = """<types>
     <xsd:all>
         <xsd:element name="HostId" type="na:ObjId"/>
         <xsd:element name="LunPath" type="na:ObjName"/>
+        <xsd:element name="QtreeId" type="na:ObjName"/>
     </xsd:all>
 </xsd:complexType>
 <xsd:simpleType name="ObjId">
@@ -814,6 +815,7 @@ class FakeDfmServerHandler(BaseHTTPServer.BaseHTTPRequestHandler):
                         <na:LunInfo>
                             <na:HostId>0</na:HostId>
                             <na:LunPath>%s</na:LunPath>
+                            <na:QtreeId>fake</na:QtreeId>
                         </na:LunInfo>
                     </na:Luns>
                     <na:Records>1</na:Records>
