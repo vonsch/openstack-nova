@@ -487,7 +487,7 @@ class FakeDirectCmodeHTTPConnection(object):
         return self.sock.result
 
 
-class NetAppDirectCmodeISCSIDriverTestCase(test.TestCase):
+class N3tAppDirectCmodeISCSIDriverTestCase(test.TestCase):
     """Test case for NetAppISCSIDriver"""
 
     volume = {'name': 'lun1', 'size': 2, 'volume_name': 'lun1',
@@ -547,7 +547,7 @@ class NetAppDirectCmodeISCSIDriverTestCase(test.TestCase):
                'thin': set([vol1]), 'all': set([vol1])}
 
     def setUp(self):
-        super(NetAppDirectCmodeISCSIDriverTestCase, self).setUp()
+        super(N3tAppDirectCmodeISCSIDriverTestCase, self).setUp()
         self._custom_setup()
 
     def _custom_setup(self):
@@ -627,7 +627,7 @@ class NetAppDirectCmodeISCSIDriverTestCase(test.TestCase):
         self.driver.get_volume_stats(refresh=True)
         stats = self.driver._stats
         self.assertEqual(stats['vendor_name'], 'NetApp')
-        self.assertTrue(stats['pools'][0]['pool_name'])
+        self.assertEqual(stats['storage_protocol'], 'iSCSI')
 
     def test_create_vol_snapshot_diff_size_resize(self):
         self.driver.create_volume(self.volume)
@@ -1133,7 +1133,7 @@ class FakeDirect7modeHTTPConnection(object):
 
 
 class NetAppDirect7modeISCSIDriverTestCase_NV(
-        NetAppDirectCmodeISCSIDriverTestCase):
+        N3tAppDirectCmodeISCSIDriverTestCase):
     """Test case for NetAppISCSIDriver
        No vfiler
     """
@@ -1249,8 +1249,8 @@ class NetAppApiElementTransTests(test.TestCase):
         child = ['e1', 'e2']
         root.translate_struct(child)
         self.assertEqual(len(root.get_children()), 2)
-        self.assertIsNone(root.get_child_content('e1'))
-        self.assertIsNone(root.get_child_content('e2'))
+        self.assertEqual(root.get_child_content('e1'), None)
+        self.assertEqual(root.get_child_content('e2'), None)
 
     def test_translate_struct_tuple(self):
         """Tests if tuple gets properly converted to NaElements."""
@@ -1258,8 +1258,8 @@ class NetAppApiElementTransTests(test.TestCase):
         child = ('e1', 'e2')
         root.translate_struct(child)
         self.assertEqual(len(root.get_children()), 2)
-        self.assertIsNone(root.get_child_content('e1'))
-        self.assertIsNone(root.get_child_content('e2'))
+        self.assertEqual(root.get_child_content('e1'), None)
+        self.assertEqual(root.get_child_content('e2'), None)
 
     def test_translate_invalid_struct(self):
         """Tests if invalid data structure raises exception."""
@@ -1322,7 +1322,7 @@ class NetAppApiElementTransTests(test.TestCase):
         """Tests key with None value."""
         root = NaElement('root')
         root['k'] = None
-        self.assertIsNone(root.get_child_content('k'))
+        self.assertEqual(root.get_child_content('k'), None)
 
     def test_setter_invalid_value(self):
         """Tests invalid value raises exception."""
