@@ -25,34 +25,33 @@ from lxml import etree
 import mock
 import six
 
-from cinder import exception
-from cinder.i18n import _
-from cinder.openstack.common import log as logging
-from cinder import test
-from cinder.volume import configuration as conf
-from cinder.volume.drivers.netapp.api import NaElement
-from cinder.volume.drivers.netapp.api import NaServer
-from cinder.volume.drivers.netapp import common
-from cinder.volume.drivers.netapp.options import netapp_7mode_opts
-from cinder.volume.drivers.netapp.options import netapp_basicauth_opts
-from cinder.volume.drivers.netapp.options import netapp_cluster_opts
-from cinder.volume.drivers.netapp.options import netapp_connection_opts
-from cinder.volume.drivers.netapp.options import netapp_provisioning_opts
-from cinder.volume.drivers.netapp.options import netapp_transport_opts
-from cinder.volume.drivers.netapp import ssc_utils
+from nova import exception
+_ = str
+from nova.openstack.common import log as logging
+from nova import test
+from nova.volume.netapp.options import CONF
+from nova.volume.netapp.api import NaElement
+from nova.volume.netapp.api import NaServer
+from nova.volume.netapp import common
+from nova.volume.netapp.options import netapp_7mode_opts
+from nova.volume.netapp.options import netapp_basicauth_opts
+from nova.volume.netapp.options import netapp_cluster_opts
+from nova.volume.netapp.options import netapp_connection_opts
+from nova.volume.netapp.options import netapp_provisioning_opts
+from nova.volume.netapp.options import netapp_transport_opts
+from nova.volume.netapp import ssc_utils
 
-LOG = logging.getLogger("cinder.volume.driver")
+LOG = logging.getLogger("nova.volume.driver")
 
 
 def create_configuration():
-    configuration = conf.Configuration(None)
-    configuration.append_config_values(netapp_connection_opts)
-    configuration.append_config_values(netapp_transport_opts)
-    configuration.append_config_values(netapp_basicauth_opts)
-    configuration.append_config_values(netapp_cluster_opts)
-    configuration.append_config_values(netapp_7mode_opts)
-    configuration.append_config_values(netapp_provisioning_opts)
-    return configuration
+    CONF.register_opts(netapp_connection_opts)
+    CONF.register_opts(netapp_transport_opts)
+    CONF.register_opts(netapp_basicauth_opts)
+    CONF.register_opts(netapp_cluster_opts)
+    CONF.register_opts(netapp_7mode_opts)
+    CONF.register_opts(netapp_provisioning_opts)
+    return CONF
 
 
 class FakeHTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
@@ -573,6 +572,7 @@ class NetAppDirectCmodeISCSIDriverTestCase(test.TestCase):
         configuration.netapp_transport_type = 'http'
         configuration.netapp_server_port = '80'
         configuration.netapp_vserver = 'openstack'
+        configuration.netapp_volume_list = 'openstack'
         return configuration
 
     def test_connect(self):
@@ -1159,6 +1159,7 @@ class NetAppDirect7modeISCSIDriverTestCase_NV(
         configuration.netapp_server_hostname = '127.0.0.1'
         configuration.netapp_transport_type = 'http'
         configuration.netapp_server_port = '80'
+        configuration.netapp_volume_list = 'openstack'
         return configuration
 
     def test_create_on_select_vol(self):
