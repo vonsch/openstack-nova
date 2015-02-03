@@ -674,6 +674,25 @@ class N3tAppDirectCmodeISCSIDriverTestCase(test.TestCase):
         else:
             self.fail(_('VolumeBackendAPIException not raised'))
 
+    def test_volume_list_is_empty(self):
+        configuration = create_configuration()
+        configuration.netapp_volume_list = None
+        driver = common.NetAppDriver(configuration=configuration)
+        self.assertRaises(exception.InvalidInput,
+                          driver.do_setup,
+                          context='')
+
+    def test_volume_list_is_more_than_one(self):
+        configuration = create_configuration()
+        configuration.netapp_volume_list = 'volume1, volume2'
+        driver = common.NetAppDriver(configuration=configuration)
+        self.assertRaises(exception.InvalidInput,
+                          driver.do_setup,
+                          context='')
+
+    def tearDown(self):
+        self._set_config(create_configuration())
+
 
 class NetAppDriverNegativeTestCase(test.TestCase):
     """Test case for NetAppDriver"""
