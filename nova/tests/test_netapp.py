@@ -1230,6 +1230,7 @@ class NetAppDirect7modeISCSIDriverTestCase_WV(
         configuration.netapp_transport_type = 'http'
         configuration.netapp_server_port = '80'
         configuration.netapp_vfiler = 'openstack'
+        configuration.netapp_volume_list = 'openstack'
         return configuration
 
 
