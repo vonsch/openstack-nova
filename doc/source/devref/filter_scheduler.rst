@@ -85,6 +85,7 @@ There are some standard filter classes to use (:mod:`nova.scheduler.filters`):
 * |TypeAffinityFilter| - Only passes hosts that are not already running an
   instance of the requested type.
 * |AggregateTypeAffinityFilter| - limits instance_type by aggregate.
+* |AggregateMultiTenancyIsolation| - isolate tenants in specific aggregates.
 
 Now we can focus on these standard filter classes in details. I will pass the
 simplest ones, such as |AllHostsFilter|, |CoreFilter| and |RamFilter| are,
@@ -333,3 +334,4 @@ in :mod:`nova.tests.scheduler`.
 .. |TrustedFilter| replace:: :class:`TrustedFilter <nova.scheduler.filters.trusted_filter.TrustedFilter>`
 .. |TypeAffinityFilter| replace:: :class:`TypeAffinityFilter <nova.scheduler.filters.type_filter.TypeAffinityFilter>`
 .. |AggregateTypeAffinityFilter| replace:: :class:`AggregateTypeAffinityFilter <nova.scheduler.filters.type_filter.AggregateTypeAffinityFilter>`
+.. |AggregateMultiTenancyIsolation| replace:: :class:`AggregateMultiTenancyIsolation <nova.scheduler.filters.aggregate_multitenancy_isolation.AggregateMultiTenancyIsolation>`

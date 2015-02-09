@@ -186,18 +186,21 @@ class LibvirtVolumeTestCase(test.TestCase):
         mount_device = "vde"
         conf = libvirt_driver.connect_volume(connection_info, mount_device)
         tree = conf.format_dom()
-        dev_str = '/dev/nova-volumes/vol-00000001'
+        dev_str = '/dev/disk/by-path/ip-%s-iscsi-%s-lun-%s' % (location, iqn, vol['id'])
         self.assertEqual(tree.get('type'), 'block')
         self.assertEqual(tree.find('./source').get('dev'), dev_str)
         libvirt_driver.disconnect_volume(connection_info, mount_device)
         connection_info = vol_driver.terminate_connection(vol, self.connr)
         expected_commands = [('iscsiadm', '-m', 'node', '-T', iqn,
                               '-p', location),
+                             ('iscsiadm', '-m', 'session'),
                              ('iscsiadm', '-m', 'node', '-T', iqn,
                               '-p', location, '--login'),
                              ('iscsiadm', '-m', 'node', '-T', iqn,
                               '-p', location, '--op', 'update',
                               '-n', 'node.startup', '-v', 'automatic'),
+                             ('iscsiadm', '-m', 'node', '-T', iqn,
+                              '-p', location, '--rescan'),
                              ('iscsiadm', '-m', 'node', '-T', iqn,
                               '-p', location, '--op', 'update',
                               '-n', 'node.startup', '-v', 'manual'),
@@ -225,21 +228,21 @@ class LibvirtVolumeTestCase(test.TestCase):
         mount_device = "vde"
         conf = libvirt_driver.connect_volume(connection_info, mount_device)
         tree = conf.format_dom()
-        dev_str = '/dev/nova-volumes/vol-00000001'
+        dev_str = '/dev/disk/by-path/ip-%s-iscsi-%s-lun-%s' % (location, iqn, vol['id'])
         self.assertEqual(tree.get('type'), 'block')
         self.assertEqual(tree.find('./source').get('dev'), dev_str)
         libvirt_driver.disconnect_volume(connection_info, mount_device)
         connection_info = vol_driver.terminate_connection(vol, self.connr)
         expected_commands = [('iscsiadm', '-m', 'node', '-T', iqn,
                               '-p', location),
+                             ('iscsiadm', '-m', 'session'),
                              ('iscsiadm', '-m', 'node', '-T', iqn,
                               '-p', location, '--login'),
                              ('iscsiadm', '-m', 'node', '-T', iqn,
                               '-p', location, '--op', 'update',
                               '-n', 'node.startup', '-v', 'automatic'),
-                             ('cp', '/dev/stdin', 
-                              '/sys/block/ip-%s-iscsi-%s-lun-1/device/delete' %
-                               (location, iqn))]
+                             ('iscsiadm', '-m', 'node', '-T', iqn,
+                              '-p', location, '--rescan')]
         self.assertEqual(self.executes, expected_commands)
 
     def test_libvirt_sheepdog_driver(self):
@@ -341,7 +344,7 @@ class LibvirtVolumeTestCase(test.TestCase):
         mount_device = "vde"
         conf = libvirt_driver.connect_volume(connection_info, mount_device)
         tree = conf.format_dom()
-        dev_str = '/dev/nova-volumes/vol-00000001'
+        dev_str = '/dev/disk/by-path/ip-%s-iscsi-%s-lun-%s' % (location, iqn, vol['id'])
         self.assertEqual(tree.get('type'), 'block')
         self.assertEqual(tree.find('./source').get('dev'), dev_str)
         libvirt_driver.disconnect_volume(connection_info, mount_device)

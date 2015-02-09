@@ -1,5 +1,4 @@
-
-# Copyright (c) 2012 NetApp, Inc.
+# Copyright 2013 IBM Corp
 # All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -13,15 +12,27 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-"""Unit tests for the NetApp-specific NFS driver module."""
 
-import os
+"""
+Unit constants
+"""
 
-from nova import test
+#Binary unit constants.
+Ki = 1024
+Mi = 1024 ** 2
+Gi = 1024 ** 3
+Ti = 1024 ** 4
+Pi = 1024 ** 5
+Ei = 1024 ** 6
+Zi = 1024 ** 7
+Yi = 1024 ** 8
 
-class NetappDirectCmodeNfsDriverTestCase(test.TestCase):
-    "Just a placeholder for skipping test reflection"
-
-    @test.skip_test("Netapp NFS driver is not operable at the moment")
-    def test_nothing(self):
-      return None
+#Decimal unit constants.
+k = 1000
+M = 1000 ** 2
+G = 1000 ** 3
+T = 1000 ** 4
+P = 1000 ** 5
+E = 1000 ** 6
+Z = 1000 ** 7
+Y = 1000 ** 8
