@@ -4,7 +4,7 @@
 %global with_doc %{!?_without_doc:1}%{?_without_doc:0}
 
 %global pkgname %{_openstack_name}-%{product_name}
-%global release_number 40
+%global release_number 41
 
 Name:             openstack-nova
 Version:          2012.2.4
@@ -758,6 +758,9 @@ fi
 %endif
 
 %changelog
+* Tue Jun 30 2015 Branislav Zarnovican <branislav.zarnovican@gooddata.com> - 2012.2.4-41.gdc
+- PCI-4669: backport of "Improve EC2 describe_security_groups performance"
+
 * Thu Feb 05 2015 Branislav Zarnovican <branislav.zarnovican@gooddata.com> - 2012.2.4-40.gdc
 - PCI-4320: backport of Juno Netapp driver to Folsom (for mgmt-netapp nodes)
 - PCI-4320: added support of iSCSI multipath to compute
