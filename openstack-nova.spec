@@ -8,7 +8,7 @@
 
 Name:             openstack-nova
 Version:          2012.2.4
-Release:          %{release_number}%{?dist}.gdc
+Release:          %{release_number}%{?dist}.gdc2
 Summary:          OpenStack Compute (nova)
 
 Group:            Applications/System
@@ -51,15 +51,22 @@ Source22:         nova-ifc-template
 
 BuildArch:        noarch
 BuildRequires:    intltool
-BuildRequires:    python-sphinx10
 BuildRequires:    python-setuptools
 BuildRequires:    python-netaddr
 BuildRequires:    openstack-utils
 # These are required to build due to the requirements check added
 BuildRequires:    python-paste-deploy >= 1.5
+%if 0%{?rhel} < 7
+BuildRequires:    python-sphinx10
 BuildRequires:    python-routes1.12
 BuildRequires:    python-sqlalchemy0.7
 BuildRequires:    python-webob1.0
+%else
+BuildRequires:    python-sphinx
+BuildRequires:    python-routes
+BuildRequires:    python-sqlalchemy
+BuildRequires:    python-webob
+%endif
 
 Requires:         openstack-nova-compute = %{version}-%{release}
 Requires:         openstack-nova-cert = %{version}-%{release}
@@ -317,12 +324,18 @@ Requires:         python-ldap
 
 Requires:         python-memcached
 
-Requires:         python-sqlalchemy0.7
 Requires:         python-migrate
 
 Requires:         python-paste-deploy >= 1.5
+%if 0%{?rhel} < 7
+Requires:         python-sqlalchemy0.7
 Requires:         python-routes1.12
 Requires:         python-webob1.0
+%else
+Requires:         python-sqlalchemy
+Requires:         python-routes
+Requires:         python-webob
+%endif
 
 Requires:         python-glanceclient >= 1:0
 Requires:         python-quantumclient >= 1:2
@@ -391,7 +404,11 @@ export PYTHONPATH="$( pwd ):$PYTHONPATH"
 pushd doc
 
 %if 0%{?with_doc}
+%if 0%{?rhel} < 7
 SPHINX_DEBUG=1 sphinx-1.0-build -b html source build/html
+%else
+SPHINX_DEBUG=1 sphinx-build -b html source build/html
+%endif
 # Fix hidden-file-or-dir warnings
 rm -fr build/html/.doctrees build/html/.buildinfo
 %endif
@@ -399,7 +416,11 @@ rm -fr build/html/.doctrees build/html/.buildinfo
 # Create dir link to avoid a sphinx-build exception
 mkdir -p build/man/.doctrees/
 ln -s .  build/man/.doctrees/man
+%if 0%{?rhel} < 7
 SPHINX_DEBUG=1 sphinx-1.0-build -b man -c source source/man build/man
+%else
+SPHINX_DEBUG=1 sphinx-build -b man -c source source/man build/man
+%endif
 mkdir -p %{buildroot}%{_mandir}/man1
 install -p -D -m 644 build/man/*.1 %{buildroot}%{_mandir}/man1/
 
@@ -758,6 +779,9 @@ fi
 %endif
 
 %changelog
+* Mon Sep 07 2015 Brano Zarnovican <branislav.zarnovican@gooddata.com> - 2012.2.4-41.gdc2
+- make spec buildable on EL7
+
 * Tue Jun 30 2015 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> - 2012.2.4-41.gdc
 - PCI-4669: backport of "Improve EC2 describe_security_groups performance"
 
