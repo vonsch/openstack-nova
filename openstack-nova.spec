@@ -758,7 +758,7 @@ fi
 %endif
 
 %changelog
-* Tue Jun 30 2015 Branislav Zarnovican <branislav.zarnovican@gooddata.com> - 2012.2.4-41.gdc
+* Tue Jun 30 2015 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> - 2012.2.4-41.gdc
 - PCI-4669: backport of "Improve EC2 describe_security_groups performance"
 
 * Thu Feb 05 2015 Branislav Zarnovican <branislav.zarnovican@gooddata.com> - 2012.2.4-40.gdc
