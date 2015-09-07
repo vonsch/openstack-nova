@@ -8,7 +8,7 @@
 
 Name:             openstack-nova
 Version:          2012.2.4
-Release:          %{release_number}%{?dist}.gdc2
+Release:          %{release_number}%{?dist}.gdc3
 Summary:          OpenStack Compute (nova)
 
 Group:            Applications/System
@@ -127,11 +127,11 @@ Requires:         curl
 Requires:         iscsi-initiator-utils
 Requires:         iptables iptables-ipv6
 Requires:         vconfig
+%if 0%{?rhel} < 7
 # tunctl is needed where `ip tuntap` is not available
 Requires:         tunctl
-Requires:         libguestfs-mount >= 1.7.17
-# The fuse dependency should be added to libguestfs-mount
-Requires:         fuse
+%endif
+Requires:         libguestfs-tools-c >= 1.7.17
 Requires:         libvirt >= 0.9.6
 Requires:         libvirt-python
 Requires:         openssh-clients
@@ -161,8 +161,10 @@ Requires:         radvd
 Requires:         bridge-utils
 Requires:         dnsmasq
 Requires:         dnsmasq-utils
+%if 0%{?rhel} < 7
 # tunctl is needed where `ip tuntap` is not available
 Requires:         tunctl
+%endif
 
 %description network
 OpenStack Compute (codename Nova) is open source software designed to
@@ -779,6 +781,9 @@ fi
 %endif
 
 %changelog
+* Mon Sep 07 2015 Brano Zarnovican <branislav.zarnovican@gooddata.com> - 2012.2.4-41.gdc3
+- fix tunctl, libguestfs-mount requires for EL7
+
 * Mon Sep 07 2015 Brano Zarnovican <branislav.zarnovican@gooddata.com> - 2012.2.4-41.gdc2
 - make spec buildable on EL7
 
