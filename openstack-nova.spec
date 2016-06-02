@@ -8,7 +8,7 @@
 
 Name:             openstack-nova
 Version:          2012.2.4
-Release:          %{release_number}%{?dist}.gdc3
+Release:          %{release_number}%{?dist}.gdc4
 Summary:          OpenStack Compute (nova)
 
 Group:            Applications/System
@@ -47,6 +47,8 @@ Source250:        openstack-nova-metadata-api.upstart
 Source20:         nova-sudoers
 Source21:         nova-polkit.pkla
 Source22:         nova-ifc-template
+
+Source50:         nova.conf.tmpfilesd
 
 
 BuildArch:        noarch
@@ -503,6 +505,12 @@ install -p -D -m 644 etc/nova/rootwrap.d/* %{buildroot}%{_datarootdir}/nova/root
 install -d -m 755 %{buildroot}%{_sysconfdir}/polkit-1/localauthority/50-local.d
 install -p -D -m 644 %{SOURCE21} %{buildroot}%{_sysconfdir}/polkit-1/localauthority/50-local.d/50-nova.pkla
 
+# (EL7) Install tmpfiles.d configs (used by systemd-tmpfiles, see: man tmpfiles.d)
+%if 0%{?rhel} >= 7
+mkdir -p %{buildroot}%{_tmpfilesdir}
+install -m 0644 %{SOURCE50} %{buildroot}%{_tmpfilesdir}/nova.conf
+%endif
+
 # Remove unneeded in production stuff
 rm -f %{buildroot}%{_bindir}/nova-debug
 rm -fr %{buildroot}%{python_sitelib}/nova/tests/
@@ -683,6 +691,10 @@ fi
 %dir %attr(0755, nova, root) %{_localstatedir}/log/nova
 %dir %attr(0755, nova, root) %{_localstatedir}/run/nova
 
+%if 0%{?rhel} >= 7
+%{_tmpfilesdir}/nova.conf
+%endif
+
 %{_bindir}/nova-clear-rabbit-queues
 # TODO. zmq-receiver may need its own service?
 %{_bindir}/nova-rpc-zmq-receiver
@@ -781,6 +793,9 @@ fi
 %endif
 
 %changelog
+* Thu Jun 02 2016 Andrey Arapov <andrey.arapov@gooddata.com> - 2012.2.4-41.gdc4
+- BUGFIX: PAAS-2305 make /var/run/nova persistent across reboots on EL7
+
 * Mon Sep 07 2015 Brano Zarnovican <branislav.zarnovican@gooddata.com> - 2012.2.4-41.gdc3
 - fix tunctl, libguestfs-mount requires for EL7
 
