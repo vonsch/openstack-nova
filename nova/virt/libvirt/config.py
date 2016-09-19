@@ -1953,6 +1953,7 @@ class LibvirtConfigGuest(LibvirtConfigObject):
         self.devices = []
         self.metadata = []
         self.idmaps = []
+        self.dataplane = False
 
     def _format_basic_props(self, root):
         root.append(self._text_node("uuid", self.uuid))
@@ -2039,6 +2040,19 @@ class LibvirtConfigGuest(LibvirtConfigObject):
             idmaps.append(idmap.format_dom())
         root.append(idmaps)
 
+    def _format_dataplane(self, root):
+        if self.dataplane:
+            XML_NAMESPACE = "http://libvirt.org/schemas/domain/qemu/1.0"
+            XML = "{%s}" % XML_NAMESPACE
+            NSMAP = {"qemu": XML_NAMESPACE}
+            qemu_cl = etree.Element(XML + "commandline", nsmap=NSMAP)
+            qemu_opts = ["-global", "virtio-blk-pci.scsi=off",
+                         "-global", "virtio-blk-pci.x-data-plane=on"]
+            for option in qemu_opts:
+                qemu_arg = etree.SubElement(qemu_cl, XML + "arg")
+                qemu_arg.set("value", option)
+            root.append(qemu_cl)
+
     def format_dom(self):
         root = super(LibvirtConfigGuest, self).format_dom()
 
@@ -2064,6 +2078,8 @@ class LibvirtConfigGuest(LibvirtConfigObject):
         self._format_devices(root)
 
         self._format_idmaps(root)
+
+        self._format_dataplane(root)
 
         return root
 

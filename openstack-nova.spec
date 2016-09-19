@@ -9,7 +9,7 @@ Name:             openstack-nova
 # https://review.openstack.org/#/q/I6a35fa0dda798fad93b804d00a46af80f08d475c,n,z
 Epoch:            1
 Version:          13.1.0
-Release:          1%{?gdc_version}%{?dist}
+Release:          2%{?gdc_version}%{?dist}
 Summary:          OpenStack Compute (nova)
 
 License:          ASL 2.0
@@ -819,7 +819,10 @@ exit 0
 %endif
 
 %changelog
-* Tue Sep 20 2016 Radek Smidl <radek.smidl@gooddata> 1:13.1.0-1.gdc1
+* Thu Sep 22 2016 Dinar Valeev <dinar.valeev@gooddata.com> 1:13.1.0-2.gdc1
+- Add dataplane support 
+
+* Tue Sep 20 2016 Radek Smidl <radek.smidl@gooddata.com> 1:13.1.0-1.gdc1
 - adapt spec for GoodData build
 
 * Fri Jun 17 2016 Haikel Guemar <hguemar@fedoraproject.org> 1:13.1.0-1
