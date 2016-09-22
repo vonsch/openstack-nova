@@ -13668,7 +13668,6 @@ class LibvirtConnTestCase(test.NoDBTestCase):
             self.assertFalse(self._test_prepare_domain_for_snapshot(
                 True, test_power_state))
 
-
 class HostStateTestCase(test.NoDBTestCase):
 
     cpu_info = {"vendor": "Intel", "model": "pentium", "arch": "i686",
