@@ -1,19 +1,20 @@
+%define gdc_version .gdc1
 %global with_doc %{!?_without_doc:1}%{?_without_doc:0}
 %global with_trans %{!?_without_trans:1}%{?_without_trans:0}
 
-%{!?upstream_version: %global upstream_version %{version}%{?milestone}}
+%{!?upstream_version: %global upstream_version %{version}%{?gdc_version}%{?milestone}}
 
 Name:             openstack-nova
 # Liberty semver reset
 # https://review.openstack.org/#/q/I6a35fa0dda798fad93b804d00a46af80f08d475c,n,z
 Epoch:            1
 Version:          13.1.0
-Release:          1%{?dist}
+Release:          1%{?gdc_version}%{?dist}
 Summary:          OpenStack Compute (nova)
 
 License:          ASL 2.0
 URL:              http://openstack.org/projects/compute/
-Source0:          https://tarballs.openstack.org/nova/nova-%{version}%{?milestone}.tar.gz
+Source0:          openstack-nova.tar.gz
 
 Source1:          nova-dist.conf
 Source6:          nova.logrotate
@@ -466,7 +467,7 @@ This package contains documentation files for nova.
 %endif
 
 %prep
-%setup -q -n nova-%{upstream_version}
+%setup -q -n openstack-nova
 
 find . \( -name .gitignore -o -name .placeholder \) -delete
 
@@ -482,7 +483,7 @@ find nova/locale \( -name '*.po' -o -name '*.pot' \) -delete
 %build
 PYTHONPATH=. oslo-config-generator --config-file=etc/nova/nova-config-generator.conf
 
-%{__python2} setup.py build
+PBR_VERSION=%{version} %{__python2} setup.py build
 
 # Avoid http://bugzilla.redhat.com/1059815. Remove when that is closed
 sed -i 's|group/name|group;name|; s|\[DEFAULT\]/|DEFAULT;|' etc/nova/nova.conf.sample
@@ -505,7 +506,7 @@ while read name eq value; do
 done < %{SOURCE1}
 
 %install
-%{__python2} setup.py install -O1 --skip-build --root %{buildroot}
+PBR_VERSION=%{version} %{__python2} setup.py install -O1 --skip-build --root %{buildroot}
 
 # docs generation requires everything to be installed first
 export PYTHONPATH="$( pwd ):$PYTHONPATH"
@@ -818,6 +819,9 @@ exit 0
 %endif
 
 %changelog
+* Tue Sep 20 2016 Radek Smidl <radek.smidl@gooddata> 1:13.1.0-1.gdc1
+- adapt spec for GoodData build
+
 * Fri Jun 17 2016 Haikel Guemar <hguemar@fedoraproject.org> 1:13.1.0-1
 - Update to 13.1.0
 
