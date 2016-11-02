@@ -9,7 +9,7 @@ Name:             openstack-nova
 # https://review.openstack.org/#/q/I6a35fa0dda798fad93b804d00a46af80f08d475c,n,z
 Epoch:            1
 Version:          13.1.0
-Release:          2%{?gdc_version}%{?dist}
+Release:          3%{?gdc_version}%{?dist}
 Summary:          OpenStack Compute (nova)
 
 License:          ASL 2.0
@@ -607,6 +607,10 @@ install -p -D -m 644 %{SOURCE21} %{buildroot}%{_sysconfdir}/polkit-1/localauthor
 install -d -m 755 %{buildroot}%{_sysconfdir}/polkit-1/rules.d
 install -p -D -m 644 %{SOURCE23} %{buildroot}%{_sysconfdir}/polkit-1/rules.d/50-nova.rules
 
+#PAAS-689
+install -m 644 nova/db/sqlalchemy/migrate_repo/migrate.cfg %{buildroot}%{python2_sitelib}/nova/db/sqlalchemy/migrate_repo/
+install -m 644 nova/db/sqlalchemy/api_migrations/migrate_repo/migrate.cfg %{buildroot}%{python2_sitelib}/nova/db/sqlalchemy/api_migrations/migrate_repo/
+
 # Install novncproxy service options template
 install -d %{buildroot}%{_sysconfdir}/sysconfig
 install -p -m 0644 %{SOURCE30} %{buildroot}%{_sysconfdir}/sysconfig/openstack-nova-novncproxy
@@ -819,6 +823,9 @@ exit 0
 %endif
 
 %changelog
+* Wed Nov 2 2016 Dinar Valeev <dinar.valeev@gooddata.com> 1:13.1.0-3.gdc1
+- PAAS-689 package migrate.cfg
+
 * Thu Sep 22 2016 Dinar Valeev <dinar.valeev@gooddata.com> 1:13.1.0-2.gdc1
 - Add dataplane support 
 
