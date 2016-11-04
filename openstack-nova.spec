@@ -8,8 +8,8 @@ Name:             openstack-nova
 # Liberty semver reset
 # https://review.openstack.org/#/q/I6a35fa0dda798fad93b804d00a46af80f08d475c,n,z
 Epoch:            1
-Version:          13.1.0
-Release:          4%{?gdc_version}%{?dist}
+Version:          13.1.2
+Release:          2%{?gdc_version}%{?dist}
 Summary:          OpenStack Compute (nova)
 
 License:          ASL 2.0
@@ -823,6 +823,9 @@ exit 0
 %endif
 
 %changelog
+* Fri Nov 4 2016 Tomas Dubec <tomas.dubec@gooddata.com> 1:13.1.2-2.gdc1
+- Align with upstream
+
 * Fri Nov 4 2016 Tomas Dubec <tomas.dubec@gooddata.com> 1:13.1.0-4.gdc1
 - Fix resizing in imagebackend.cache() (cherry-pick)
 
