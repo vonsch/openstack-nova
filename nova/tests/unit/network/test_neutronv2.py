@@ -2275,6 +2275,21 @@ class TestNeutronv2(TestNeutronv2Base):
         api.disassociate_and_release_floating_ip(self.context, None,
                                                floating_ip)
 
+    def test_disassociate_and_release_floating_ip_with_instance(self):
+        api = neutronapi.API()
+        address = self.fip_unassociated['floating_ip_address']
+        fip_id = self.fip_unassociated['id']
+        floating_ip = {'address': address}
+        instance = self._fake_instance_object(self.instance)
+
+        self.moxed_client.list_floatingips(floating_ip_address=address).\
+            AndReturn({'floatingips': [self.fip_unassociated]})
+        self.moxed_client.delete_floatingip(fip_id)
+        self._setup_mock_for_refresh_cache(api, [instance])
+        self.mox.ReplayAll()
+        api.disassociate_and_release_floating_ip(self.context, instance,
+                                                 floating_ip)
+
     def test_release_floating_ip_associated(self):
         api = neutronapi.API()
         address = self.fip_associated['floating_ip_address']
@@ -3839,6 +3854,18 @@ class TestNeutronv2WithMock(test.TestCase):
                                       'dns_name': ''}}
             port_client.update_port.assert_called_once_with(
                 uuids.port_id, port_req_body)
+
+    @mock.patch('nova.network.neutronv2.api.API._get_floating_ip_by_address',
+                return_value={"port_id": "1"})
+    @mock.patch('nova.network.neutronv2.api.API._show_port',
+                side_effect=exception.PortNotFound(port_id='1'))
+    def test_get_instance_id_by_floating_address_port_not_found(self,
+                                                                mock_show,
+                                                                mock_get):
+        api = neutronapi.API()
+        fip = api.get_instance_id_by_floating_address(self.context,
+                                                      '172.24.4.227')
+        self.assertIsNone(fip)
 
 
 class TestNeutronv2ModuleMethods(test.NoDBTestCase):

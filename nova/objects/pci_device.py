@@ -118,7 +118,7 @@ class PciDevice(base.NovaPersistentObject, base.NovaObject):
     def should_migrate_data():
         # NOTE(ndipanov): Only migrate parent_addr if all services are up to at
         # least version 4 - this should only ever be called from save()
-        services = ('conductor', 'api')
+        services = ('conductor', 'osapi_compute')
         min_parent_addr_version = 4
 
         min_deployed = min(objects.Service.get_minimum_version(
@@ -264,7 +264,7 @@ class PciDevice(base.NovaPersistentObject, base.NovaObject):
         for dev in dev_list:
             dev.status = status
 
-    def claim(self, instance):
+    def claim(self, instance_uuid):
         if self.status != fields.PciDeviceStatus.AVAILABLE:
             raise exception.PciDeviceInvalidStatus(
                 compute_node_id=self.compute_node_id,
@@ -316,7 +316,7 @@ class PciDevice(base.NovaPersistentObject, base.NovaObject):
                             'vf_addr': self.address})
 
         self.status = fields.PciDeviceStatus.CLAIMED
-        self.instance_uuid = instance['uuid']
+        self.instance_uuid = instance_uuid
 
     def allocate(self, instance):
         ok_statuses = (fields.PciDeviceStatus.AVAILABLE,
