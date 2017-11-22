@@ -9,7 +9,7 @@ Name:             openstack-nova
 # https://review.openstack.org/#/q/I6a35fa0dda798fad93b804d00a46af80f08d475c,n,z
 Epoch:            1
 Version:          13.1.2
-Release:          2%{?gdc_version}%{?dist}
+Release:          3%{?gdc_version}%{?dist}
 Summary:          OpenStack Compute (nova)
 
 License:          ASL 2.0
@@ -824,6 +824,9 @@ exit 0
 %endif
 
 %changelog
+* Wed Nov 22 2017 Martin Surovcak <martin.surovcak@gooddata.com> 1:13.1.2-3.gdc1
+- PAAS-12479 do not call get_by_security_group when not needed
+
 * Mon Dec 12 2016 Martin Surovcak <martin.surovcak@gooddata.com>
 - openstack-nova-network depends on conntrack-tools
 
