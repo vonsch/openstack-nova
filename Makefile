@@ -18,3 +18,5 @@ sources: $(SPECFILE)
 
 rpm: sources
 	rpmbuild -ta $(TARNAME).tar.gz
+
+tarball: sources

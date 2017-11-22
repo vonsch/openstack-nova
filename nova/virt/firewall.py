@@ -318,6 +318,9 @@ class IptablesFirewallDriver(FirewallDriver):
         # then, security group chains and rules
         rules = objects.SecurityGroupRuleList.get_by_instance(ctxt, instance)
 
+        # this should reduce DB calls rules times
+        inst_cache = {}
+
         for rule in rules:
             if not rule.cidr:
                 version = 4
@@ -350,8 +353,17 @@ class IptablesFirewallDriver(FirewallDriver):
                 fw_rules += [' '.join(args)]
             else:
                 if rule.grantee_group:
-                    insts = objects.InstanceList.get_by_security_group(
-                            ctxt, rule.grantee_group)
+                    if rule.grantee_group.name in inst_cache:
+                        LOG.debug('using inst_cache to get data for %s group' %
+                            rule.grantee_group.name)
+                        insts = inst_cache[rule.grantee_group.name]
+                    else:
+                        LOG.debug('quering DB for %s group' %
+                            rule.grantee_group.name)
+                        insts = objects.InstanceList.get_by_security_group(ctxt,
+                            rule.grantee_group)
+                        inst_cache[rule.grantee_group.name] = insts
+
                     for inst in insts:
                         if inst.info_cache.deleted:
                             LOG.debug('ignoring deleted cache')
