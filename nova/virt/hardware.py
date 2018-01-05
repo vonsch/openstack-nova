@@ -1135,6 +1135,12 @@ def _add_cpu_pinning_constraint(flavor, image_meta, numa_topology):
     return numa_topology
 
 
+def _get_numa_spreading(flavor):
+    """Whether you want packing/spreading over NUMA nodes"""
+    flavor_numa_spreading = flavor.get('extra_specs', {}).get("hw:numa_spreading")
+    return strutils.bool_from_string(flavor_numa_spreading)
+
+
 # TODO(sahid): Move numa related to hardward/numa.py
 def numa_get_constraints(flavor, image_meta):
     """Return topology related to input request
@@ -1149,7 +1155,6 @@ def numa_get_constraints(flavor, image_meta):
 
     :returns: InstanceNUMATopology or None
     """
-
     nodes = flavor.get('extra_specs', {}).get("hw:numa_nodes")
     props = image_meta.properties
     if nodes is not None:
@@ -1195,7 +1200,7 @@ def numa_get_constraints(flavor, image_meta):
 
 def numa_fit_instance_to_host(
         host_topology, instance_topology, limits=None,
-        pci_requests=None, pci_stats=None):
+        pci_requests=None, pci_stats=None, flavor=None):
     """Fit the instance topology onto the host topology given the limits
 
     :param host_topology: objects.NUMATopology object to fit an instance on
@@ -1224,8 +1229,14 @@ def numa_fit_instance_to_host(
     else:
         # TODO(ndipanov): We may want to sort permutations differently
         # depending on whether we want packing/spreading over NUMA nodes
-        for host_cell_perm in itertools.permutations(
-                host_topology.cells, len(instance_topology)):
+        host_cell_perms = itertools.permutations(host_topology.cells,
+                                                 len(instance_topology))
+
+        if _get_numa_spreading(flavor):
+            host_cell_perms = sorted(host_cell_perms,
+                                     key=lambda numacell: numacell[0].cpu_usage)
+
+        for host_cell_perm in host_cell_perms:
             cells = []
             for host_cell, instance_cell in zip(
                     host_cell_perm, instance_topology.cells):

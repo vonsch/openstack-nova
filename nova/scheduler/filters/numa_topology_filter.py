@@ -82,7 +82,8 @@ class NUMATopologyFilter(filters.BaseHostFilter):
                         host_topology, requested_topology,
                         limits=limits,
                         pci_requests=pci_requests,
-                        pci_stats=host_state.pci_stats))
+                        pci_stats=host_state.pci_stats,
+                        flavor=spec_obj.flavor))
             if not instance_topology:
                 LOG.debug("%(host)s, %(node)s fails NUMA topology "
                           "requirements. The instance does not fit on this "
