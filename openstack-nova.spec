@@ -1,4 +1,4 @@
-%define gdc_version .gdc1
+%define gdc_version .gdc
 %global with_doc %{!?_without_doc:1}%{?_without_doc:0}
 %global with_trans %{!?_without_trans:1}%{?_without_trans:0}
 
@@ -9,7 +9,7 @@ Name:             openstack-nova
 # https://review.openstack.org/#/q/I6a35fa0dda798fad93b804d00a46af80f08d475c,n,z
 Epoch:            1
 Version:          13.1.2
-Release:          3%{?gdc_version}%{?dist}
+Release:          4%{?gdc_version}%{?dist}
 Summary:          OpenStack Compute (nova)
 
 License:          ASL 2.0
@@ -824,6 +824,9 @@ exit 0
 %endif
 
 %changelog
+* Fri Jan 5 2018 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 1:13.1.2-4.gdc
+- PAAS-12889 Allow spreading over NUMA nodes if flavor property 'hw:numa_spreading=true' is set
+
 * Wed Nov 22 2017 Martin Surovcak <martin.surovcak@gooddata.com> 1:13.1.2-3.gdc1
 - PAAS-12479 do not call get_by_security_group when not needed
 

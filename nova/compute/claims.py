@@ -215,7 +215,8 @@ class Claim(NopClaim):
                         host_topology, requested_topology,
                         limits=limit,
                         pci_requests=pci_requests.requests,
-                        pci_stats=pci_stats))
+                        pci_stats=pci_stats,
+                        flavor=self.instance.flavor))
 
             if requested_topology and not instance_topology:
                 if pci_requests.requests:
