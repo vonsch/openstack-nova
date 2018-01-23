@@ -275,10 +275,9 @@ libvirt_opts = [
                 help='A path to a device that will be used as source of '
                      'entropy on the host. Permitted options are: '
                      '/dev/random or /dev/hwrng'),
-    cfg.BoolOpt('dataplane',
-                default=False,
-                help='Enable x-data-plane for virtio devices',
-                deprecated_group='DEFAULT'),
+    cfg.BoolOpt('iothreads',
+                default=True,
+                help='This option enables IOThreads in nova (former x-data-plane) in libvirt templace.'),
     cfg.ListOpt('hw_machine_type',
                help='For qemu or KVM guests, set this option to specify '
                     'a default machine type per host architecture. '
@@ -1348,6 +1347,9 @@ class LibvirtDriver(driver.ComputeDriver):
                                                        encryption)
                 encryptor.attach_volume(context, **encryption)
 
+            iothreads_no = guest.get_iothreads()
+            if iothreads_no == 0:
+                conf.iothread = 0
             guest.attach_device(conf, persistent=True, live=live)
         except Exception as ex:
             LOG.exception(_LE('Failed to attach volume at mountpoint: %s'),
@@ -4539,9 +4541,10 @@ class LibvirtDriver(driver.ComputeDriver):
             instance.numa_topology, flavor, pci_devs, allowed_cpus, image_meta)
 
         guest.cpuset = guest_numa_config.cpuset
-        guest.dataplane = CONF.libvirt.dataplane
         guest.cputune = guest_numa_config.cputune
         guest.numatune = guest_numa_config.numatune
+
+        guest.iothreads = CONF.libvirt.iothreads
 
         guest.membacking = self._get_guest_memory_backing_config(
             instance.numa_topology,

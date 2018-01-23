@@ -57,6 +57,7 @@ class LibvirtBaseVolumeDriver(object):
             self.is_block_dev
         )
 
+        conf.iothread = 2
         conf.source_device = disk_info['type']
         conf.driver_format = "raw"
         conf.driver_cache = "none"
@@ -146,6 +147,7 @@ class LibvirtVolumeDriver(LibvirtBaseVolumeDriver):
                      self).get_config(connection_info, disk_info)
         conf.source_type = "block"
         conf.source_path = connection_info['data']['device_path']
+        conf.driver_io = "native"
         return conf
 
 

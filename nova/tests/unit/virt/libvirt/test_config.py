@@ -1907,7 +1907,7 @@ class LibvirtConfigGuestTest(LibvirtConfigBaseTest):
               </devices>
             </domain>""")
 
-    def test_config_kvm_dataplane(self):
+    def test_config_kvm_iothreads(self):
         obj = config.LibvirtConfigGuest()
         obj.virt_type = "kvm"
         obj.memory = 100 * units.Mi
@@ -1921,7 +1921,6 @@ class LibvirtConfigGuestTest(LibvirtConfigBaseTest):
         obj.os_type = "linux"
         obj.os_boot_dev = ["hd", "cdrom", "fd"]
         obj.os_smbios = config.LibvirtConfigGuestSMBIOS()
-        obj.dataplane = True
 
         obj.cputune = config.LibvirtConfigGuestCPUTune()
         obj.cputune.shares = 100
@@ -1955,6 +1954,7 @@ class LibvirtConfigGuestTest(LibvirtConfigBaseTest):
                    <entry name="version">1.0.0</entry>
                  </system>
               </sysinfo>
+              <iothreads>1</iothreads>
               <os>
                 <type>linux</type>
                 <boot dev="hd"/>
@@ -1968,7 +1968,7 @@ class LibvirtConfigGuestTest(LibvirtConfigBaseTest):
                 <period>25000</period>
               </cputune>
               <devices>
-                <disk type="file" device="disk">
+                <disk type="file" device="disk" iothread="1">
                   <source file="/tmp/img"/>
                   <target bus="virtio" dev="/dev/vda"/>
                 </disk>
@@ -1976,9 +1976,7 @@ class LibvirtConfigGuestTest(LibvirtConfigBaseTest):
               <qemu:commandline xmlns:qemu=\
 "http://libvirt.org/schemas/domain/qemu/1.0">
                   <qemu:arg value="-global"/>
-                  <qemu:arg value="virtio-blk-pci.scsi=off"/>
-                  <qemu:arg value="-global"/>
-                  <qemu:arg value="virtio-blk-pci.x-data-plane=on"/>
+                  <qemu:arg value="virtio-blk-pci.config-wce=off"/>
                </qemu:commandline>
             </domain>""")
 

@@ -477,6 +477,9 @@ class Guest(object):
         """
         self._domain.suspend()
 
+    def get_iothreads(self):
+        ret = self._domain.ioThreadInfo()
+        return len(ret)
 
 class BlockDevice(object):
     """Wrapper around block device API"""

@@ -9,7 +9,7 @@ Name:             openstack-nova
 # https://review.openstack.org/#/q/I6a35fa0dda798fad93b804d00a46af80f08d475c,n,z
 Epoch:            1
 Version:          13.1.2
-Release:          4%{?gdc_version}%{?dist}
+Release:          5%{?gdc_version}%{?dist}
 Summary:          OpenStack Compute (nova)
 
 License:          ASL 2.0
@@ -824,6 +824,9 @@ exit 0
 %endif
 
 %changelog
+* Fri Jan 19 2018 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 1:13.1.2-5.gdc
+- PAAS-12718 Replace deprecated DataPlane options with IOthreads, disable config-wce and use io='native' in volume driver
+
 * Fri Jan 5 2018 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 1:13.1.2-4.gdc
 - PAAS-12889 Allow spreading over NUMA nodes if flavor property 'hw:numa_spreading=true' is set
 
