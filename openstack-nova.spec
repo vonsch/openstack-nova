@@ -9,7 +9,7 @@ Name:             openstack-nova
 # https://review.openstack.org/#/q/I6a35fa0dda798fad93b804d00a46af80f08d475c,n,z
 Epoch:            1
 Version:          13.1.2
-Release:          5%{?gdc_version}%{?dist}
+Release:          6%{?gdc_version}%{?dist}
 Summary:          OpenStack Compute (nova)
 
 License:          ASL 2.0
@@ -680,27 +680,27 @@ exit 0
 %systemd_preun %{name}-serialproxy.service
 
 %postun compute
-%systemd_postun_with_restart %{name}-compute.service
+%systemd_postun %{name}-compute.service
 %postun network
-%systemd_postun_with_restart %{name}-network.service
+%systemd_postun %{name}-network.service
 %postun scheduler
-%systemd_postun_with_restart %{name}-scheduler.service
+%systemd_postun %{name}-scheduler.service
 %postun cert
-%systemd_postun_with_restart %{name}-cert.service
+%systemd_postun %{name}-cert.service
 %postun api
-%systemd_postun_with_restart %{name}-api.service %{name}-metadata-api.service %{name}-os-compute-api.service
+%systemd_postun %{name}-api.service %{name}-metadata-api.service %{name}-os-compute-api.service
 %postun conductor
-%systemd_postun_with_restart %{name}-conductor.service
+%systemd_postun %{name}-conductor.service
 %postun console
-%systemd_postun_with_restart %{name}-console.service %{name}-consoleauth.service %{name}-xvpvncproxy.service
+%systemd_postun %{name}-console.service %{name}-consoleauth.service %{name}-xvpvncproxy.service
 %postun cells
-%systemd_postun_with_restart %{name}-cells.service
+%systemd_postun %{name}-cells.service
 %postun novncproxy
-%systemd_postun_with_restart %{name}-novncproxy.service
+%systemd_postun %{name}-novncproxy.service
 %postun spicehtml5proxy
-%systemd_postun_with_restart %{name}-spicehtml5proxy.service
+%systemd_postun %{name}-spicehtml5proxy.service
 %postun serialproxy
-%systemd_postun_with_restart %{name}-serialproxy.service
+%systemd_postun %{name}-serialproxy.service
 
 %files
 %doc LICENSE
@@ -824,6 +824,9 @@ exit 0
 %endif
 
 %changelog
+* Wed Feb 14 2018 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 1:13.1.2-6.gdc
+- PAAS-13452 Ensure nova services are not restarted during update of openstack-nova-* packages.
+
 * Fri Jan 19 2018 Jaroslav Pulchart <jaroslav.pulchart@gooddata.com> 1:13.1.2-5.gdc
 - PAAS-12718 Replace deprecated DataPlane options with IOthreads, disable config-wce and use io='native' in volume driver
 
