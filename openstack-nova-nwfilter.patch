@@ -1,0 +1,97 @@
+Backported from following upstream change:
+
+From 68ec6840dd75dea85b6a55310c487284d7bd579e Mon Sep 17 00:00:00 2001
+From: "Daniel P. Berrange" <berrange@redhat.com>
+Date: Fri, 19 Sep 2014 13:41:54 +0100
+Subject: libvirt: avoid changing UUID when redefining nwfilters
+
+libvirt >= 1.2.7 enforces that when you re-define a network
+filter you can't change the UUID. ie name + uuid must match.
+Since Nova was not including any UUID in the XML it sent, it
+would always get a random UUID generated, which would cause
+failures when re-defining an existing filter. The result
+was that Nova would fail to start up and fail to migrate
+if there was an existing guest running. The fix is to query
+libvirt to see if the nwfilter already exists, and extract
+the UUID from its XML and use that when re-defining it.
+
+(cherry picked from commit 2418a9dce86280fbf269f68f7d7c9b739f662ef1)
+
+Closes-bug: #1360119
+Change-Id: I9d4b2c6c8f0c9a23ed79ed8e0b5ac0d4418851a4
+
+diff -up ./virt/libvirt/firewall.py.nwfilter ./virt/libvirt/firewall.py
+--- ./virt/libvirt/firewall.py.nwfilter	2016-06-03 14:16:03.000000000 +0200
++++ ./virt/libvirt/firewall.py	2018-05-29 17:24:44.750094343 +0200
+@@ -18,6 +18,9 @@
+ #    under the License.
+ 
+ 
++import uuid
++
++from lxml import etree
+ from eventlet import tpool
+ 
+ from nova import flags
+@@ -57,14 +60,14 @@ class NWFilterFirewall(base_firewall.Fir
+         return self._libvirt_get_connection()
+     _conn = property(_get_connection)
+ 
+-    @staticmethod
+-    def nova_dhcp_filter():
++    def nova_dhcp_filter(self):
+         """The standard allow-dhcp-server filter is an <ip> one, so it uses
+            ebtables to allow traffic through. Without a corresponding rule in
+            iptables, it'll get blocked anyway."""
+ 
++        uuid = self._get_filter_uuid('nova-allow-dhcp-server')
+         return '''<filter name='nova-allow-dhcp-server' chain='ipv4'>
+-                    <uuid>891e4787-e5c0-d59b-cbd6-41bc3c6b36fc</uuid>
++                    <uuid>%s</uuid>
+                     <rule action='accept' direction='out'
+                           priority='100'>
+                       <udp srcipaddr='0.0.0.0'
+@@ -78,7 +81,7 @@ class NWFilterFirewall(base_firewall.Fir
+                            srcportstart='67'
+                            dstportstart='68'/>
+                     </rule>
+-                  </filter>'''
++                  </filter>''' % uuid
+ 
+     def setup_basic_filtering(self, instance, network_info):
+         """Set up basic filtering (MAC, IP, and ARP spoofing protection)"""
+@@ -133,16 +136,32 @@ class NWFilterFirewall(base_firewall.Fir
+                                                     'no-arp-spoofing']))
+         self._define_filter(self._filter_container('nova-vpn',
+                                                    ['allow-dhcp-server']))
+-        self._define_filter(self.nova_dhcp_filter)
++        self._define_filter(self.nova_dhcp_filter())
+ 
+         self.static_filters_configured = True
+ 
+     def _filter_container(self, name, filters):
+-        xml = '''<filter name='%s' chain='root'>%s</filter>''' % (
++        uuid = self._get_filter_uuid(name)
++        xml = '''<filter name='%s' chain='root'>%s''' % (
+                  name,
+                  ''.join(["<filterref filter='%s'/>" % (f,) for f in filters]))
++        xml += '<uuid>%s</uuid>' % uuid
++        xml += '</filter>'
+         return xml
+ 
++    def _get_filter_uuid(self, name):
++        try:
++            flt = self._conn.nwfilterLookupByName(name)
++            xml = flt.XMLDesc(0)
++            doc = etree.fromstring(xml)
++            u = doc.find("./uuid").text
++        except Exception as e:
++            LOG.debug("Cannot find UUID for filter '%s': '%s'" % (name, e))
++            u = uuid.uuid4().hex
++
++        LOG.debug("UUID for filter '%s' is '%s'" % (name, u))
++        return u
++
+     def _define_filter(self, xml):
+         if callable(xml):
+             xml = xml()

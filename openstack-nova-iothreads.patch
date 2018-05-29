@@ -1,0 +1,131 @@
+diff -up ./virt/libvirt/config.py.orig ./virt/libvirt/config.py
+--- ./virt/libvirt/config.py.orig	2018-05-29 01:13:38.748791975 +0200
++++ ./virt/libvirt/config.py	2018-05-29 15:01:23.196067689 +0200
+@@ -356,7 +356,7 @@ class LibvirtConfigGuestDisk(LibvirtConf
+         self.driver_name = None
+         self.driver_format = None
+         self.driver_cache = None
+-        if (FLAGS.libvirt_dataplane or FLAGS.libvirt_io_native):
++        if (FLAGS.libvirt_io_native):
+             if FLAGS.libvirt_images_type == "lvm":
+                 self.driver_io = "native"
+             else:
+@@ -374,6 +374,8 @@ class LibvirtConfigGuestDisk(LibvirtConf
+         self.auth_secret_type = None
+         self.auth_secret_uuid = None
+         self.serial = None
++        self.iothreads = True
++        self.iothread = 1
+ 
+     def format_dom(self):
+         dev = super(LibvirtConfigGuestDisk, self).format_dom()
+@@ -392,6 +394,8 @@ class LibvirtConfigGuestDisk(LibvirtConf
+                 drv.set("cache", self.driver_cache)
+             if self.driver_io is not None:
+                 drv.set("io", self.driver_io)
++            if self.iothreads and self.driver_io == 'native' and self.iothread >= 1:
++                drv.set("iothread", str(self.iothread))
+             dev.append(drv)
+ 
+         if self.source_type == "file":
+@@ -643,18 +647,16 @@ class LibvirtConfigGuest(LibvirtConfigOb
+             memorybacking.append(etree.Element("hugepages"))
+             root.append(memorybacking)
+ 
+-    def _format_dataplane(self, root):
+-        if self.dataplane:
+-            XML_NAMESPACE = "http://libvirt.org/schemas/domain/qemu/1.0"
+-            XML = "{%s}" % XML_NAMESPACE
+-            NSMAP = {"qemu": XML_NAMESPACE}
+-            qemu_cl = etree.Element(XML + "commandline", nsmap=NSMAP)
+-            qemu_opts = ["-global", "virtio-blk-pci.scsi=off",
+-                         "-global", "virtio-blk-pci.x-data-plane=on"]
+-            for option in qemu_opts:
+-                qemu_arg = etree.SubElement(qemu_cl, XML + "arg")
+-                qemu_arg.set("value", option)
+-            root.append(qemu_cl)
++    def _format_globaloptions(self, root):
++        XML_NAMESPACE = "http://libvirt.org/schemas/domain/qemu/1.0"
++        XML = "{%s}" % XML_NAMESPACE
++        NSMAP = {"qemu": XML_NAMESPACE}
++        qemu_cl = etree.Element(XML + "commandline", nsmap=NSMAP)
++        qemu_opts = ["-global", "virtio-blk-pci.config-wce=off"]
++        for option in qemu_opts:
++            qemu_arg = etree.SubElement(qemu_cl, XML + "arg")
++            qemu_arg.set("value", option)
++        root.append(qemu_cl)
+ 
+     def _format_features(self, root):
+         if self.acpi or self.apic or self.pae:
+@@ -667,6 +669,12 @@ class LibvirtConfigGuest(LibvirtConfigOb
+                 features.append(etree.Element("pae"))
+             root.append(features)
+ 
++    def _format_iothreads(self, root):
++        if self.iothreads:
++            iothreads = etree.Element("iothreads")
++            iothreads.text = '2'
++            root.append(iothreads)
++
+     def _format_devices(self, root):
+         if len(self.devices) == 0:
+             return
+@@ -691,9 +699,11 @@ class LibvirtConfigGuest(LibvirtConfigOb
+         if self.cpu is not None:
+             root.append(self.cpu.format_dom())
+ 
++        self._format_iothreads(root)
++
+         self._format_devices(root)
+ 
+-        self._format_dataplane(root)
++        self._format_globaloptions(root)
+ 
+         return root
+ 
+diff -up ./virt/libvirt/driver.py.orig ./virt/libvirt/driver.py
+--- ./virt/libvirt/driver.py.orig	2018-05-29 01:20:58.756039943 +0200
++++ ./virt/libvirt/driver.py	2018-05-29 14:59:17.508341749 +0200
+@@ -103,9 +103,9 @@ libvirt_opts = [
+     cfg.BoolOpt('libvirt_hugepages',
+                default=False,
+                help='Libvirt hugepages memory backed'),
+-    cfg.BoolOpt('libvirt_dataplane',
+-                default=False,
+-                help='Enable x-data-plane for virtio devices'),
++    cfg.BoolOpt('libvirt_iothreads',
++                default=True,
++                help='This option enables IOThreads in nova (former x-data-plane) in libvirt templace.'),
+     cfg.BoolOpt('libvirt_io_native',
+                 default=False,
+                 help='Enable native io'),
+@@ -1848,8 +1848,8 @@ class LibvirtDriver(driver.ComputeDriver
+         if FLAGS.libvirt_hugepages == True:
+             guest.hugepages = True
+ 
+-        if FLAGS.libvirt_dataplane:
+-            guest.dataplane = True
++        if FLAGS.libvirt_iothreads:
++            guest.iothreads = True
+ 
+         clk = config.LibvirtConfigGuestClock()
+         clk.offset = "utc"
+diff -up ./virt/libvirt/volume.py.orig ./virt/libvirt/volume.py
+--- ./virt/libvirt/volume.py.orig	2018-05-29 13:34:15.177804277 +0200
++++ ./virt/libvirt/volume.py	2018-05-29 13:36:39.010613667 +0200
+@@ -49,6 +49,7 @@ class LibvirtVolumeDriver(object):
+         conf.target_dev = mount_device
+         conf.target_bus = "virtio"
+         conf.serial = connection_info.get('serial')
++        conf.iothread = 2
+ 
+         try:
+             volume_id = connection_info['data']['volume_id']
+@@ -70,6 +71,7 @@ class LibvirtVolumeDriver(object):
+         except KeyError as e:
+              LOG.debug("Attaching device failed, because volume_id is not present. Shitty coding, that needs to be worked-around, in order for unit tests to pass")
+ 
++        conf.driver_io = "native"
+         return conf
+ 
+     def disconnect_volume(self, connection_info, mount_device):
