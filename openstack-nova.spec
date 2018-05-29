@@ -8,7 +8,7 @@
 
 Name:             openstack-nova
 Version:          2012.2.4
-Release:          %{release_number}%{?dist}.gdc4
+Release:          %{release_number}%{?dist}.gdc5
 Summary:          OpenStack Compute (nova)
 
 Group:            Applications/System
@@ -50,6 +50,8 @@ Source22:         nova-ifc-template
 
 Source50:         nova.conf.tmpfilesd
 
+Patch0:           openstack-nova-iothreads.patch
+Patch1:           openstack-nova-nwfilter.patch
 
 BuildArch:        noarch
 BuildRequires:    intltool
@@ -378,6 +380,10 @@ This package contains documentation files for nova.
 %prep
 %setup -q -n %{_openstack_name}-%{product_name}-%{release_number}
 
+pushd nova
+%patch0 -p0 -b .iothreads
+%patch1 -p0 -b .nwfilter
+popd
 
 find . \( -name .gitignore -o -name .placeholder \) -delete
 
@@ -793,6 +799,10 @@ fi
 %endif
 
 %changelog
+* Tue May 29 2018 Adam Tkac <adam.tkac@gooddata.com> - 2012.2.4-41.gdc5
+- fix libvirt firewall.py driver
+- use iothreads instead of dataplane for IO
+
 * Thu Jun 02 2016 Andrey Arapov <andrey.arapov@gooddata.com> - 2012.2.4-41.gdc4
 - BUGFIX: PAAS-2305 make /var/run/nova persistent across reboots on EL7
 
